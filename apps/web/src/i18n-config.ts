@@ -51,6 +51,7 @@ i18next
     fallbackNS: ["common", "ui", "dialog"],
     debug: import.meta.env.MODE === "development",
     ns: [
+      "bipper",
       "channels",
       "connections",
       "commandPalette",

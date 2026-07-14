@@ -138,6 +138,12 @@ export const moduleRoute = createRoute({
   component: ConfigPage,
 });
 
+export const bipperRoute = createRoute({
+  getParentRoute: () => settingsRoute,
+  path: "bipper",
+  component: ConfigPage,
+});
+
 const nodesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/nodes",
@@ -162,7 +168,12 @@ export const routeTree = rootRoute.addChildren([
   messagesWithParamsRoute,
   mapRoute,
   mapWithParamsRoute,
-  settingsRoute.addChildren([radioRoute, deviceRoute, moduleRoute]),
+  settingsRoute.addChildren([
+    radioRoute,
+    bipperRoute,
+    deviceRoute,
+    moduleRoute,
+  ]),
   nodesRoute,
   dialogWithParamsRoute,
   connectionsRoute,

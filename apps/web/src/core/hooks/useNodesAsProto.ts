@@ -32,7 +32,7 @@ function useSdkNodesSafe(): ReadonlyArray<SdkNode> {
   );
 }
 
-function useMyNodeNumSafe(): number | undefined {
+export function useMyNodeNumSafe(): number | undefined {
   const client = useActiveClient();
   return useSignal(
     client?.device.myNodeNum ?? {

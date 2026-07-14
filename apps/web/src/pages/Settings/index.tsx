@@ -1,4 +1,4 @@
-import { deviceRoute, moduleRoute, radioRoute } from "@app/routes";
+import { deviceRoute, bipperRoute, moduleRoute, radioRoute } from "@app/routes";
 import { PageLayout } from "@components/PageLayout.tsx";
 import { Sidebar } from "@components/Sidebar.tsx";
 import { SidebarButton } from "@components/UI/Sidebar/SidebarButton.tsx";
@@ -7,6 +7,7 @@ import { useToast } from "@core/hooks/useToast.ts";
 import { cn } from "@core/utils/cn.ts";
 import { useConfigEditor, useSignal } from "@meshtastic/sdk-react";
 import { DeviceConfig } from "@pages/Settings/DeviceConfig.tsx";
+import { BipperConfig } from "@pages/Settings/BipperConfig.tsx";
 import { ModuleConfig } from "@pages/Settings/ModuleConfig.tsx";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
@@ -16,6 +17,7 @@ import {
   RouterIcon,
   SaveIcon,
   SaveOff,
+  SirenIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FieldValues, UseFormReturn } from "react-hook-form";
@@ -30,6 +32,12 @@ const EMPTY_DIRTY_STRING_SIGNAL = {
 const EMPTY_DIRTY_NUMBER_SIGNAL = {
   value: [] as readonly number[],
   peek: () => [] as readonly number[],
+  subscribe: () => () => {},
+} as const;
+
+const EMPTY_OWNER_DIRTY_SIGNAL = {
+  value: false,
+  peek: () => false,
   subscribe: () => () => {},
 } as const;
 
@@ -50,6 +58,9 @@ const ConfigPage = () => {
   );
   const dirtyChannels = useSignal(
     editor?.dirtyChannels ?? EMPTY_DIRTY_NUMBER_SIGNAL,
+  );
+  const isOwnerDirty = useSignal(
+    editor?.isOwnerDirty ?? EMPTY_OWNER_DIRTY_SIGNAL,
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -76,6 +87,14 @@ const ConfigPage = () => {
         component: RadioConfig,
       },
       {
+        key: "bipper",
+        route: bipperRoute,
+        label: t("navigation.bipperConfig", { ns: "bipper" }),
+        icon: SirenIcon,
+        changeCount: configChangeCount + (isOwnerDirty ? 1 : 0),
+        component: BipperConfig,
+      },
+      {
         key: "device",
         route: deviceRoute,
         label: t("navigation.deviceConfig"),
@@ -92,7 +111,13 @@ const ConfigPage = () => {
         component: ModuleConfig,
       },
     ],
-    [t, configChangeCount, moduleConfigChangeCount, channelChangeCount],
+    [
+      t,
+      configChangeCount,
+      moduleConfigChangeCount,
+      channelChangeCount,
+      isOwnerDirty,
+    ],
   );
 
   const activeSection =

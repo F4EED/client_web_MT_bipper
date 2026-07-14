@@ -1,0 +1,65 @@
+{
+  "navigation": {
+    "bipperConfig": "Paramétrer le Bipper"
+  },
+  "page": {
+    "title": "Paramétrer le Bipper",
+    "description": "Réglages Meshtastic et pager Gaulix pour le Seeed Wio Tracker L1 Pro.",
+    "notBipperWarning": "L'appareil connecté ne semble pas être un Bipper L1 — les paramètres Gaulix peuvent ne pas s'appliquer.",
+    "tabIdentity": "Identité",
+    "tabGaulix": "Pager Gaulix",
+    "saveHint": "L'onglet Identité utilise le bouton Enregistrer en haut de page. L'appartenance aux entités (T1–T4) est appliquée immédiatement."
+  },
+  "gaulix": {
+    "title": "Pager Gaulix",
+    "description": "Définissez la valeur de chaque tag T1–T4 pour ce Bipper. Une alerte `#T1 valeur …` ne bipe que si `valeur` correspond.",
+    "usbHint": "Firmware v1.9.1+ : format alerte `#T1 SDIS42 texte`. Valeurs via `#tagset` (une seule écriture flash).",
+    "notConnected": "Connectez un Bipper en USB ou Bluetooth pour configurer le pager Gaulix.",
+    "status": {
+      "title": "État du pager",
+      "refresh": "Actualiser",
+      "empty": "Cliquez sur Actualiser pour interroger le pager (#status).",
+      "state": "État",
+      "alerts": "Alertes",
+      "battery": "Batterie",
+      "beeps": "Bips",
+      "tag": "Valeurs T1–T4",
+      "code": "Code"
+    },
+    "code": {
+      "title": "Code d'activation",
+      "description": "Équivalent à la commande #code ANCIEN NOUVEAU.",
+      "old": "Code actuel",
+      "new": "Nouveau code",
+      "apply": "Mettre à jour le code"
+    },
+    "tag": {
+      "title": "Valeurs des tags T1–T4",
+      "description": "Chaque Bipper a ses propres valeurs (ex. T1=SDIS42, T3=Ricamarie, T4=ligerien). Laisser vide = tag désactivé.",
+      "placeholder": "ex. SDIS42, Ricamarie, ligerien…",
+      "apply": "Enregistrer les tags",
+      "hint": "Alerte réseau : `#T4 ligerien inondation` → bipe si T4 vaut « ligerien » sur ce Bipper. Sans tag ou valeur différente → ignoré."
+    },
+    "beep": {
+      "title": "Nombre de bips (legacy)",
+      "description": "Enregistré en NVS (#b N). Le son d'alerte reste pim-pom continu.",
+      "label": "Nombre (0 = continu)",
+      "apply": "Enregistrer"
+    }
+  },
+  "toast": {
+    "notConnected": {
+      "title": "Non connecté",
+      "description": "Aucun nœud actif pour envoyer les commandes pager."
+    },
+    "sendFailed": {
+      "title": "Envoi impossible"
+    },
+    "commandOk": {
+      "title": "Commande acceptée"
+    },
+    "commandErr": {
+      "title": "Commande refusée"
+    }
+  }
+}

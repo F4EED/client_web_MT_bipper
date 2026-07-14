@@ -1,0 +1,65 @@
+{
+  "navigation": {
+    "bipperConfig": "Configure Bipper"
+  },
+  "page": {
+    "title": "Configure Bipper",
+    "description": "Meshtastic and Gaulix pager settings for the Seeed Wio Tracker L1 Pro.",
+    "notBipperWarning": "The connected device does not appear to be a Bipper L1 — Gaulix settings may not apply.",
+    "tabIdentity": "Identity",
+    "tabGaulix": "Gaulix pager",
+    "saveHint": "The Identity tab uses the Save button at the top. T1–T4 tag values are applied immediately."
+  },
+  "gaulix": {
+    "title": "Gaulix pager",
+    "description": "Set each T1–T4 value for this Bipper. An alert `#T1 value …` only buzzes when `value` matches.",
+    "usbHint": "Firmware v1.9.1+: alert format `#T1 SDIS42 text`. Values via `#tagset` (single flash write).",
+    "notConnected": "Connect a Bipper via USB or Bluetooth to configure the Gaulix pager.",
+    "status": {
+      "title": "Pager status",
+      "refresh": "Refresh",
+      "empty": "Click Refresh to query the pager (#status).",
+      "state": "State",
+      "alerts": "Alerts",
+      "battery": "Battery",
+      "beeps": "Beeps",
+      "tag": "T1–T4 values",
+      "code": "Code"
+    },
+    "code": {
+      "title": "Activation code",
+      "description": "Same as #code OLD NEW command.",
+      "old": "Current code",
+      "new": "New code",
+      "apply": "Update code"
+    },
+    "tag": {
+      "title": "T1–T4 tag values",
+      "description": "Each Bipper has its own values (e.g. T1=SDIS42, T3=Ricamarie, T4=ligerien). Leave empty to disable a tag.",
+      "placeholder": "e.g. SDIS42, Ricamarie, ligerien…",
+      "apply": "Save tags",
+      "hint": "Network alert: `#T4 ligerien flood` → buzzes if T4 is « ligerien » on this Bipper. No tag or wrong value → ignored."
+    },
+    "beep": {
+      "title": "Beep count (legacy)",
+      "description": "Stored in NVS (#b N). Alert sound remains continuous pim-pom.",
+      "label": "Count (0 = continuous)",
+      "apply": "Save"
+    }
+  },
+  "toast": {
+    "notConnected": {
+      "title": "Not connected",
+      "description": "No active node to send pager commands."
+    },
+    "sendFailed": {
+      "title": "Send failed"
+    },
+    "commandOk": {
+      "title": "Command accepted"
+    },
+    "commandErr": {
+      "title": "Command rejected"
+    }
+  }
+}
