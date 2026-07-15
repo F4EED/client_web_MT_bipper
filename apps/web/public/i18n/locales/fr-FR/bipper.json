@@ -12,8 +12,8 @@
   },
   "gaulix": {
     "title": "Pager Gaulix",
-    "description": "Définissez la valeur de chaque tag T1–T4 pour ce Bipper. Une alerte `#T1 valeur …` ne bipe que si `valeur` correspond.",
-    "usbHint": "Firmware v1.9.1+ : format alerte `#T1 SDIS42 texte`. Valeurs via `#tagset` (une seule écriture flash).",
+    "description": "T1–T4 = jusqu’à 4 entités d’appartenance. Alertes : `#alerte texte #SDIS42 #test` (OU entre tags).",
+    "usbHint": "Firmware v1.10+ : `#alerte blabla #SDIS42 #test` / `#secours …` / `#info …`. Sans tag #entité → tous les bippers.",
     "notConnected": "Connectez un Bipper en USB ou Bluetooth pour configurer le pager Gaulix.",
     "status": {
       "title": "État du pager",
@@ -23,7 +23,7 @@
       "alerts": "Alertes",
       "battery": "Batterie",
       "beeps": "Bips",
-      "tag": "Valeurs T1–T4",
+      "tag": "Entités (T1–T4)",
       "code": "Code"
     },
     "code": {
@@ -34,11 +34,11 @@
       "apply": "Mettre à jour le code"
     },
     "tag": {
-      "title": "Valeurs des tags T1–T4",
-      "description": "Chaque Bipper a ses propres valeurs (ex. T1=SDIS42, T3=Ricamarie, T4=ligerien). Laisser vide = tag désactivé.",
-      "placeholder": "ex. SDIS42, Ricamarie, ligerien…",
-      "apply": "Enregistrer les tags",
-      "hint": "Alerte réseau : `#T4 ligerien inondation` → bipe si T4 vaut « ligerien » sur ce Bipper. Sans tag ou valeur différente → ignoré."
+      "title": "Appartenance aux entités (T1–T4)",
+      "description": "Jusqu’à 4 entités par Bipper (ex. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Laisser vide = slot inutilisé.",
+      "placeholder": "ex. SDIS42",
+      "apply": "Enregistrer les appartenances",
+      "hint": "Exemple : `#alerte incendie #SDIS42 #test` → bipe si le bip appartient à SDIS42 ou test. `#info message #test` = 3 bips sans écran plein."
     },
     "beep": {
       "title": "Nombre de bips (legacy)",

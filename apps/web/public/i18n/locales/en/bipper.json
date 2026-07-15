@@ -12,8 +12,8 @@
   },
   "gaulix": {
     "title": "Gaulix pager",
-    "description": "Set each T1–T4 value for this Bipper. An alert `#T1 value …` only buzzes when `value` matches.",
-    "usbHint": "Firmware v1.9.1+: alert format `#T1 SDIS42 text`. Values via `#tagset` (single flash write).",
+    "description": "T1–T4 = up to 4 membership entities. Alerts: `#alerte text #SDIS42 #test` (OR across tags).",
+    "usbHint": "Firmware v1.10+: `#alerte blabla #SDIS42 #test` / `#secours …` / `#info …`. No #entity tag → all bippers.",
     "notConnected": "Connect a Bipper via USB or Bluetooth to configure the Gaulix pager.",
     "status": {
       "title": "Pager status",
@@ -23,7 +23,7 @@
       "alerts": "Alerts",
       "battery": "Battery",
       "beeps": "Beeps",
-      "tag": "T1–T4 values",
+      "tag": "Entities (T1–T4)",
       "code": "Code"
     },
     "code": {
@@ -34,11 +34,11 @@
       "apply": "Update code"
     },
     "tag": {
-      "title": "T1–T4 tag values",
-      "description": "Each Bipper has its own values (e.g. T1=SDIS42, T3=Ricamarie, T4=ligerien). Leave empty to disable a tag.",
-      "placeholder": "e.g. SDIS42, Ricamarie, ligerien…",
-      "apply": "Save tags",
-      "hint": "Network alert: `#T4 ligerien flood` → buzzes if T4 is « ligerien » on this Bipper. No tag or wrong value → ignored."
+      "title": "Entity membership (T1–T4)",
+      "description": "Up to 4 entities per Bipper (e.g. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Leave empty to leave a slot unused.",
+      "placeholder": "e.g. SDIS42",
+      "apply": "Save memberships",
+      "hint": "Example: `#alerte fire #SDIS42 #test` → buzzes if this bip belongs to SDIS42 or test. `#info message #test` = 3 beeps, no full-screen."
     },
     "beep": {
       "title": "Beep count (legacy)",
