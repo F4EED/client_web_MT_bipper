@@ -299,6 +299,13 @@ export const DeviceInfoPanel = ({
             </Button>
           );
         })}
+        <div className="mt-3 flex justify-center px-2 pb-2">
+          <img
+            src="/images/gaulix_rond.png"
+            alt="Gaulix"
+            className="h-16 w-16 object-contain"
+          />
+        </div>
       </div>
     </>
   );

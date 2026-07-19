@@ -19,6 +19,7 @@ import { cn } from "@core/utils/cn.ts";
 import { useTotalUnread } from "@meshtastic/sdk-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
+  BellIcon,
   CircleChevronLeft,
   type LucideIcon,
   MapIcon,
@@ -122,6 +123,11 @@ export const Sidebar = ({ children }: SidebarProps) => {
       count: numUnread ? numUnread : undefined,
     },
     {
+      name: t("navigation.alerts", { ns: "bipper" }),
+      icon: BellIcon,
+      page: "alerts",
+    },
+    {
       name: `${t("navigation.nodes")} (${displayedNodeCount})`,
       icon: UsersIcon,
       page: "nodes",
@@ -162,14 +168,15 @@ export const Sidebar = ({ children }: SidebarProps) => {
         />
         <h2
           className={cn(
-            "text-xl font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap",
+            "text-xl font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap truncate",
             "transition-all duration-300 ease-in-out",
             isCollapsed
               ? "opacity-0 max-w-0 invisible ml-0"
-              : "opacity-100 max-w-xs visible ml-2",
+              : "opacity-100 max-w-[11rem] visible ml-2",
           )}
+          title={myNode?.user?.longName || t("app.title")}
         >
-          {t("app.title")}
+          {myNode?.user?.longName || t("app.title")}
         </h2>
       </div>
 

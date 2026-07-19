@@ -1,6 +1,7 @@
 {
   "navigation": {
-    "bipperConfig": "Paramétrer le Bipper"
+    "bipperConfig": "Paramétrer le Bipper",
+    "alerts": "Envoi alerte"
   },
   "page": {
     "title": "Paramétrer le Bipper",
@@ -12,8 +13,8 @@
   },
   "gaulix": {
     "title": "Pager Gaulix",
-    "description": "T1–T4 = jusqu’à 4 entités d’appartenance. Alertes : `#alerte texte #SDIS42 #test` (OU entre tags).",
-    "usbHint": "Firmware v1.10+ : `#alerte blabla #SDIS42 #test` / `#secours …` / `#info …`. Sans tag #entité → tous les bippers.",
+    "description": "T1–T4 = jusqu’à 4 entités d’appartenance. Format alerte : `#alerte <texte> #appartenance`.",
+    "usbHint": "Firmware : `#alerte|#secours|#vigilance|#info … #tag` / `#fin #tag`. Sans #appartenance → tous les bippers.",
     "notConnected": "Connectez un Bipper en USB ou Bluetooth pour configurer le pager Gaulix.",
     "status": {
       "title": "État du pager",
@@ -35,16 +36,55 @@
     },
     "tag": {
       "title": "Appartenance aux entités (T1–T4)",
-      "description": "Jusqu’à 4 entités par Bipper (ex. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Laisser vide = slot inutilisé.",
+      "description": "Jusqu’à 4 entités par Bipper (ex. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Laisser vide = slot inutilisé. T1=all = reçoit tout.",
       "placeholder": "ex. SDIS42",
       "apply": "Enregistrer les appartenances",
-      "hint": "Exemple : `#alerte incendie #SDIS42 #test` → bipe si le bip appartient à SDIS42 ou test. `#info message #test` = 3 bips sans écran plein."
+      "hint": "Exemple : `#alerte incendie #test` → bipe si T1–T4 contient test (ou all). `#info message #SDIS42` = 3 bips sans écran plein."
     },
     "beep": {
       "title": "Nombre de bips (legacy)",
       "description": "Enregistré en NVS (#b N). Le son d'alerte reste pim-pom continu.",
       "label": "Nombre (0 = continu)",
       "apply": "Enregistrer"
+    }
+  },
+  "send": {
+    "pageTitle": "Envois Alerte, Info et vigilance sur le réseau de bipper Gaulix",
+    "pageDescription": "Composez `#alerte|#secours|#vigilance|#info|#fin <texte> #appartenance` puis envoyez sur le canal Alerte ou en DM.",
+    "kindLabel": "Type de message",
+    "kinds": {
+      "alerte": "Alerte",
+      "secours": "Secours",
+      "vigilance": "Vigilance",
+      "info": "Info",
+      "fin": "Fin d'alerte"
+    },
+    "textLabel": "Texte",
+    "textPlaceholder": "ex. mise en alerte structure",
+    "affiliationLabel": "Appartenance (#…)",
+    "affiliationPlaceholder": "ex. test (vide = tous les Bippers)",
+    "affiliationHint": "Contrôlée à la réception contre T1–T4 du Bipper.",
+    "destLabel": "Destination",
+    "destAlerte": "Groupe canal {{channel}} (défaut)",
+    "destAlerteMissing": "Alerte introuvable",
+    "destDirect": "Direct (nœud reçu)",
+    "pickNode": "Choisir un nœud…",
+    "preview": "Trame à envoyer",
+    "submit": "Envoyer",
+    "needText": {
+      "title": "Texte manquant",
+      "description": "Saisissez le texte de l'alerte, ou choisissez Fin."
+    },
+    "needNode": {
+      "title": "Nœud manquant",
+      "description": "Sélectionnez un nœud pour un envoi direct."
+    },
+    "noAlerteChannel": {
+      "title": "Canal Alerte absent",
+      "description": "Le canal nommé Alerte n'est pas présent sur le nœud connecté."
+    },
+    "sent": {
+      "title": "Message envoyé"
     }
   },
   "toast": {

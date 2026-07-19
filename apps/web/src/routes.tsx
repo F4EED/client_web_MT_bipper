@@ -5,6 +5,7 @@ import MapPage from "@pages/Map/index.tsx";
 import MessagesPage from "@pages/Messages.tsx";
 import NodesPage from "@pages/Nodes/index.tsx";
 import ConfigPage from "@pages/Settings/index.tsx";
+import BipperSendPage from "@pages/BipperSend/index.tsx";
 import {
   createRootRouteWithContext,
   createRoute,
@@ -150,6 +151,12 @@ const nodesRoute = createRoute({
   component: NodesPage,
 });
 
+const alertsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alerts",
+  component: BipperSendPage,
+});
+
 const dialogWithParamsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dialog/$dialogId",
@@ -175,6 +182,7 @@ export const routeTree = rootRoute.addChildren([
     moduleRoute,
   ]),
   nodesRoute,
+  alertsRoute,
   dialogWithParamsRoute,
   connectionsRoute,
 ]);

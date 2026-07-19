@@ -1,6 +1,7 @@
 {
   "navigation": {
-    "bipperConfig": "Configure Bipper"
+    "bipperConfig": "Configure Bipper",
+    "alerts": "Send alert"
   },
   "page": {
     "title": "Configure Bipper",
@@ -12,8 +13,8 @@
   },
   "gaulix": {
     "title": "Gaulix pager",
-    "description": "T1–T4 = up to 4 membership entities. Alerts: `#alerte text #SDIS42 #test` (OR across tags).",
-    "usbHint": "Firmware v1.10+: `#alerte blabla #SDIS42 #test` / `#secours …` / `#info …`. No #entity tag → all bippers.",
+    "description": "T1–T4 = up to 4 membership entities. Alert format: `#alerte <text> #affiliation`.",
+    "usbHint": "Firmware: `#alerte|#secours|#vigilance|#info … #tag` / `#fin #tag`. No #affiliation → all bippers.",
     "notConnected": "Connect a Bipper via USB or Bluetooth to configure the Gaulix pager.",
     "status": {
       "title": "Pager status",
@@ -35,16 +36,55 @@
     },
     "tag": {
       "title": "Entity membership (T1–T4)",
-      "description": "Up to 4 entities per Bipper (e.g. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Leave empty to leave a slot unused.",
+      "description": "Up to 4 entities per Bipper (e.g. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Leave empty to leave a slot unused. T1=all receives everything.",
       "placeholder": "e.g. SDIS42",
       "apply": "Save memberships",
-      "hint": "Example: `#alerte fire #SDIS42 #test` → buzzes if this bip belongs to SDIS42 or test. `#info message #test` = 3 beeps, no full-screen."
+      "hint": "Example: `#alerte fire #test` → buzzes if T1–T4 contains test (or all). `#info message #SDIS42` = 3 beeps, no full-screen."
     },
     "beep": {
       "title": "Beep count (legacy)",
       "description": "Stored in NVS (#b N). Alert sound remains continuous pim-pom.",
       "label": "Count (0 = continuous)",
       "apply": "Save"
+    }
+  },
+  "send": {
+    "pageTitle": "Send Alert, Info and Vigilance on the Gaulix bipper network",
+    "pageDescription": "Build `#alerte|#secours|#vigilance|#info|#fin <text> #affiliation` then send on Alerte channel or as DM.",
+    "kindLabel": "Message type",
+    "kinds": {
+      "alerte": "Alert",
+      "secours": "Rescue",
+      "vigilance": "Vigilance",
+      "info": "Info",
+      "fin": "End alert"
+    },
+    "textLabel": "Text",
+    "textPlaceholder": "e.g. structure alert",
+    "affiliationLabel": "Membership (#…)",
+    "affiliationPlaceholder": "e.g. test (empty = all Bippers)",
+    "affiliationHint": "Checked on receive against the Bipper T1–T4 slots.",
+    "destLabel": "Destination",
+    "destAlerte": "Alerte channel group {{channel}} (default)",
+    "destAlerteMissing": "Alerte missing",
+    "destDirect": "Direct (received node)",
+    "pickNode": "Pick a node…",
+    "preview": "Wire message",
+    "submit": "Send",
+    "needText": {
+      "title": "Text required",
+      "description": "Enter alert text, or choose Fin."
+    },
+    "needNode": {
+      "title": "Node required",
+      "description": "Select a node for direct send."
+    },
+    "noAlerteChannel": {
+      "title": "Alerte channel missing",
+      "description": "No channel named Alerte on the connected node."
+    },
+    "sent": {
+      "title": "Message sent"
     }
   },
   "toast": {
