@@ -20,6 +20,8 @@ export default defineConfig({
         {
           src: "src/lib/theme/default.css",
           dest: "theme",
+          // v4 preserves source path under dest; strip so exports map to dist/theme/default.css
+          rename: { stripBase: true },
         },
       ],
     }),
