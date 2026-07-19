@@ -5,9 +5,9 @@
   "description": "Meshtastic Web App",
   "icons": [
     {
-      "src": "/logo.svg",
+      "src": "/images/logo_Gaulix_v.png",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
   "theme_color": "#67ea94",

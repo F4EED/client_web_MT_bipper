@@ -162,9 +162,9 @@ export const Sidebar = ({ children }: SidebarProps) => {
         )}
       >
         <img
-          src="/logo.svg"
+          src="/images/logo_Gaulix_v.png"
           alt={t("app.logo")}
-          className="size-10 flex-shrink-0 rounded-xl"
+          className="size-10 flex-shrink-0 rounded-xl object-contain"
         />
         <h2
           className={cn(
