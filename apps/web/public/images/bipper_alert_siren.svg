@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Alerte Bipper">
+  <circle cx="12" cy="12" r="10" fill="#E05252"/>
+  <path fill="#3B82F6" d="M12 5.5c-2.21 0-4 1.57-4 3.5V9.5h8V9c0-1.93-1.79-3.5-4-3.5z"/>
+  <path fill="#1D4ED8" d="M7.5 10h9v3c0 .83-.67 1.5-1.5 1.5h-6c-.83 0-1.5-.67-1.5-1.5v-3z"/>
+  <path fill="#93C5FD" d="M10.8 5.3 12 3.6l1.2 1.7q-1.2.6-2.4 0z"/>
+</svg>

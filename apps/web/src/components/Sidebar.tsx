@@ -19,7 +19,6 @@ import { cn } from "@core/utils/cn.ts";
 import { useTotalUnread } from "@meshtastic/sdk-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
-  BellIcon,
   CircleChevronLeft,
   type LucideIcon,
   MapIcon,
@@ -38,7 +37,8 @@ export interface SidebarProps {
 
 interface NavLink {
   name: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  iconSrc?: string;
   page: Page;
   count?: number;
 }
@@ -124,7 +124,7 @@ export const Sidebar = ({ children }: SidebarProps) => {
     },
     {
       name: t("navigation.alerts", { ns: "bipper" }),
-      icon: BellIcon,
+      iconSrc: "/images/bipper_alert_siren.svg",
       page: "alerts",
     },
     {
@@ -188,6 +188,8 @@ export const Sidebar = ({ children }: SidebarProps) => {
               count={link.count}
               label={link.name}
               Icon={link.icon}
+              iconSrc={link.iconSrc}
+              iconAlt={link.name}
               onClick={() => {
                 if (myNode !== undefined) {
                   navigate({ to: `/${link.page}` });

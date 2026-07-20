@@ -9,6 +9,8 @@ export interface SidebarButtonProps {
   count?: number;
   active?: boolean;
   Icon?: LucideIcon;
+  iconSrc?: string;
+  iconAlt?: string;
   children?: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
@@ -20,6 +22,8 @@ export const SidebarButton = ({
   label,
   active,
   Icon,
+  iconSrc,
+  iconAlt = "",
   count,
   children,
   onClick,
@@ -43,8 +47,19 @@ export const SidebarButton = ({
       )}
       disabled={disabled}
     >
-      {Icon && (
-        <Icon size={isButtonCollapsed ? 20 : 18} className="flex-shrink-0" />
+      {iconSrc ? (
+        <img
+          src={iconSrc}
+          alt={iconAlt}
+          className={cn(
+            "flex-shrink-0 object-contain",
+            isButtonCollapsed ? "size-5" : "size-[18px]",
+          )}
+        />
+      ) : (
+        Icon && (
+          <Icon size={isButtonCollapsed ? 20 : 18} className="flex-shrink-0" />
+        )
       )}
 
       {children}
