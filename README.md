@@ -1,4 +1,15 @@
-# Meshtastic Web Monorepo
+# Meshtastic Web Monorepo — fork **Gaulix Bipper**
+
+> **Fork Gaulix** : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
+> Doc produit : **[docs/BIPPER-WEB.md](docs/BIPPER-WEB.md)** · Install : [INSTALL-SRV-WEB](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER](docs/INSTALL-DOCKER.md)  
+> Firmware cible : **v1.10.0+** — [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)  
+> App Android : [F4EED/bipper_android](https://github.com/F4EED/bipper_android)
+
+Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).
+
+---
+
+# Meshtastic Web Monorepo (upstream base)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/meshtastic/web/ci.yml?branch=main&label=Web%20CI&logo=github&color=yellow)](https://github.com/meshtastic/web/actions/workflows/ci.yml)
 [![CI](https://img.shields.io/github/actions/workflow/status/meshtastic/js/ci.yml?branch=master&label=JS%20CI&logo=github&color=yellow)](https://github.com/meshtastic/js/actions/workflows/ci.yml)

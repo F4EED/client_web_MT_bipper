@@ -4,7 +4,8 @@ Guide pour déployer le client web Gaulix Bipper (fork Meshtastic) avec Docker
 ou Podman. L’image sert les fichiers statiques via **Nginx** (port **8080**).
 
 > Dépôt : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
-> Infra existante : `apps/web/infra/Containerfile` + `apps/web/infra/default.conf`
+> Infra existante : `apps/web/infra/Containerfile` + `apps/web/infra/default.conf`  
+> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md) · Firmware cible **v1.10.0+**
 
 ---
 
@@ -99,6 +100,7 @@ docker run -d \
 | URL | Usage |
 | --- | --- |
 | <http://localhost:8080/> | Accueil client |
+| <http://localhost:8080/alerts> | Envoi alerte Gaulix |
 | <http://localhost:8080/settings/bipper> | Paramétrage Bipper / pager Gaulix |
 
 Arrêt / suppression :
@@ -204,4 +206,4 @@ docker compose up -d --build
 | `apps/web/infra/default.conf` | Serveur Nginx (SPA, cache, gzip, port 8080) |
 | `apps/web/package.json` → `docker:build` | Script de build image (adapter le contexte si besoin) |
 
-Voir aussi : [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md) (Nginx / Apache / Caddy sans Docker).
+Voir aussi : [BIPPER-WEB.md](./BIPPER-WEB.md) · [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md) (Nginx / Apache / Caddy sans Docker).

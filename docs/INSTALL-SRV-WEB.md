@@ -5,7 +5,8 @@ Guide pour déployer le client web Gaulix Bipper (fork Meshtastic) comme
 
 > Dépôt : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
 > Sortie de build : `apps/web/dist/`  
-> Page Bipper : `/settings/bipper`
+> Page Bipper : `/settings/bipper` · Envoi alerte : `/alerts`  
+> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md)
 
 ---
 
@@ -234,9 +235,10 @@ Pour un usage Bipper en USB depuis le LAN, prévoyez un certificat
 Après déploiement :
 
 1. Ouvrir `https://bipper.exemple.local/` (ou l’URL choisie).
-2. Naviguer vers `/settings/bipper` — la page **Paramétrer le Bipper** doit s’afficher.
-3. Connecter un Bipper (USB Serial ou Bluetooth) sous **contexte sécurisé**.
-4. Firmware recommandé : Gaulix **v1.10+** (`#alerte texte #entité1 #entité2`).
+2. Naviguer vers `/alerts` — page **Envoi alerte**.
+3. Naviguer vers `/settings/bipper` — page **Paramétrer le Bipper**.
+4. Connecter un Bipper (USB Serial ou Bluetooth) sous **contexte sécurisé**.
+5. Firmware recommandé : Gaulix **v1.10.0+** (`#alerte texte #appartenance`).
 
 ---
 
@@ -281,6 +283,8 @@ dans `/var/www/…/bipper/`. Sans cela, les assets et le routeur casseront.
 
 ## Voir aussi
 
+- [BIPPER-WEB.md](./BIPPER-WEB.md) — fonctionnalités Gaulix du client web
 - [INSTALL-DOCKER.md](./INSTALL-DOCKER.md) — déploiement conteneurisé
 - `apps/web/infra/default.conf` — référence Nginx utilisée dans l’image Docker
-- Firmware Bipper : dépôt [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)
+- Firmware Bipper : dépôt [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro) (`docs/BIPPER1.md`)
+- App Android : [F4EED/bipper_android](https://github.com/F4EED/bipper_android) (`docs/BIPPER-ANDROID.md`)
