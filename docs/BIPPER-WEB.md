@@ -65,6 +65,17 @@ Source de vérité détaillée : firmware `docs/ECOSYSTEME-GAULIX.md`.
 
 > **État code web** : aligné protocole **v1.11** (nº d’alerte, multi-entités, T1–T10, `#tagset`, `#fin N`).
 
+## Matériels firmware (connexion USB / BLE)
+
+| Matériel | Env | Usage côté web |
+|:---------|:----|:---------------|
+| Seeed Wio Tracker L1 Pro | `seeed_wio_tracker_L1` | Paramétrer le Bipper + envoi alerte |
+| Elecrow ThinkNode M1 | `thinknode_m1` | Idem |
+| Elecrow ThinkNode M2 | `thinknode_m2` | Idem |
+| Seeed XIAO ESP32-S3 + Wio-SX1262 | `seeed-xiao-s3-gaulix` | Radio **PC crise** (coordinateur) — envoi alerte ; pas de tags pager locaux |
+
+Détection HW pager : `SEEED_WIO_TRACKER_L1` / `_EINK` / `THINKNODE_M1` / `THINKNODE_M2`.
+
 ---
 
 ## Développement local
