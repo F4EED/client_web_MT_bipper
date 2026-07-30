@@ -4,13 +4,12 @@ import { Heading } from "@components/UI/Typography/Heading.tsx";
 import { Subtle } from "@components/UI/Typography/Subtle.tsx";
 import {
   EMPTY_SERVICE_TAG_VALUES,
+  SERVICE_TAG_OPTIONS,
   type ServiceTagValues,
 } from "@app/lib/bipper/serviceTags.ts";
 import { RefreshCwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-const SERVICE_TAG_OPTIONS = [1, 2, 3, 4] as const;
 
 export function BipperGaulixPanel() {
   const { t } = useTranslation("bipper");

@@ -1,48 +1,72 @@
 import { describe, expect, it } from "vitest";
 import {
   formatPagerAlertCommand,
+  parseAffiliationInput,
   parsePagerAlertCommand,
 } from "./alertCommands.ts";
 
-describe("alertCommands", () => {
-  it("formats alerte with text and affiliation", () => {
+describe("alertCommands v1.11", () => {
+  it("formats alerte with id and multi affiliations", () => {
     expect(
       formatPagerAlertCommand({
         kind: "alerte",
-        text: "mise en alerte structure",
-        affiliation: "test",
+        alertId: 42,
+        text: "incendie hall",
+        affiliations: ["SDIS42", "test"],
       }),
-    ).toBe("#alerte mise en alerte structure #test");
+    ).toBe("#alerte 42 incendie hall #SDIS42 #test");
   });
 
-  it("formats without affiliation as broadcast", () => {
-    expect(
-      formatPagerAlertCommand({ kind: "secours", text: "renfort nord" }),
-    ).toBe("#secours renfort nord");
-  });
-
-  it("formats fin with optional affiliation", () => {
-    expect(formatPagerAlertCommand({ kind: "fin" })).toBe("#fin");
-    expect(formatPagerAlertCommand({ kind: "fin", affiliation: "test" })).toBe(
-      "#fin #test",
+  it("formats fin with id", () => {
+    expect(formatPagerAlertCommand({ kind: "fin", alertId: 42 })).toBe(
+      "#fin 42",
     );
-  });
-
-  it("formats vigilance with text and affiliation", () => {
     expect(
       formatPagerAlertCommand({
-        kind: "vigilance",
-        text: "niveau orange",
-        affiliation: "SDIS42",
+        kind: "fin",
+        alertId: 42,
+        affiliations: ["SDIS42"],
       }),
-    ).toBe("#vigilance niveau orange #SDIS42");
+    ).toBe("#fin 42 #SDIS42");
   });
 
-  it("parses trailing affiliation only", () => {
-    expect(parsePagerAlertCommand("#info exercice #SDIS42")).toEqual({
-      kind: "info",
-      text: "exercice",
+  it("keeps legacy single affiliation", () => {
+    expect(
+      formatPagerAlertCommand({
+        kind: "secours",
+        text: "renfort",
+        affiliation: "DEPT42",
+      }),
+    ).toBe("#secours renfort #DEPT42");
+  });
+
+  it("parses id and multi tags", () => {
+    expect(
+      parsePagerAlertCommand("#alerte 42 incendie hall #SDIS42 #test"),
+    ).toEqual({
+      kind: "alerte",
+      alertId: 42,
+      text: "incendie hall",
+      affiliations: ["SDIS42", "test"],
       affiliation: "SDIS42",
     });
+  });
+
+  it("parses fin with id", () => {
+    expect(parsePagerAlertCommand("#fin 42")).toEqual({
+      kind: "fin",
+      alertId: 42,
+      text: "",
+      affiliations: [],
+      affiliation: "",
+    });
+  });
+
+  it("parseAffiliationInput splits commas and hashes", () => {
+    expect(parseAffiliationInput("SDIS42, test #DEPT42")).toEqual([
+      "SDIS42",
+      "test",
+      "DEPT42",
+    ]);
   });
 });

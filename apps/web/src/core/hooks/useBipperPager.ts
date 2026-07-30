@@ -208,11 +208,12 @@ export function useBipperPager() {
     [sendLocalCommand, refreshStatus],
   );
 
+  const hw = myNode?.user?.hwModel;
   const isBipperHardware =
-    myNode?.user?.hwModel ===
-      Protobuf.Mesh.HardwareModel.SEEED_WIO_TRACKER_L1 ||
-    myNode?.user?.hwModel ===
-      Protobuf.Mesh.HardwareModel.SEEED_WIO_TRACKER_L1_EINK;
+    hw === Protobuf.Mesh.HardwareModel.SEEED_WIO_TRACKER_L1 ||
+    hw === Protobuf.Mesh.HardwareModel.SEEED_WIO_TRACKER_L1_EINK ||
+    hw === Protobuf.Mesh.HardwareModel.THINKNODE_M1 ||
+    hw === Protobuf.Mesh.HardwareModel.THINKNODE_M2;
 
   return {
     connected: Boolean(client && myNodeNum !== undefined),

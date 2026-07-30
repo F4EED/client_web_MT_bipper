@@ -2,7 +2,7 @@
 
 > **Fork Gaulix** : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
 > Doc produit : **[docs/BIPPER-WEB.md](docs/BIPPER-WEB.md)** · Install : [INSTALL-SRV-WEB](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER](docs/INSTALL-DOCKER.md)  
-> Firmware cible : **v1.10.0+** — [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)  
+> Firmware cible : **v1.11.0+** — [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)  
 > App Android : [F4EED/bipper_android](https://github.com/F4EED/bipper_android)
 
 Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).

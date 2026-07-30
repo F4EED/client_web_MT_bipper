@@ -5,7 +5,7 @@ ou Podman. L’image sert les fichiers statiques via **Nginx** (port **8080**).
 
 > Dépôt : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
 > Infra existante : `apps/web/infra/Containerfile` + `apps/web/infra/default.conf`  
-> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md) · Firmware cible **v1.10.0+**
+> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md) · Firmware cible **v1.11.0+**
 
 ---
 
@@ -37,7 +37,7 @@ docker run -d \
 
 Puis ouvrir : <http://localhost:8080/>
 
-> Pour le fork Bipper (page **Paramétrer le Bipper**, tags T1–T4, etc.),
+> Pour le fork Bipper (page **Paramétrer le Bipper**, tags T1–T10, etc.),
 > utilisez l’**option B** (build local) ci-dessous.
 
 ---

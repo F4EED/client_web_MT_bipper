@@ -10,6 +10,7 @@ import {
 } from "@core/hooks/useNodesAsProto.ts";
 import {
   formatPagerAlertCommand,
+  parseAffiliationInput,
   type PagerAlertKind,
 } from "@app/lib/bipper/alertCommands.ts";
 import { Types } from "@meshtastic/sdk";
@@ -47,6 +48,7 @@ export default function BipperSendPage() {
   const myNode = useMyNodeAsProto();
 
   const [kind, setKind] = useState<PagerAlertKind>("alerte");
+  const [alertId, setAlertId] = useState("");
   const [text, setText] = useState("");
   const [affiliation, setAffiliation] = useState("");
   const [destMode, setDestMode] = useState<DestMode>("alerte");
@@ -68,10 +70,12 @@ export default function BipperSendPage() {
     [allNodes, myNode?.num],
   );
 
+  const parsedId = Number.parseInt(alertId.trim(), 10);
   const preview = formatPagerAlertCommand({
     kind,
+    alertId: Number.isFinite(parsedId) && parsedId > 0 ? parsedId : undefined,
     text: kind === "fin" ? "" : text,
-    affiliation,
+    affiliations: parseAffiliationInput(affiliation),
   });
 
   const send = async () => {
@@ -159,6 +163,19 @@ export default function BipperSendPage() {
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium">{t("send.alertIdLabel")}</span>
+          <input
+            type="number"
+            min={1}
+            className="rounded-md border border-slate-300 bg-background-primary px-3 py-2 dark:border-slate-600"
+            value={alertId}
+            onChange={(e) => setAlertId(e.target.value)}
+            placeholder={t("send.alertIdPlaceholder")}
+          />
+          <Subtle className="text-xs">{t("send.alertIdHint")}</Subtle>
         </label>
 
         {kind !== "fin" && (

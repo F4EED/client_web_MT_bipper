@@ -9,12 +9,12 @@
     "notBipperWarning": "L'appareil connecté ne semble pas être un Bipper L1 — les paramètres Gaulix peuvent ne pas s'appliquer.",
     "tabIdentity": "Identité",
     "tabGaulix": "Pager Gaulix",
-    "saveHint": "L'onglet Identité utilise le bouton Enregistrer en haut de page. L'appartenance aux entités (T1–T4) est appliquée immédiatement."
+    "saveHint": "L'onglet Identité utilise le bouton Enregistrer en haut de page. L'appartenance aux entités (T1–T10) est appliquée immédiatement."
   },
   "gaulix": {
     "title": "Pager Gaulix",
-    "description": "T1–T4 = jusqu’à 4 entités d’appartenance. Format alerte : `#alerte <texte> #appartenance`.",
-    "usbHint": "Firmware : `#alerte|#secours|#vigilance|#info … #tag` / `#fin #tag`. Sans #appartenance → tous les bippers.",
+    "description": "T1–T10 = jusqu’à 10 entités d’appartenance. Format : `#alerte [N] texte #E1 #E2`.",
+    "usbHint": "Firmware v1.11+ : `#alerte 42 texte #SDIS42 #test` / `#fin 42`. Sans #entité → tous les bippers.",
     "notConnected": "Connectez un Bipper en USB ou Bluetooth pour configurer le pager Gaulix.",
     "status": {
       "title": "État du pager",
@@ -24,7 +24,7 @@
       "alerts": "Alertes",
       "battery": "Batterie",
       "beeps": "Bips",
-      "tag": "Entités (T1–T4)",
+      "tag": "Entités (T1–T10)",
       "code": "Code"
     },
     "code": {
@@ -35,11 +35,11 @@
       "apply": "Mettre à jour le code"
     },
     "tag": {
-      "title": "Appartenance aux entités (T1–T4)",
-      "description": "Jusqu’à 4 entités par Bipper (ex. T1=SDIS42, T2=DEPT42, T3=Test, T4=UDIOM42). Laisser vide = slot inutilisé. T1=all = reçoit tout.",
+      "title": "Appartenance aux entités (T1–T10)",
+      "description": "Jusqu’à 10 entités par Bipper. Laisser vide = slot inutilisé. T1=all = reçoit tout.",
       "placeholder": "ex. SDIS42",
       "apply": "Enregistrer les appartenances",
-      "hint": "Exemple : `#alerte incendie #test` → bipe si T1–T4 contient test (ou all). `#info message #SDIS42` = 3 bips sans écran plein."
+      "hint": "Exemple : `#alerte 42 incendie #SDIS42 #test` → bipe si une entité est dans T1–T10 (OU). `#fin 42` clôture l’alerte 42."
     },
     "beep": {
       "title": "Nombre de bips (legacy)",
@@ -50,7 +50,7 @@
   },
   "send": {
     "pageTitle": "Envois Alerte, Info et vigilance sur le réseau de bipper Gaulix",
-    "pageDescription": "Composez `#alerte|#secours|#vigilance|#info|#fin <texte> #appartenance` puis envoyez sur le canal Alerte ou en DM.",
+    "pageDescription": "Composez `#alerte [N] <texte> #E1 #E2` (firmware v1.11+) puis envoyez sur le canal Alerte ou en DM.",
     "kindLabel": "Type de message",
     "kinds": {
       "alerte": "Alerte",
@@ -59,11 +59,14 @@
       "info": "Info",
       "fin": "Fin d'alerte"
     },
+    "alertIdLabel": "Numéro d’alerte",
+    "alertIdPlaceholder": "ex. 42 (optionnel)",
+    "alertIdHint": "Requis pour clôturer précisément avec `#fin N`.",
     "textLabel": "Texte",
     "textPlaceholder": "ex. mise en alerte structure",
-    "affiliationLabel": "Appartenance (#…)",
-    "affiliationPlaceholder": "ex. test (vide = tous les Bippers)",
-    "affiliationHint": "Contrôlée à la réception contre T1–T4 du Bipper.",
+    "affiliationLabel": "Appartenances (#…)",
+    "affiliationPlaceholder": "ex. SDIS42, test (vide = tous)",
+    "affiliationHint": "Plusieurs entités séparées par espace ou virgule (OU). Contrôlées contre T1–T10.",
     "destLabel": "Destination",
     "destAlerte": "Groupe canal {{channel}} (défaut)",
     "destAlerteMissing": "Alerte introuvable",
