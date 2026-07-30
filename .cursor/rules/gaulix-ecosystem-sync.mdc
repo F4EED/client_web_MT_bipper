@@ -18,7 +18,7 @@ Protocole v1.11+ :
 
 T1–T10 · multi-entités OU · nº alerte · SOS sur Fr_Balise.
 
-Matériels firmware : `seeed_wio_tracker_L1` · `thinknode_m1` · `thinknode_m2`.
+Matériels firmware : `seeed_wio_tracker_L1` · `thinknode_m1` · `thinknode_m2` · `seeed-xiao-s3-gaulix` (PC crise).
 
 Miroir code : `apps/web/src/lib/bipper/*` ↔ Android `core/domain/.../bipper/` ↔ firmware `GaulixPagerModule`.
 

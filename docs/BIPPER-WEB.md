@@ -4,7 +4,7 @@
 |:--|:--|
 | **Dépôt** | [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper) |
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
-| **Firmware cible** | Gaulix Bipper **v1.11.0+** (L1 Pro · ThinkNode M1 · ThinkNode M2) |
+| **Firmware cible** | Gaulix Bipper **v1.11.0+** (L1 Pro · ThinkNode M1/M2 · PC crise XIAO S3+SX1262) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
 | **Install** | [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
 | **Écosystème** | Firmware + Android — voir firmware [`docs/ECOSYSTEME-GAULIX.md`](https://github.com/F4EED/Bipper_L1Pro/blob/develop/docs/ECOSYSTEME-GAULIX.md) |
