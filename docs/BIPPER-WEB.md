@@ -70,6 +70,7 @@ Source de vérité détaillée : firmware `docs/ECOSYSTEME-GAULIX.md`.
 | Matériel | Env | Usage côté web |
 |:---------|:----|:---------------|
 | Seeed Wio Tracker L1 Pro | `seeed_wio_tracker_L1` | Paramétrer le Bipper + envoi alerte |
+| Seeed Wio Tracker L1 E-Ink | `seeed_wio_tracker_L1_eink` | Idem |
 | Elecrow ThinkNode M1 | `thinknode_m1` | Idem |
 | Elecrow ThinkNode M2 | `thinknode_m2` | Idem |
 | Seeed XIAO ESP32-S3 + Wio-SX1262 | `seeed-xiao-s3-gaulix` | Radio **PC crise** (coordinateur) — envoi alerte ; pas de tags pager locaux |
