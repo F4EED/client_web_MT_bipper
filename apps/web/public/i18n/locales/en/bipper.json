@@ -1,7 +1,7 @@
 {
   "navigation": {
     "bipperConfig": "Configure Bipper",
-    "alerts": "Send alert"
+    "alerts": "GerMaCrise"
   },
   "page": {
     "title": "Configure Bipper",
@@ -48,8 +48,36 @@
       "apply": "Save"
     }
   },
+  "manager": {
+    "pageTitle": "GerMaCrise",
+    "pageDescription": "POI reports, alert composition, tracking and bipper read ACKs (firmware v1.12+).",
+    "tabs": {
+      "report": "Report",
+      "message": "Message",
+      "alerts": "Alerts",
+      "acks": "Read ACKs"
+    },
+    "status": {
+      "emise": "Emitted",
+      "en_cours": "In progress",
+      "cloturee": "Closed"
+    },
+    "alerts": {
+      "description": "Alert / rescue / vigilance messages emitted from this coordinator session.",
+      "empty": "No alerts recorded yet. Send a message from the Message tab.",
+      "ackCount": "{{count}} ACK"
+    },
+    "acks": {
+      "description": "`Pager ACK alerte…` receipts from bippers (matched by alert # or text).",
+      "empty": "No ACKs received yet.",
+      "alert": "Alert {{id}}",
+      "gps": "GPS {{gps}}"
+    },
+    "clear": "Clear history",
+    "clearConfirm": "Clear all locally stored alerts and ACKs?"
+  },
   "send": {
-    "pageTitle": "Send Alert, Info and Vigilance on the Gaulix bipper network",
+    "pageTitle": "GerMaCrise",
     "pageDescription": "Build `#alerte [N] <text> #E1 #E2` (firmware v1.11+) then send on Alerte channel or as DM.",
     "kindLabel": "Message type",
     "kinds": {
@@ -88,6 +116,39 @@
     },
     "sent": {
       "title": "Message sent"
+    }
+  },
+  "report": {
+    "description": "Publishes a Meshtastic waypoint (distinct icon per type) on Fr_Balise — visible on web / Android / iOS maps.",
+    "typeLabel": "Report type",
+    "categories": {
+      "routes": "Roads",
+      "crises": "Crises",
+      "secouristes": "Responders"
+    },
+    "categoryEmpty": "No report types in this category yet.",
+    "types": {
+      "incendie": "Fire",
+      "axe_inonde": "Flooded road",
+      "axe_barree": "Blocked road",
+      "objet_sur_axe": "Object on road",
+      "arbre_sur_axe": "Tree on road",
+      "accident": "Accident"
+    },
+    "posLabel": "Position source",
+    "posRadio": "Radio module GPS (node)",
+    "posRadioMissing": "Radio module GPS (unavailable)",
+    "posBrowser": "Browser GPS",
+    "channelBalise": "Fr_Balise channel (#{{channel}})",
+    "channelPrimary": "Primary channel (Fr_Balise missing)",
+    "submit": "Send report",
+    "needPosition": {
+      "title": "Position unavailable",
+      "description": "Neither module GPS nor terminal GPS available — send blocked.",
+      "browser": "Could not get terminal position (permission / timeout)."
+    },
+    "sent": {
+      "title": "Report sent"
     }
   },
   "toast": {

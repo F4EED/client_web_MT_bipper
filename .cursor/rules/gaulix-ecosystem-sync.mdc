@@ -9,17 +9,20 @@ Chemins : `C:\firmware_meshtastic` · `C:\client web mesthastic_bipper` · `C:\b
 
 **Toute évolution protocole / tags / alertes / SOS-POI / docs doit être faite sur les trois dépôts dans la même session**, sauf périmètre explicitement limité.
 
-Protocole v1.11+ :
+Protocole v1.12+ :
 
 ```text
 #alerte|#secours|#vigilance|#info [N] <texte> [#entité…]
 #fin [N] [#entité]
+Pager ACK alerte [#N] JJ/MM HH:MM[ — texte][ | lat lon]
 ```
 
-T1–T10 · multi-entités OU · nº alerte · SOS sur Fr_Balise.
+T1–T10 · multi-entités OU · nº alerte · ACK / waypoints signalement sur Fr_Balise.
 
 Matériels firmware : `seeed_wio_tracker_L1` · `seeed_wio_tracker_L1_eink` · `thinknode_m1` · `thinknode_m2` · `seeed-xiao-s3-gaulix` (PC crise).
 
 Miroir code : `apps/web/src/lib/bipper/*` ↔ Android `core/domain/.../bipper/` ↔ firmware `GaulixPagerModule`.
+
+UI web : `/alerts` = Gestion des alertes (Message / Alertes / ACK).
 
 Docs : firmware `docs/ECOSYSTEME-GAULIX.md` · `docs/BIPPER-WEB.md` · Android `docs/BIPPER-ANDROID.md`.

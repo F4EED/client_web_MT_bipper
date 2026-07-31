@@ -70,6 +70,7 @@ export function isPagerCommandReply(text: string): boolean {
   return (
     t.startsWith("Pager Gaulix") ||
     t.startsWith("Pager OK") ||
-    t.startsWith("Pager ERR")
+    t.startsWith("Pager ERR") ||
+    t.startsWith("Pager ACK")
   );
 }

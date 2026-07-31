@@ -107,6 +107,16 @@ export class ChatClient {
 
     client.events.onMessagePacket.subscribe((packet) => {
       const message = MessageMapper.fromPacket(packet);
+      // Gaulix pager protocol replies → Gestion des alertes only (not Fr_BlaBla / Primary).
+      const text = message.text.trim();
+      if (
+        text.startsWith("Pager ACK") ||
+        text.startsWith("Pager OK") ||
+        text.startsWith("Pager ERR") ||
+        text.startsWith("Pager Gaulix")
+      ) {
+        return;
+      }
       const conv: ConversationKey =
         packet.type === "direct" && packet.to !== Constants.broadcastNum
           ? {

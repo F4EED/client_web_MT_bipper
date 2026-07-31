@@ -1,7 +1,7 @@
 {
   "navigation": {
     "bipperConfig": "Paramétrer le Bipper",
-    "alerts": "Envoi alerte"
+    "alerts": "GerMaCrise"
   },
   "page": {
     "title": "Paramétrer le Bipper",
@@ -48,8 +48,36 @@
       "apply": "Enregistrer"
     }
   },
+  "manager": {
+    "pageTitle": "GerMaCrise",
+    "pageDescription": "Signalements POI, composition d’alertes, suivi et ACK lecture des bippers (firmware v1.12+).",
+    "tabs": {
+      "report": "Signalement",
+      "message": "Message",
+      "alerts": "Alertes",
+      "acks": "ACK lecture"
+    },
+    "status": {
+      "emise": "Émise",
+      "en_cours": "En cours",
+      "cloturee": "Clôturée"
+    },
+    "alerts": {
+      "description": "Alertes alerte / secours / vigilance émises depuis cette session coordinateur.",
+      "empty": "Aucune alerte enregistrée. Envoyez un message depuis l’onglet Message.",
+      "ackCount": "{{count}} ACK"
+    },
+    "acks": {
+      "description": "Accusés `Pager ACK alerte…` reçus des bippers (corrélés par nº d’alerte ou texte).",
+      "empty": "Aucun ACK reçu pour le moment.",
+      "alert": "Alerte {{id}}",
+      "gps": "GPS {{gps}}"
+    },
+    "clear": "Effacer l’historique",
+    "clearConfirm": "Effacer toutes les alertes et ACK stockés localement ?"
+  },
   "send": {
-    "pageTitle": "Envois Alerte, Info et vigilance sur le réseau de bipper Gaulix",
+    "pageTitle": "GerMaCrise",
     "pageDescription": "Composez `#alerte [N] <texte> #E1 #E2` (firmware v1.11+) puis envoyez sur le canal Alerte ou en DM.",
     "kindLabel": "Type de message",
     "kinds": {
@@ -88,6 +116,39 @@
     },
     "sent": {
       "title": "Message envoyé"
+    }
+  },
+  "report": {
+    "description": "Publie un waypoint Meshtastic (icône distincte par type) sur Fr_Balise — visible sur les cartes web / Android / iOS.",
+    "typeLabel": "Type de signalement",
+    "categories": {
+      "routes": "Routes",
+      "crises": "Crises",
+      "secouristes": "Secouristes"
+    },
+    "categoryEmpty": "Aucun signalement dans cette catégorie pour le moment.",
+    "types": {
+      "incendie": "Incendie",
+      "axe_inonde": "Axe inondé",
+      "axe_barree": "Axe barrée",
+      "objet_sur_axe": "Objet sur axe",
+      "arbre_sur_axe": "Arbre sur axe",
+      "accident": "Accident"
+    },
+    "posLabel": "Source de position",
+    "posRadio": "GPS module radio (nœud)",
+    "posRadioMissing": "GPS module radio (indisponible)",
+    "posBrowser": "GPS du navigateur",
+    "channelBalise": "Canal Fr_Balise (#{{channel}})",
+    "channelPrimary": "Canal primaire (Fr_Balise absent)",
+    "submit": "Envoyer le signalement",
+    "needPosition": {
+      "title": "Position indisponible",
+      "description": "Ni GPS module ni GPS terminal disponibles — envoi bloqué.",
+      "browser": "Impossible d’obtenir la position du terminal (permission / timeout)."
+    },
+    "sent": {
+      "title": "Signalement envoyé"
     }
   },
   "toast": {
