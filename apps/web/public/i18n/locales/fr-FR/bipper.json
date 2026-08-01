@@ -124,17 +124,10 @@
     "categories": {
       "routes": "Routes",
       "crises": "Crises",
-      "secouristes": "Secouristes"
+      "secouristes": "Secouristes",
+      "status": "Status"
     },
     "categoryEmpty": "Aucun signalement dans cette catégorie pour le moment.",
-    "types": {
-      "incendie": "Incendie",
-      "axe_inonde": "Axe inondé",
-      "axe_barree": "Axe barrée",
-      "objet_sur_axe": "Objet sur axe",
-      "arbre_sur_axe": "Arbre sur axe",
-      "accident": "Accident"
-    },
     "posLabel": "Source de position",
     "posRadio": "GPS module radio (nœud)",
     "posRadioMissing": "GPS module radio (indisponible)",

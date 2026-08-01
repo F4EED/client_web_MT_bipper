@@ -124,17 +124,10 @@
     "categories": {
       "routes": "Roads",
       "crises": "Crises",
-      "secouristes": "Responders"
+      "secouristes": "Responders",
+      "status": "Status"
     },
     "categoryEmpty": "No report types in this category yet.",
-    "types": {
-      "incendie": "Fire",
-      "axe_inonde": "Flooded road",
-      "axe_barree": "Blocked road",
-      "objet_sur_axe": "Object on road",
-      "arbre_sur_axe": "Tree on road",
-      "accident": "Accident"
-    },
     "posLabel": "Position source",
     "posRadio": "Radio module GPS (node)",
     "posRadioMissing": "Radio module GPS (unavailable)",

@@ -16,14 +16,14 @@ import { useActiveClient, useChannels } from "@meshtastic/sdk-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-function findBaliseChannelIndex(
+function findChannelIndex(
   channels: ReturnType<typeof useChannels>,
+  names: string[],
 ): number | null {
+  const wanted = new Set(names.map((n) => n.toLowerCase()));
   for (const ch of channels) {
     const name = ch?.settings?.name?.toLowerCase() ?? "";
-    if (name === "fr_balise" || name === "frbalise") {
-      return ch.index;
-    }
+    if (wanted.has(name)) return ch.index;
   }
   return null;
 }
@@ -70,16 +70,24 @@ export function ReportTab() {
   );
 
   const baliseChannel = useMemo(
-    () => findBaliseChannelIndex(channels),
+    () => findChannelIndex(channels, ["fr_balise", "frbalise"]),
+    [channels],
+  );
+  const alerteChannel = useMemo(
+    () => findChannelIndex(channels, ["alerte"]),
     [channels],
   );
 
   const radioHasPosition = Boolean(
     myNode?.position?.latitudeI || myNode?.position?.longitudeI,
   );
-
   const canSendPosition = radioHasPosition || browserHasPosition;
-  const label = type ? t(`report.types.${type.id}`) : "";
+  const needsGps = type?.kind === "waypoint";
+  const canSend =
+    Boolean(meshClient) &&
+    !busy &&
+    Boolean(type) &&
+    (!needsGps || canSendPosition);
 
   useEffect(() => {
     const types = reportTypesForCategory(category);
@@ -136,33 +144,57 @@ export function ReportTab() {
       return;
     }
 
-    const pos = await resolvePosition();
-    if (!pos) {
-      toast({
-        title: t("report.needPosition.title"),
-        description: t("report.needPosition.description"),
-      });
-      return;
-    }
-
-    const channel =
-      baliseChannel !== null
-        ? (baliseChannel as Types.ChannelNumber)
-        : Types.ChannelNumber.Primary;
-
-    const waypoint = create(Protobuf.Mesh.WaypointSchema, {
-      id: Math.floor(Math.random() * 0x7fffffff) || 1,
-      latitudeI: pos.latI,
-      longitudeI: pos.lonI,
-      name: reportWaypointName(type, label),
-      description: `${label} (${pos.sourceLabel})`.slice(0, 100),
-      icon: type.iconCodepoint,
-      expire: 0,
-      lockedTo: 0,
-    });
-
     setBusy(true);
     try {
+      if (type.kind === "status") {
+        const channel =
+          alerteChannel !== null
+            ? (alerteChannel as Types.ChannelNumber)
+            : Types.ChannelNumber.Primary;
+        const result = await meshClient.chat.send({
+          text: type.label,
+          destination: "broadcast",
+          channel,
+        });
+        if (result.status === "error") {
+          toast({
+            title: t("toast.sendFailed.title"),
+            description: String(result.error),
+          });
+        } else {
+          toast({
+            title: t("report.sent.title"),
+            description: `${type.emoji} ${type.label}`,
+          });
+        }
+        return;
+      }
+
+      const pos = await resolvePosition();
+      if (!pos) {
+        toast({
+          title: t("report.needPosition.title"),
+          description: t("report.needPosition.description"),
+        });
+        return;
+      }
+
+      const channel =
+        baliseChannel !== null
+          ? (baliseChannel as Types.ChannelNumber)
+          : Types.ChannelNumber.Primary;
+
+      const waypoint = create(Protobuf.Mesh.WaypointSchema, {
+        id: Math.floor(Math.random() * 0x7fffffff) || 1,
+        latitudeI: pos.latI,
+        longitudeI: pos.lonI,
+        name: reportWaypointName(type),
+        description: `${type.label} (${pos.sourceLabel})`.slice(0, 100),
+        icon: type.iconCodepoint,
+        expire: 0,
+        lockedTo: 0,
+      });
+
       await meshClient.sendPacket(
         toBinary(Protobuf.Mesh.WaypointSchema, waypoint),
         Protobuf.Portnums.PortNum.WAYPOINT_APP,
@@ -173,7 +205,7 @@ export function ReportTab() {
       );
       toast({
         title: t("report.sent.title"),
-        description: `${type.emoji} ${label}`,
+        description: `${type.emoji} ${type.label}`,
       });
     } catch (e) {
       toast({
@@ -187,11 +219,10 @@ export function ReportTab() {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Not nested Radix Tabs — parent GerMaCrise already uses Tabs. */}
       <div
         role="tablist"
         aria-label={t("manager.tabs.report")}
-        className="grid grid-cols-3 gap-1 rounded-lg bg-slate-200 p-1 dark:bg-slate-700"
+        className="grid grid-cols-4 gap-1 rounded-lg bg-slate-200 p-1 dark:bg-slate-700"
       >
         {REPORT_CATEGORIES.map((cat) => {
           const selected = category === cat;
@@ -203,7 +234,7 @@ export function ReportTab() {
               aria-selected={selected}
               onClick={() => setCategory(cat)}
               className={[
-                "rounded-md px-2 py-2 text-sm font-semibold transition",
+                "rounded-md px-1 py-2 text-xs font-semibold transition sm:text-sm",
                 selected
                   ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
                   : "text-slate-700 hover:bg-white/50 dark:text-slate-200 dark:hover:bg-slate-800/60",
@@ -223,14 +254,13 @@ export function ReportTab() {
         <div className="grid grid-cols-4 gap-1.5">
           {categoryTypes.map((r) => {
             const selected = r.id === typeId;
-            const typeLabel = t(`report.types.${r.id}`);
             return (
               <button
-                key={r.id}
+                key={`${category}-${r.id}`}
                 type="button"
                 onClick={() => setTypeId(r.id)}
                 aria-pressed={selected}
-                title={typeLabel}
+                title={r.label}
                 className={[
                   "flex flex-col items-center justify-center gap-0.5 rounded-lg border px-1 py-1.5 text-center transition",
                   "min-h-[4.25rem]",
@@ -242,8 +272,8 @@ export function ReportTab() {
                 <span className="text-xl leading-none" aria-hidden>
                   {r.emoji}
                 </span>
-                <span className="text-[10px] font-medium leading-tight">
-                  {typeLabel}
+                <span className="text-[9px] font-medium leading-tight">
+                  {r.label}
                 </span>
               </button>
             );
@@ -251,11 +281,7 @@ export function ReportTab() {
         </div>
       )}
 
-      <Button
-        type="button"
-        disabled={busy || !meshClient || !canSendPosition || !type}
-        onClick={() => void send()}
-      >
+      <Button type="button" disabled={!canSend} onClick={() => void send()}>
         {type ? `${type.emoji} ${t("report.submit")}` : t("report.submit")}
       </Button>
     </div>
