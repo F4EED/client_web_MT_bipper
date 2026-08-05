@@ -29,7 +29,10 @@ const device = new MeshDevice(transport);
 
 ### Compatibility
 
-The Web Serial API's have limited support in browsers, compatibility is
-represented in the matrix below.
+Web Serial is required for USB. **Chrome / Edge** are the reliable target.
+Firefox supports Web Serial from **151+**; older Firefox and Safari do not
+(`navigator.serial` missing → *Web Serial not supported*).
+
+GerMaCrise / Gaulix PC crise notes: see `docs/BIPPER-WEB.md` (French).
 
 ![Web Serial compatability matrix](https://caniuse.bitsofco.de/image/web-serial.png)

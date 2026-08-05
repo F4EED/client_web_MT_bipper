@@ -1,11 +1,11 @@
 {
-  "name": "Meshtastic",
-  "short_name": "Web Client",
+  "name": "GerMaCrise-meshtastic",
+  "short_name": "GerMaCrise",
   "start_url": ".",
-  "description": "Meshtastic Web App",
+  "description": "GerMaCrise-meshtastic Web App",
   "icons": [
     {
-      "src": "/images/logo_Gaulix_v.png",
+      "src": "/images/gaulix_rond.png",
       "sizes": "any",
       "type": "image/png"
     }

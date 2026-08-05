@@ -1,67 +1,88 @@
 import type { DeviceOutput } from "../transport/Transport.ts";
 
+/** Max FromRadio / ToRadio protobuf payload (PhoneAPI.h). */
+const MAX_TO_FROM_RADIO_SIZE = 512;
+const START1 = 0x94;
+const START2 = 0xc3;
+
 /**
  * Transforms a raw byte stream from the device into typed DeviceOutput chunks
  * by parsing the 0x94 0xC3 framing header and length prefix.
+ *
+ * Tolerates boot-console ASCII and other garbage (common on USB/CH340 after
+ * reset): scans for START1/START2, rejects lengths > 512, and resyncs on
+ * false START1 bytes instead of stalling the parser.
  */
 export const fromDeviceStream: () => TransformStream<
   Uint8Array,
   DeviceOutput
 > = () => {
-  let byteBuffer = new Uint8Array([]);
+  let byteBuffer = new Uint8Array(0);
   const textDecoder = new TextDecoder();
+
+  const emitDebug = (
+    controller: TransformStreamDefaultController<DeviceOutput>,
+    bytes: Uint8Array,
+  ): void => {
+    if (bytes.length === 0) return;
+    controller.enqueue({
+      type: "debug",
+      data: textDecoder.decode(bytes),
+    });
+  };
+
   return new TransformStream<Uint8Array, DeviceOutput>({
     transform(chunk: Uint8Array, controller): void {
-      byteBuffer = new Uint8Array([...byteBuffer, ...chunk]);
-      let processingExhausted = false;
-      while (byteBuffer.length !== 0 && !processingExhausted) {
-        const framingIndex = byteBuffer.indexOf(0x94);
-        const framingByte2 = byteBuffer[framingIndex + 1];
-        if (framingByte2 === 0xc3) {
-          if (byteBuffer.subarray(0, framingIndex).length) {
-            controller.enqueue({
-              type: "debug",
-              data: textDecoder.decode(byteBuffer.subarray(0, framingIndex)),
-            });
-            byteBuffer = byteBuffer.subarray(framingIndex);
-          }
+      const merged = new Uint8Array(byteBuffer.length + chunk.length);
+      merged.set(byteBuffer);
+      merged.set(chunk, byteBuffer.length);
+      byteBuffer = merged;
 
-          const msb = byteBuffer[2];
-          const lsb = byteBuffer[3];
+      while (byteBuffer.length > 0) {
+        const framingIndex = byteBuffer.indexOf(START1);
 
-          if (
-            msb !== undefined &&
-            lsb !== undefined &&
-            byteBuffer.length >= 4 + (msb << 8) + lsb
-          ) {
-            const packet = byteBuffer.subarray(4, 4 + (msb << 8) + lsb);
-
-            const malformedDetectorIndex = packet.indexOf(0x94);
-            if (
-              malformedDetectorIndex !== -1 &&
-              packet[malformedDetectorIndex + 1] === 0xc3
-            ) {
-              console.warn(
-                `⚠️ Malformed packet found, discarding: ${byteBuffer
-                  .subarray(0, malformedDetectorIndex - 1)
-                  .toString()}`,
-              );
-
-              byteBuffer = byteBuffer.subarray(malformedDetectorIndex);
-            } else {
-              byteBuffer = byteBuffer.subarray(3 + (msb << 8) + lsb + 1);
-
-              controller.enqueue({
-                type: "packet",
-                data: packet,
-              });
-            }
-          } else {
-            processingExhausted = true;
-          }
-        } else {
-          processingExhausted = true;
+        if (framingIndex === -1) {
+          // No START1 yet — treat everything as debug console output.
+          emitDebug(controller, byteBuffer);
+          byteBuffer = new Uint8Array(0);
+          return;
         }
+
+        if (framingIndex > 0) {
+          emitDebug(controller, byteBuffer.subarray(0, framingIndex));
+          byteBuffer = byteBuffer.subarray(framingIndex);
+        }
+
+        // Need at least START1 + START2
+        if (byteBuffer.length < 2) return;
+
+        if (byteBuffer[1] !== START2) {
+          // Lone/false START1 — skip it and keep scanning (do not stall).
+          emitDebug(controller, byteBuffer.subarray(0, 1));
+          byteBuffer = byteBuffer.subarray(1);
+          continue;
+        }
+
+        // Need full 4-byte header
+        if (byteBuffer.length < 4) return;
+
+        const length = ((byteBuffer[2] ?? 0) << 8) | (byteBuffer[3] ?? 0);
+        if (length > MAX_TO_FROM_RADIO_SIZE) {
+          // Bogus length — resync past this START1.
+          emitDebug(controller, byteBuffer.subarray(0, 1));
+          byteBuffer = byteBuffer.subarray(1);
+          continue;
+        }
+
+        const frameTotal = 4 + length;
+        if (byteBuffer.length < frameTotal) return;
+
+        const packet = byteBuffer.subarray(4, frameTotal);
+        byteBuffer = byteBuffer.subarray(frameTotal);
+        controller.enqueue({
+          type: "packet",
+          data: packet,
+        });
       }
     },
   });

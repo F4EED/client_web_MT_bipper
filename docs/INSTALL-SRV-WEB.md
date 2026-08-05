@@ -228,6 +228,16 @@ bipper.exemple.local {
 Pour un usage Bipper en USB depuis le LAN, prévoyez un certificat
 (Let’s Encrypt, certificat interne, ou reverse proxy TLS).
 
+### Navigateurs supportés (USB PC crise)
+
+| Navigateur | Web Serial | Recommandation |
+| --- | --- | --- |
+| Chrome / Edge | Oui | **Oui** — usage nominal GerMaCrise USB |
+| Firefox ≥ 151 | Oui | Possible ; sinon basculer Chrome/Edge |
+| Firefox < 151 / Safari | Non | Impossible en USB navigateur |
+
+Sans Web Serial, le client coupe avec *Web Serial not supported*. Ce n’est pas un bug firmware : c’est l’API navigateur.
+
 ---
 
 ## 5. Vérifications
@@ -277,6 +287,8 @@ dans `/var/www/…/bipper/`. Sans cela, les assets et le routeur casseront.
 | Page blanche | Mauvais `DocumentRoot`, ou build incomplet |
 | i18n / textes manquants | Dossier `i18n/` non recopié depuis `dist/` |
 | USB / BLE gris | Site en HTTP hors localhost |
+| *Web Serial not supported* | Navigateur sans API (Firefox < 151, Safari) — utiliser **Chrome** ou **Edge** |
+| Connexion USB qui tourne puis échoue | Autre app sur le COM, ou reboot ESP32 — un seul client série ; attendre ~5–10 s après Connecter |
 | Ancienne UI après update | Cache navigateur / CDN — `index.html` en `no-cache` |
 
 ---

@@ -54,37 +54,65 @@ export function useConnections() {
     [updateSavedConnection],
   );
 
-  const teardown = useCallback(async (id: ConnectionId, conn?: Connection) => {
-    log.debug("teardown: enter", { id });
-    stopHeartbeat(id);
-    configSubscriptions.get(id)?.();
-    configSubscriptions.delete(id);
+  const teardown = useCallback(
+    async (
+      id: ConnectionId,
+      conn?: Connection,
+      opts: { releaseSerial?: boolean } = {},
+    ) => {
+      log.debug("teardown: enter", {
+        id,
+        releaseSerial: !!opts.releaseSerial,
+      });
+      stopHeartbeat(id);
+      configSubscriptions.get(id)?.();
+      configSubscriptions.delete(id);
 
-    if (conn?.meshDeviceId) {
-      const device = useDeviceStore.getState().getDevice(conn.meshDeviceId);
-      try {
-        // Await the underlying transport's close so the port is fully
-        // released before the user clicks reconnect — otherwise port.open()
-        // can race the close and throw "port already open".
-        await device?.connection?.disconnect();
-        log.debug("teardown: transport disconnect awaited");
-      } catch (e) {
-        const err = e as Error;
-        log.warn("teardown: transport disconnect threw", {
-          name: err?.name,
-          message: err?.message,
-        });
+      if (conn?.meshDeviceId) {
+        const device = useDeviceStore.getState().getDevice(conn.meshDeviceId);
+        try {
+          // Soft disconnect keeps the SerialPort open so reconnect does not
+          // pulse DTR/RTS (ESP32/CH340 auto-reset). Hard-release only when
+          // removing the saved connection.
+          const transport = device?.connection as
+            | {
+                disconnect?: () => Promise<void>;
+                releasePort?: () => Promise<void>;
+              }
+            | undefined;
+          if (opts.releaseSerial && transport?.releasePort) {
+            await transport.releasePort();
+          } else {
+            await transport?.disconnect?.();
+          }
+          log.debug("teardown: transport disconnect awaited");
+        } catch (e) {
+          const err = e as Error;
+          log.warn("teardown: transport disconnect threw", {
+            name: err?.name,
+            message: err?.message,
+          });
+        }
       }
-    }
-    closeTransport(cachedTransports.get(id));
-    cachedTransports.delete(id);
-    log.debug("teardown: done", { id });
-  }, []);
+
+      const cached = cachedTransports.get(id);
+      if (opts.releaseSerial) {
+        closeTransport(cached, { releaseSerial: true });
+        cachedTransports.delete(id);
+      } else if (cached && "gatt" in cached) {
+        // Drop BT GATT only; keep SerialPort handle for reset-free reconnect.
+        closeTransport(cached);
+        cachedTransports.delete(id);
+      }
+      log.debug("teardown: done", { id });
+    },
+    [],
+  );
 
   const removeConnection = useCallback(
     async (id: ConnectionId) => {
       const conn = connections.find((c) => c.id === id);
-      await teardown(id, conn);
+      await teardown(id, conn, { releaseSerial: true });
       if (conn?.meshDeviceId) {
         try {
           useDeviceStore.getState().removeDevice(conn.meshDeviceId);
@@ -161,9 +189,11 @@ export function useConnections() {
       //      catch the case the event missed.
       // Either path may fire first; `markConfigured` is idempotent.
       let configuredHandled = false;
+      let handshakeTimer: ReturnType<typeof setTimeout> | undefined;
       const markConfigured = (source: string): void => {
         if (configuredHandled) return;
         configuredHandled = true;
+        if (handshakeTimer !== undefined) clearTimeout(handshakeTimer);
         log.info("connect transitioned to configured", { id, source });
         device.setConnectionPhase("configured");
         updateStatus(id, "configured");
@@ -209,27 +239,49 @@ export function useConnections() {
         unsubRebooted();
       });
 
-      log.debug("setupMeshDevice: calling configure()", { id });
-      meshDevice
-        .configure()
-        .then(() => {
-          log.debug(
-            "setupMeshDevice: configure() resolved, sending heartbeat",
-            { id },
-          );
-          return meshDevice
-            .heartbeat()
-            .then(() => startConfigHeartbeat(id, meshDevice));
-        })
-        .catch((error) => {
-          const e = error as Error;
-          log.error("setupMeshDevice: configure() rejected", {
-            id,
-            name: e?.name,
-            message: e?.message,
-          });
-          updateStatus(id, "error", error?.message ?? String(error));
+      // Do not wait for configure() to resolve before starting retries:
+      // wantConfigId sits in the SDK queue for up to 60s without a radio ACK,
+      // and ESP32 often reboots on serial open so the first packet is lost.
+      log.debug("setupMeshDevice: calling configure() + handshake retries", {
+        id,
+      });
+      meshDevice.configure().catch((error) => {
+        const e = error as Error;
+        log.error("setupMeshDevice: configure() rejected", {
+          id,
+          name: e?.name,
+          message: e?.message,
         });
+        if (!configuredHandled) {
+          updateStatus(id, "error", error?.message ?? String(error));
+        }
+      });
+      startConfigHeartbeat(id, meshDevice);
+
+      const HANDSHAKE_TIMEOUT_MS = 45_000;
+      handshakeTimer = setTimeout(() => {
+        if (configuredHandled) return;
+        log.error("setupMeshDevice: config handshake timed out", { id });
+        stopHeartbeat(id);
+        // Hard-release serial: soft-reuse after a failed handshake leaves a
+        // zombie port (streams torn down, MCU never finished config).
+        const live = useDeviceStore
+          .getState()
+          .savedConnections.find((c) => c.id === id);
+        void teardown(id, live, { releaseSerial: true }).finally(() => {
+          updateStatus(
+            id,
+            "error",
+            "Configuration handshake timed out. Unplug the radio, close other serial apps, then reconnect.",
+          );
+        });
+      }, HANDSHAKE_TIMEOUT_MS);
+
+      const prevUnsub = configSubscriptions.get(id);
+      configSubscriptions.set(id, () => {
+        if (handshakeTimer !== undefined) clearTimeout(handshakeTimer);
+        prevUnsub?.();
+      });
 
       updateSavedConnection(id, { meshDeviceId: deviceId });
       return deviceId;
@@ -241,6 +293,7 @@ export function useConnections() {
       setActiveConnectionId,
       updateSavedConnection,
       updateStatus,
+      teardown,
     ],
   );
 
@@ -249,7 +302,9 @@ export function useConnections() {
       // Read from the live store, not the memoized `connections` closure: callers
       // such as addConnectionAndConnect() add a connection and connect to it in the
       // same tick, before this hook re-renders, so the closure would be stale.
-      const conn = useDeviceStore.getState().savedConnections.find((c) => c.id === id);
+      const conn = useDeviceStore
+        .getState()
+        .savedConnections.find((c) => c.id === id);
       if (!conn) {
         log.warn("connect: unknown connection id", { id });
         return false;
@@ -318,8 +373,12 @@ export function useConnections() {
     async (id: ConnectionId) => {
       const conn = connections.find((c) => c.id === id);
       if (!conn) return;
+      // Serial: always hard-close. Transport force-reopens on next connect
+      // anyway (ESP32 settle); keeping the port open only left zombie locks.
       try {
-        await teardown(id, conn);
+        await teardown(id, conn, {
+          releaseSerial: conn.type === "serial",
+        });
         if (conn.meshDeviceId) {
           const device = useDeviceStore.getState().getDevice(conn.meshDeviceId);
           if (device) {

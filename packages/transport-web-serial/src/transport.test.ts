@@ -153,6 +153,13 @@ class FakeSerialPort {
     return Promise.resolve();
   }
 
+  setSignals(_signals?: {
+    dataTerminalReady?: boolean;
+    requestToSend?: boolean;
+  }): Promise<void> {
+    return Promise.resolve();
+  }
+
   close(): Promise<void> {
     try {
       this._readController.close();
@@ -281,16 +288,17 @@ describe("TransportWebSerial.createFromPort port hygiene", () => {
     vi.restoreAllMocks();
   });
 
-  it("force-closes a port that's still open from a prior session", async () => {
+  it("force-closes then reopens an already-open port (clears zombie locks)", async () => {
     const fake = new FakeSerialPort();
-    // Streams are non-null right after construction — simulate "previous
-    // session left it open". preparePort should close + reopen rather
-    // than barfing on the already-open state.
     expect(fake.readable).not.toBeNull();
     const closeSpy = vi.spyOn(fake, "close");
+    const openSpy = vi.spyOn(fake, "open");
     const result = await TransportWebSerial.createFromPort(fake as any);
     expect(Result.isOk(result)).toBe(true);
-    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalled();
+    expect(openSpy).toHaveBeenCalled();
+    // Wake bytes (4× START1) are written after settle.
+    expect(fake.lastWritten).toEqual(new Uint8Array([0x94, 0x94, 0x94, 0x94]));
     if (Result.isOk(result)) await result.value.disconnect();
   });
 

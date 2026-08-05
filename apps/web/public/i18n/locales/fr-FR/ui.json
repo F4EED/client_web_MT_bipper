@@ -8,12 +8,12 @@
     "radioConfig": "Configuration radio",
     "deviceConfig": "Configuration de l'appareil",
     "moduleConfig": "Configuration du module",
-    "manageConnections": "Manage Connections",
+    "manageConnections": "Gérer les connexions",
     "nodes": "Noeuds"
   },
   "app": {
-    "title": "Meshtastic",
-    "logo": "Logo Meshtastic"
+    "title": "GerMaCrise-meshtastic",
+    "logo": "Logo GerMaCrise"
   },
   "sidebar": {
     "collapseToggle": {
@@ -28,7 +28,12 @@
         "title": "Micrologiciel",
         "version": "v{{version}}",
         "buildDate": "Date de compilation : {{date}}"
-      }
+      },
+      "loading": "Chargement…",
+      "notConnected": "Non connecté",
+      "notConnectedHint": "Ouvrez Connexions et connectez la radio (USB Série).",
+      "handshakeFailed": "Connexion échouée",
+      "handshakeFailedHint": "Allez dans Connexions → Connecter à nouveau. Attendez ~5 s après le reboot du boîtier."
     }
   },
   "batteryStatus": {

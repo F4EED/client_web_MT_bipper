@@ -264,10 +264,13 @@ export async function probeConnection(
 }
 
 /**
- * Best-effort cleanup for a held-onto BT device or serial port. Safe on either.
+ * Best-effort cleanup for a held-onto BT device or serial port.
+ * Serial ports are kept open by default (closing pulses DTR/RTS and resets
+ * ESP32/CH340). Pass `releaseSerial: true` when removing the connection.
  */
 export function closeTransport(
   handle: BluetoothDevice | SerialPort | undefined,
+  opts: { releaseSerial?: boolean } = {},
 ): void {
   if (!handle) return;
   const bt = handle as BluetoothDevice;
@@ -276,10 +279,11 @@ export function closeTransport(
       bt.gatt.disconnect();
     } catch {}
   }
+  if (!opts.releaseSerial) return;
   const port = handle as SerialPort & { close?: () => Promise<void> };
   if (port.close) {
     try {
-      port.close();
+      void port.close();
     } catch {}
   }
 }

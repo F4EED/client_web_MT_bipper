@@ -119,6 +119,25 @@ pnpm --filter meshtastic-web build
 
 **Contexte sécurisé** obligatoire pour USB/BLE : `https://` ou `http://localhost`.
 
+### Navigateurs et Web Serial (USB)
+
+La connexion USB passe par l’API **Web Serial** (`navigator.serial`). Sans elle, le client affiche *Web Serial not supported* et le handshake ne démarre pas.
+
+| Navigateur | USB (Web Serial) | Notes |
+|:-----------|:-----------------|:------|
+| **Chrome** / **Edge** (Chromium) | ✅ recommandé | Support stable depuis longtemps — **cible PC crise** |
+| **Firefox** ≥ **151** | ✅ possible | API ajoutée en 151 ; permissions un peu différentes de Chrome. En cas de doute, utiliser Chrome/Edge |
+| Firefox < 151 | ❌ | Pas d’API série |
+| Safari | ❌ | Pas de Web Serial |
+
+**Pièges USB / ESP32 (CH340, ThinkNode M2, XIAO…)** :
+
+- Ouvrir le port série **reboote** souvent le MCU (pulse DTR/RTS) — le client attend ~5 s puis envoie un wake `0x94×4` avant `wantConfigId`.
+- Un seul onglet / une seule app sur le COM (pas Chrome + Edge + CLI Meshtastic en même temps).
+- Symptôme « Connexion échouée / Chargement… / Noeuds (0) » : handshake incomplet — débrancher/rebrancer, fermer les autres apps série, reconnecter sous Chrome ou Edge.
+
+Web Bluetooth (BLE) : Chromium surtout ; Firefox/Safari limités ou absents selon version.
+
 ---
 
 ## Déploiement

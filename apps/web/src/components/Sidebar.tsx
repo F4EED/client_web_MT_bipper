@@ -162,7 +162,7 @@ export const Sidebar = ({ children }: SidebarProps) => {
         )}
       >
         <img
-          src="/images/logo_Gaulix_v.png"
+          src="/images/gaulix_rond.png"
           alt={t("app.logo")}
           className="size-10 flex-shrink-0 rounded-xl object-contain"
         />
@@ -172,11 +172,15 @@ export const Sidebar = ({ children }: SidebarProps) => {
             "transition-all duration-300 ease-in-out",
             isCollapsed
               ? "opacity-0 max-w-0 invisible ml-0"
-              : "opacity-100 max-w-[11rem] visible ml-2",
+              : "opacity-100 max-w-[14rem] visible ml-2",
           )}
-          title={myNode?.user?.longName || t("app.title")}
+          title={
+            myNode?.user?.longName
+              ? `${t("app.title")} — ${myNode.user.longName}`
+              : t("app.title")
+          }
         >
-          {myNode?.user?.longName || t("app.title")}
+          {t("app.title")}
         </h2>
       </div>
 
@@ -208,16 +212,54 @@ export const Sidebar = ({ children }: SidebarProps) => {
 
       <div className=" pt-4 border-t-[0.5px] bg-background-primary border-slate-300 dark:border-slate-700 h-full flex-1">
         {myNode === undefined ? (
-          <div className="flex flex-col items-center justify-center py-6">
-            <Spinner />
-            <Subtle
-              className={cn(
-                "mt-4 transition-opacity duration-300",
-                isCollapsed ? "opacity-0 invisible" : "opacity-100 visible",
-              )}
-            >
-              {t("loading")}
-            </Subtle>
+          <div className="flex flex-col items-center justify-center gap-2 px-3 py-6 text-center">
+            {activeConnection?.status === "connecting" ||
+            activeConnection?.status === "configuring" ? (
+              <>
+                <Spinner />
+                <Subtle
+                  className={cn(
+                    "transition-opacity duration-300",
+                    isCollapsed ? "opacity-0 invisible" : "opacity-100 visible",
+                  )}
+                >
+                  {t("sidebar.deviceInfo.loading")}
+                </Subtle>
+              </>
+            ) : (
+              <>
+                <Subtle
+                  className={cn(
+                    "font-medium text-text-primary",
+                    isCollapsed && "sr-only",
+                  )}
+                >
+                  {activeConnection?.status === "error"
+                    ? t("sidebar.deviceInfo.handshakeFailed")
+                    : t("sidebar.deviceInfo.notConnected")}
+                </Subtle>
+                <Subtle
+                  className={cn(
+                    "text-xs",
+                    isCollapsed ? "opacity-0 invisible" : "opacity-100 visible",
+                  )}
+                >
+                  {activeConnection?.status === "error"
+                    ? t("sidebar.deviceInfo.handshakeFailedHint")
+                    : t("sidebar.deviceInfo.notConnectedHint")}
+                </Subtle>
+                <button
+                  type="button"
+                  className={cn(
+                    "mt-1 text-xs text-link underline",
+                    isCollapsed && "sr-only",
+                  )}
+                  onClick={() => void navigate({ to: "/connections" })}
+                >
+                  {t("navigation.manageConnections")}
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <DeviceInfoPanel

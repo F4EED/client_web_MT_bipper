@@ -34,7 +34,12 @@ export class SerialConnectError extends Error {
 }
 
 const PORT_OPEN_RETRY_DELAYS_MS = [250, 500, 750] as const;
-const POST_CLOSE_DELAY_MS = 200;
+const POST_CLOSE_DELAY_MS = 300;
+/** ESP32 USB/CH340 often resets on port.open() (DTR/RTS); wait before first ToRadio. */
+const POST_OPEN_SETTLE_MS =
+  typeof process !== "undefined" && process.env?.VITEST === "true" ? 5 : 5000;
+/** Protocol: 4× START1 wakes / resyncs the firmware StreamAPI framer. */
+const SERIAL_WAKE_BYTES = new Uint8Array([0x94, 0x94, 0x94, 0x94]);
 
 function isPortBusyError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
@@ -44,12 +49,50 @@ function isPortBusyError(err: unknown): boolean {
   );
 }
 
+async function releaseModemLines(port: SerialPort): Promise<void> {
+  // Deassert DTR/RTS ASAP. Cannot prevent the brief assert during open()
+  // (Web Serial / Windows limitation) but avoids holding the MCU in reset.
+  try {
+    await port.setSignals?.({
+      dataTerminalReady: false,
+      requestToSend: false,
+    });
+  } catch {
+    /* optional */
+  }
+}
+
+async function writeWakeBytes(port: SerialPort): Promise<void> {
+  if (!port.writable) return;
+  const writer = port.writable.getWriter();
+  try {
+    await writer.write(SERIAL_WAKE_BYTES);
+    log.debug("writeWakeBytes: sent 4× START1");
+  } catch (cause) {
+    const err = cause as Error;
+    log.warn("writeWakeBytes: failed", {
+      name: err?.name,
+      message: err?.message,
+    });
+  } finally {
+    try {
+      writer.releaseLock();
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 /**
  * Provides Web Serial transport for Meshtastic devices.
  *
  * Implements the {@link Transport} contract using the Web Serial API.
  * Use {@link TransportWebSerial.create} or {@link TransportWebSerial.createFromPort}
  * to construct an instance.
+ *
+ * Each connect force-closes then reopens the port (ESP32/CH340 always resets
+ * once) so boot garbage and zombie stream locks cannot strand the handshake.
+ * Call {@link TransportWebSerial.releasePort} to fully close the port.
  */
 export class TransportWebSerial implements Transport {
   private _toDevice: WritableStream<Uint8Array>;
@@ -57,8 +100,9 @@ export class TransportWebSerial implements Transport {
   private fromDeviceController?: ReadableStreamDefaultController<DeviceOutput>;
   private connection: SerialPort;
   private pipePromise: Promise<void> | null = null;
-  private abortController: AbortController;
-  private portReadable: ReadableStream<Uint8Array>;
+  private portWriter: WritableStreamDefaultWriter<Uint8Array> | null = null;
+  private portReader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+  private writePumpActive = false;
 
   private lastStatus: DeviceStatusEnum = DeviceStatusEnum.DeviceDisconnected;
   private closingByUser = false;
@@ -85,18 +129,8 @@ export class TransportWebSerial implements Transport {
   }
 
   /**
-   * Open a transport on an already-known {@link SerialPort}. Performs the
-   * port-state hygiene needed for reconnect flows:
-   *
-   * - If `readable` / `writable` are non-null (port still open from a
-   *   previous session), close it and wait for the descriptor to settle.
-   * - Try `port.open()` up to four times with backoff on
-   *   `InvalidStateError` — common during USB re-enumeration.
-   *
-   * Returns `Err(SerialConnectError)` on persistent failure; the kind
-   * distinguishes "port owned by another tab/process" (`in-use`) from
-   * "transient busy / could not open" (`busy`) from
-   * "permission denied / no streams" (`unavailable`).
+   * Open a transport on an already-known {@link SerialPort}.
+   * Always closes + reopens so ESP32 boot settles cleanly (no zombie reuse).
    */
   public static async createFromPort(
     port: SerialPort,
@@ -127,8 +161,10 @@ export class TransportWebSerial implements Transport {
       baudRate,
     });
 
+    // Always force-close first. Soft-reuse left zombie locks / half-open ports
+    // after failed handshakes and Vite HMR, which looks like "connects then void".
     if (port.readable || port.writable) {
-      log.debug("preparePort: port has live streams, closing");
+      log.debug("preparePort: closing before fresh open");
       try {
         await port.close();
         log.debug("preparePort: close() ok");
@@ -138,13 +174,7 @@ export class TransportWebSerial implements Transport {
           name: err?.name,
           message: err?.message,
         });
-        return Result.err(
-          new SerialConnectError(
-            "in-use",
-            "Serial port is open and could not be released. Close any other tab, terminal, or app using it (Arduino IDE, screen, picocom, esptool) and try again.",
-            { cause },
-          ),
-        );
+        // Still try open() below — some browsers reject close on already-closed.
       }
       await new Promise((r) => setTimeout(r, POST_CLOSE_DELAY_MS));
     }
@@ -158,7 +188,14 @@ export class TransportWebSerial implements Transport {
       try {
         log.debug("preparePort: open() attempt", { attempt });
         await port.open({ baudRate });
-        log.debug("preparePort: open() ok", { attempt });
+        // First open always pulses DTR/RTS on Windows — release immediately.
+        await releaseModemLines(port);
+        log.debug("preparePort: open() ok, settling", {
+          attempt,
+          settleMs: POST_OPEN_SETTLE_MS,
+        });
+        await new Promise((r) => setTimeout(r, POST_OPEN_SETTLE_MS));
+        await writeWakeBytes(port);
         return Result.ok(true);
       } catch (err) {
         lastErr = err;
@@ -175,6 +212,12 @@ export class TransportWebSerial implements Transport {
           attempt === PORT_OPEN_RETRY_DELAYS_MS.length
         )
           break;
+        // If "already open", try close again before retry.
+        try {
+          await port.close();
+        } catch {
+          /* ignore */
+        }
         await new Promise((r) =>
           setTimeout(r, PORT_OPEN_RETRY_DELAYS_MS[attempt]),
         );
@@ -212,41 +255,70 @@ export class TransportWebSerial implements Transport {
     }
 
     this.connection = connection;
-    this.portReadable = connection.readable;
-    this.abortController = new AbortController();
-    const abortController = this.abortController;
+    this.portWriter = connection.writable.getWriter();
+    this.portReader = connection.readable.getReader();
 
-    log.debug("constructor: wiring pipe + reader");
+    log.debug("constructor: wiring writer/reader pumps");
 
-    // Set up the pipe with abort signal for clean cancellation
     const toDeviceTransform = toDeviceStream();
-    this.pipePromise = toDeviceTransform.readable
-      .pipeTo(connection.writable, { signal: this.abortController.signal })
-      .catch((err) => {
-        // Ignore expected rejection when we cancel it via the AbortController.
-        if (abortController.signal.aborted) {
-          log.debug("toDevice pipe aborted (expected)");
-          return;
-        }
-        const e = err as Error;
-        log.error("toDevice pipe rejected", {
-          name: e?.name,
-          message: e?.message,
-        });
-        this.connection.close().catch(() => {});
-        this.emitStatus(DeviceStatusEnum.DeviceDisconnected, "write-error");
-      });
-
     this._toDevice = toDeviceTransform.writable;
+    this.writePumpActive = true;
+    const writer = this.portWriter;
+    this.pipePromise = (async () => {
+      const reader = toDeviceTransform.readable.getReader();
+      try {
+        while (this.writePumpActive) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value) await writer.write(value);
+        }
+      } catch (err) {
+        if (!this.closingByUser) {
+          const e = err as Error;
+          log.error("toDevice pump rejected", {
+            name: e?.name,
+            message: e?.message,
+          });
+          this.emitStatus(DeviceStatusEnum.DeviceDisconnected, "write-error");
+        } else {
+          log.debug("toDevice pump stopped (expected)");
+        }
+      } finally {
+        try {
+          reader.releaseLock();
+        } catch {
+          /* ignore */
+        }
+      }
+    })();
 
-    // Wrap + capture controller to inject status packets
+    const portReader = this.portReader;
     this._fromDevice = new ReadableStream<DeviceOutput>({
       start: async (ctrl) => {
         this.fromDeviceController = ctrl;
 
         this.emitStatus(DeviceStatusEnum.DeviceConnecting);
 
-        const transformed = this.portReadable.pipeThrough(fromDeviceStream());
+        const transformed = new ReadableStream<Uint8Array>({
+          pull: async (c) => {
+            try {
+              const { value, done } = await portReader.read();
+              if (done) {
+                c.close();
+                return;
+              }
+              if (value) c.enqueue(value);
+            } catch (error) {
+              c.error(
+                error instanceof Error ? error : new Error(String(error)),
+              );
+            }
+          },
+          cancel: async () => {
+            /* soft disconnect releases portReader in disconnect() */
+          },
+        }).pipeThrough(fromDeviceStream());
+
         const reader = transformed.getReader();
 
         const onOsDisconnect = (ev: Event) => {
@@ -285,11 +357,12 @@ export class TransportWebSerial implements Transport {
             this.emitStatus(DeviceStatusEnum.DeviceDisconnected, "read-error");
           }
           ctrl.error(error instanceof Error ? error : new Error(String(error)));
-          try {
-            await transformed.cancel();
-          } catch {}
         } finally {
-          reader.releaseLock();
+          try {
+            reader.releaseLock();
+          } catch {
+            /* ignore */
+          }
           navigator.serial.removeEventListener("disconnect", onOsDisconnect);
           log.debug("read loop: released reader lock + listener");
         }
@@ -319,37 +392,49 @@ export class TransportWebSerial implements Transport {
   }
 
   /**
-   * Closes the serial port and emits `DeviceDisconnected("user")`.
+   * Soft-disconnect: stop pumps and release stream locks, but keep the OS
+   * serial port open so the next connect does not reset ESP32 via DTR/RTS.
    */
   public async disconnect(): Promise<void> {
-    log.debug("disconnect: enter");
+    log.debug("disconnect: enter (soft — port stays open)");
     try {
       this.closingByUser = true;
+      this.writePumpActive = false;
 
-      // Stop outbound piping
-      this.abortController.abort();
-      log.debug("disconnect: aborted toDevice pipe");
+      try {
+        await this._toDevice.close();
+      } catch {
+        /* may already be closed */
+      }
       if (this.pipePromise) {
-        await this.pipePromise;
-        log.debug("disconnect: pipePromise settled");
+        await this.pipePromise.catch(() => {});
+        log.debug("disconnect: write pump settled");
       }
 
-      // Cancel any remaining streams
       if (this._fromDevice?.locked) {
         try {
           await this._fromDevice.cancel();
-          log.debug("disconnect: cancelled fromDevice");
-        } catch (e) {
-          const err = e as Error;
-          log.warn("disconnect: fromDevice.cancel() threw", {
-            name: err?.name,
-            message: err?.message,
-          });
+        } catch {
+          /* ignore */
         }
       }
 
-      await this.connection.close();
-      log.debug("disconnect: connection.close() ok");
+      try {
+        this.portWriter?.releaseLock();
+      } catch {
+        /* ignore */
+      }
+      this.portWriter = null;
+
+      try {
+        this.portReader?.releaseLock();
+      } catch {
+        /* ignore */
+      }
+      this.portReader = null;
+
+      await releaseModemLines(this.connection);
+      log.debug("disconnect: soft complete (port still open)");
     } catch (error) {
       const e = error as Error;
       log.warn("disconnect: cleanup failed", {
@@ -364,6 +449,29 @@ export class TransportWebSerial implements Transport {
   }
 
   /**
+   * Fully close the underlying SerialPort (pulses DTR/RTS on next open).
+   * Use when removing the connection permanently.
+   */
+  public async releasePort(): Promise<void> {
+    log.debug("releasePort: enter");
+    try {
+      await this.disconnect();
+    } catch {
+      /* ignore */
+    }
+    try {
+      await this.connection.close();
+      log.debug("releasePort: connection.close() ok");
+    } catch (error) {
+      const e = error as Error;
+      log.warn("releasePort: close() threw", {
+        name: e?.name,
+        message: e?.message,
+      });
+    }
+  }
+
+  /**
    * Reconnects the transport by creating a new AbortController and re-establishing
    * the pipe connection. Only call this after disconnect() or if the connection failed.
    */
@@ -374,29 +482,32 @@ export class TransportWebSerial implements Transport {
       if (!this.connection.readable || !this.connection.writable) {
         throw new Error("Stream not accessible");
       }
-      this.portReadable = this.connection.readable;
+      this.portWriter = this.connection.writable.getWriter();
+      this.portReader = this.connection.readable.getReader();
 
-      // Create a new AbortController for the new connection
-      this.abortController = new AbortController();
-      const abortController = this.abortController;
-
-      // Re-establish the pipe connection
       const toDeviceTransform = toDeviceStream();
-      this.pipePromise = toDeviceTransform.readable
-        .pipeTo(this.connection.writable, {
-          signal: this.abortController.signal,
-        })
-        .catch((error) => {
-          if (abortController.signal.aborted) {
-            return;
+      this._toDevice = toDeviceTransform.writable;
+      this.writePumpActive = true;
+      const writer = this.portWriter;
+      this.pipePromise = (async () => {
+        const reader = toDeviceTransform.readable.getReader();
+        try {
+          while (this.writePumpActive) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            if (value) await writer.write(value);
           }
-          console.error("Error piping data to serial port (reconnect):", error);
-          this.emitStatus(DeviceStatusEnum.DeviceDisconnected, "write-error");
-        });
+        } finally {
+          try {
+            reader.releaseLock();
+          } catch {
+            /* ignore */
+          }
+        }
+      })();
 
       this.emitStatus(DeviceStatusEnum.DeviceConnected, "reconnected");
     } catch (error) {
-      // Couldn’t re-pipe
       this.emitStatus(DeviceStatusEnum.DeviceDisconnected, "reconnect-failed");
       throw error;
     }

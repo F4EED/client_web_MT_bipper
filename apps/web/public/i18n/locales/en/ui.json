@@ -12,8 +12,8 @@
     "nodes": "Nodes"
   },
   "app": {
-    "title": "Meshtastic",
-    "logo": "Meshtastic Logo"
+    "title": "GerMaCrise-meshtastic",
+    "logo": "GerMaCrise Logo"
   },
   "sidebar": {
     "collapseToggle": {
@@ -28,7 +28,12 @@
         "title": "Firmware",
         "version": "v{{version}}",
         "buildDate": "Build date: {{date}}"
-      }
+      },
+      "loading": "Loading…",
+      "notConnected": "Not connected",
+      "notConnectedHint": "Open Connections and connect the radio (USB Serial).",
+      "handshakeFailed": "Connection failed",
+      "handshakeFailedHint": "Go to Connections → Connect again. Wait ~5s after the device reboots."
     }
   },
   "batteryStatus": {
