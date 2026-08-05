@@ -19,10 +19,19 @@ Pager ACK alerte [#N] JJ/MM HH:MM[ — texte][ | lat lon]
 
 T1–T10 · multi-entités OU · nº alerte · ACK / waypoints signalement sur Fr_Balise.
 
-Matériels firmware : `seeed_wio_tracker_L1` · `seeed_wio_tracker_L1_eink` · `thinknode_m1` · `thinknode_m2` · `seeed-xiao-s3-gaulix` (PC crise).
+## Matériels firmware
+
+| Matériel | Env | Macro |
+|:---------|:----|:------|
+| Seeed Wio Tracker L1 Pro | `seeed_wio_tracker_L1` | `GAULIX_PAGER` |
+| Seeed Wio Tracker L1 E-Ink | `seeed_wio_tracker_L1_eink` | `GAULIX_PAGER` |
+| Elecrow ThinkNode M1 | `thinknode_m1` | `GAULIX_PAGER` |
+| Elecrow ThinkNode M2 (bipper) | `thinknode_m2` | `GAULIX_PAGER` |
+| Seeed XIAO ESP32-S3 + Wio-SX1262 | `seeed-xiao-s3-gaulix` | `GAULIX_PC_NODE` (sans écran) |
+| Elecrow ThinkNode M2 (PC crise) | `thinknode_m2-gaulix` | `GAULIX_PC_NODE` (OLED + USB / Wi‑Fi / BLE, CLIENT, LOCAL_ONLY) |
 
 Miroir code : `apps/web/src/lib/bipper/*` ↔ Android `core/domain/.../bipper/` ↔ firmware `GaulixPagerModule`.
 
-UI web : `/alerts` = Gestion des alertes (Message / Alertes / ACK).
+UI web : `/alerts` = **GerMaCrise** (Signalement / Message / Alertes / ACK).
 
 Docs : firmware `docs/ECOSYSTEME-GAULIX.md` · `docs/BIPPER-WEB.md` · Android `docs/BIPPER-ANDROID.md`.

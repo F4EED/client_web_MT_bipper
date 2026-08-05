@@ -2,8 +2,10 @@
 
 > **Fork Gaulix** : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
 > Doc produit : **[docs/BIPPER-WEB.md](docs/BIPPER-WEB.md)** · Install : [INSTALL-SRV-WEB](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER](docs/INSTALL-DOCKER.md)  
-> Firmware cible : **v1.11.0+** — [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)  
-> Matériels : L1 Pro · ThinkNode M1/M2 · PC crise XIAO S3+SX1262  
+> Firmware cible : **v1.12+** — [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)  
+> Matériels : pagers L1 / M1 / M2 · PC crise XIAO S3+SX1262 (`seeed-xiao-s3-gaulix`) · PC crise ThinkNode M2 (`thinknode_m2-gaulix`, OLED)  
+
+
 > App Android : [F4EED/bipper_android](https://github.com/F4EED/bipper_android)
 
 Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).

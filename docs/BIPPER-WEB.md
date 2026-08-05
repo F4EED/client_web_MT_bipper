@@ -4,7 +4,7 @@
 |:--|:--|
 | **Dépôt** | [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper) |
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
-| **Firmware cible** | Gaulix Bipper **v1.11.0+** (L1 Pro · ThinkNode M1/M2 · PC crise XIAO S3+SX1262) |
+| **Firmware cible** | Gaulix Bipper **v1.12+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
 | **Install** | [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
 | **Écosystème** | Firmware + Android — voir firmware [`docs/ECOSYSTEME-GAULIX.md`](https://github.com/F4EED/Bipper_L1Pro/blob/develop/docs/ECOSYSTEME-GAULIX.md) |
@@ -29,7 +29,7 @@ Aucun backend Node n’est requis en production : build → fichiers statiques d
 
 | Route | Écran | Contenu |
 |:------|:------|:--------|
-| `/alerts` | **Gestion des alertes** | 4 onglets : **Signalement** (1er, waypoints POI → Fr_Balise), **Message**, **Alertes**, **ACK lecture** |
+| `/alerts` | **GerMaCrise** | 4 onglets : **Signalement** (Routes / Crises / Secouristes / Status), **Message**, **Alertes**, **ACK lecture** |
 | `/settings/bipper` | **Paramétrer le Bipper** | Status, tags **T1–T10**, code, bips |
 | (prévu) | **Signaler POI** | Envoi waypoint / objet POI |
 | `/map` | Carte | Waypoints mesh (dont SOS à styliser) |
@@ -75,17 +75,28 @@ Source de vérité détaillée : firmware `docs/ECOSYSTEME-GAULIX.md`.
 
 > **État code web** : aligné protocole **v1.11** (nº d’alerte, multi-entités, T1–T10, `#tagset`, `#fin N`) + parsing ACK **v1.12**.
 
-## Matériels firmware (connexion USB / BLE)
+## Matériels firmware (connexion USB / BLE / Wi‑Fi)
 
-| Matériel | Env | Usage côté web |
-|:---------|:----|:---------------|
-| Seeed Wio Tracker L1 Pro | `seeed_wio_tracker_L1` | Paramétrer le Bipper + gestion des alertes |
+### Pagers (`GAULIX_PAGER=1`) — paramétrage tags + alertes
+
+| Matériel | Env PlatformIO | Usage côté web |
+|:---------|:---------------|:---------------|
+| Seeed Wio Tracker L1 Pro | `seeed_wio_tracker_L1` | Paramétrer le Bipper + GerMaCrise (alertes / signalement) |
 | Seeed Wio Tracker L1 E-Ink | `seeed_wio_tracker_L1_eink` | Idem |
 | Elecrow ThinkNode M1 | `thinknode_m1` | Idem |
-| Elecrow ThinkNode M2 | `thinknode_m2` | Idem |
-| Seeed XIAO ESP32-S3 + Wio-SX1262 | `seeed-xiao-s3-gaulix` | Radio **PC crise** (coordinateur) — gestion des alertes ; pas de tags pager locaux |
+| Elecrow ThinkNode M2 | `thinknode_m2` | Idem (bipper OLED) |
 
 Détection HW pager : `SEEED_WIO_TRACKER_L1` / `_EINK` / `THINKNODE_M1` / `THINKNODE_M2`.
+
+### Nœuds PC de crise (`GAULIX_PC_NODE=1`) — radio coordinateur
+
+| Matériel | Env PlatformIO | Connexion | Notes |
+|:---------|:---------------|:----------|:------|
+| Seeed XIAO ESP32-S3 + Wio-SX1262 | `seeed-xiao-s3-gaulix` | USB / BLE / Wi‑Fi | Sans écran — GerMaCrise (alertes / signalement) ; pas de tags pager locaux |
+| Elecrow ThinkNode M2 | `thinknode_m2-gaulix` | USB / BLE / Wi‑Fi | **OLED** statut Meshtastic ; pas d’UI pager — distinct de `thinknode_m2` (bipper) |
+
+Usine PC crise : nom **Gaulix PC Crise**, rôle **CLIENT**, rebroadcast **LOCAL_ONLY**, EU868 / canaux Gaulix.  
+Flash M2 PC crise : `pio run -e thinknode_m2-gaulix -t upload --upload-port COMx` (CH340, ex. COM44).
 
 ---
 
