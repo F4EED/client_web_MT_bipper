@@ -95,8 +95,28 @@ Détection HW pager : `SEEED_WIO_TRACKER_L1` / `_EINK` / `THINKNODE_M1` / `THINK
 | Seeed XIAO ESP32-S3 + Wio-SX1262 | `seeed-xiao-s3-gaulix` | USB / BLE / Wi‑Fi | Sans écran — GerMaCrise (alertes / signalement) ; pas de tags pager locaux |
 | Elecrow ThinkNode M2 | `thinknode_m2-gaulix` | USB / BLE / Wi‑Fi | **OLED** statut Meshtastic ; pas d’UI pager — distinct de `thinknode_m2` (bipper) |
 
-Usine PC crise : nom **Gaulix PC Crise**, rôle **CLIENT**, rebroadcast **LOCAL_ONLY**, EU868 / canaux Gaulix.  
-Flash M2 PC crise : `pio run -e thinknode_m2-gaulix -t upload --upload-port COMx` (CH340, ex. COM44).
+Usine PC crise (`GAULIX_PC_NODE`) :
+
+| Champ | Valeur usine |
+|:------|:-------------|
+| Nom long | **Gaulix PC Crise** (souvent renommé opérationnellement, ex. `GMC - PC Gestion Crise`) |
+| Nom court | **🔴** (cercle rouge, emoji UTF-8 4 octets — limite Meshtastic) |
+| Rôle | **CLIENT** |
+| Rebroadcast | **LOCAL_ONLY** |
+| Radio | EU868 / canaux Gaulix |
+
+Flash M2 PC crise : `pio run -e thinknode_m2-gaulix -t upload --upload-port COMx` (CH340, ex. COM45).
+
+### Branding GerMaCrise (client)
+
+Portail / POC : [germacrise.wordpress.com](https://germacrise.wordpress.com/).
+
+| Élément | Valeur |
+|:--------|:-------|
+| Titre UI | **GerMaCrise-meshtastic** |
+| Icône app / favicon / PWA | `public/images/germacrise_icon.png` — mesh + antenne + alerte, fond orange `#E85D04`, motif bleu nuit `#0F172A` (pas de G Gaulix) |
+| PWA `short_name` | **🔴** (même symbole que le nom court radio PC crise) |
+| Master 1024 | `docs/assets/germacrise-icon-1024.png` |
 
 ---
 
@@ -171,4 +191,6 @@ Après déploiement, vérifier :
 | `apps/web/src/core/hooks/useBipperPager.ts` | Commandes locales |
 | `apps/web/src/core/hooks/usePagerAckIngest.ts` | Ingestion DM `Pager ACK` |
 | `public/i18n/locales/*/bipper.json` | i18n |
+| `public/images/germacrise_icon.png` | Icône GerMaCrise (favicons / sidebar / PWA) — orange / mesh |
+| `public/site.webmanifest` | PWA : `short_name` = **🔴** |
 | `.cursor/rules/gaulix-ecosystem-sync.mdc` | Sync 3 projets |

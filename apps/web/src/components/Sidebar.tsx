@@ -162,9 +162,9 @@ export const Sidebar = ({ children }: SidebarProps) => {
         )}
       >
         <img
-          src="/images/gaulix_rond.png"
+          src="/images/germacrise_icon.png"
           alt={t("app.logo")}
-          className="size-10 flex-shrink-0 rounded-xl object-contain"
+          className="size-10 flex-shrink-0 rounded-xl object-cover"
         />
         <h2
           className={cn(

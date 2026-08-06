@@ -301,9 +301,9 @@ export const DeviceInfoPanel = ({
         })}
         <div className="mt-3 flex justify-center px-2 pb-2">
           <img
-            src="/images/gaulix_rond.png"
-            alt="Gaulix"
-            className="h-16 w-16 object-contain"
+            src="/images/germacrise_icon.png"
+            alt="GerMaCrise"
+            className="h-16 w-16 rounded-xl object-cover"
           />
         </div>
       </div>

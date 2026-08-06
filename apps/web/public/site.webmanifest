@@ -1,16 +1,23 @@
 {
   "name": "GerMaCrise-meshtastic",
-  "short_name": "GerMaCrise",
+  "short_name": "🔴",
   "start_url": ".",
-  "description": "GerMaCrise-meshtastic Web App",
+  "description": "GerMaCrise — démonstrateur gestion de crise (mesh Meshtastic)",
   "icons": [
     {
-      "src": "/images/gaulix_rond.png",
-      "sizes": "any",
-      "type": "image/png"
+      "src": "/images/germacrise_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/germacrise_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "theme_color": "#67ea94",
-  "background_color": "#67ea94",
+  "theme_color": "#E85D04",
+  "background_color": "#E85D04",
   "display": "standalone"
 }
