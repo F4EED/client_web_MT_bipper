@@ -119,13 +119,17 @@
     }
   },
   "report": {
-    "description": "Publishes a Meshtastic waypoint (distinct icon per type) on Fr_Balise — visible on web / Android / iOS maps.",
+    "description": "Every button sends a waypoint (PortNum 8) on Alerte (ch. 7) and Fr_Balise (ch. 0) — GPS required.",
     "typeLabel": "Report type",
+    "hintWaypoint": "Waypoint Alerte + Fr_Balise — hardware GPS then phone; no send without a fix.",
+    "hintStatus": "Waypoint Alerte + Fr_Balise — GPS required, alert priority.",
     "categories": {
       "routes": "Roads",
-      "crises": "Crises",
-      "secouristes": "Responders",
-      "status": "Status"
+      "status": "Status",
+      "sdis": "SDIS",
+      "secourisme": "First aid",
+      "crise": "Crisis",
+      "adrasec": "ADRASEC"
     },
     "categoryEmpty": "No report types in this category yet.",
     "posLabel": "Position source",

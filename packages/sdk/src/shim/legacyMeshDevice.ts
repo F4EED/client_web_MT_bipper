@@ -239,6 +239,20 @@ export class MeshDevice {
     );
   }
 
+  /** Sync radio RTC from host clock (`AdminMessage.set_time_only`). */
+  public setTimeOnly(
+    epochSeconds = Math.floor(Date.now() / 1000),
+  ): Promise<number> {
+    return sendAdminMessage(
+      this.client,
+      { case: "setTimeOnly", value: epochSeconds >>> 0 },
+      "self",
+      ChannelNumber.Primary,
+      true,
+      false,
+    );
+  }
+
   public removeFixedPosition(): Promise<number> {
     return sendAdminMessage(
       this.client,

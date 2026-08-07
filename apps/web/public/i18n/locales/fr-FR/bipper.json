@@ -119,13 +119,17 @@
     }
   },
   "report": {
-    "description": "Publie un waypoint Meshtastic (icône distincte par type) sur Fr_Balise — visible sur les cartes web / Android / iOS.",
+    "description": "Chaque bouton envoie un waypoint (PortNum 8) sur Alerte (ch. 7) et Fr_Balise (ch. 0) — GPS requis.",
     "typeLabel": "Type de signalement",
+    "hintWaypoint": "Waypoint Alerte + Fr_Balise — GPS hardware puis smartphone ; envoi bloqué sans position.",
+    "hintStatus": "Waypoint Alerte + Fr_Balise — GPS requis, priorité alerte.",
     "categories": {
       "routes": "Routes",
-      "crises": "Crises",
-      "secouristes": "Secouristes",
-      "status": "Status"
+      "status": "Status",
+      "sdis": "SDIS",
+      "secourisme": "Secourisme",
+      "crise": "Crise",
+      "adrasec": "ADRASEC"
     },
     "categoryEmpty": "Aucun signalement dans cette catégorie pour le moment.",
     "posLabel": "Source de position",

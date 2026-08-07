@@ -18,6 +18,15 @@ export interface WaypointLayerProps {
 
 import { toLngLat } from "@core/utils/geo.ts";
 
+function waypointEmoji(icon: number | undefined): string {
+  if (!icon) return "📍";
+  try {
+    return String.fromCodePoint(icon);
+  } catch {
+    return "📍";
+  }
+}
+
 export const WaypointLayer = ({
   mapRef,
   myNode,
@@ -60,7 +69,7 @@ export const WaypointLayer = ({
         id={waypoint.id}
         lng={lng}
         lat={lat}
-        label={String.fromCodePoint(waypoint.icon) ?? "📍"}
+        label={waypointEmoji(waypoint.icon)}
         longLabel={waypoint.name}
         avatarClassName="bg-amber-400 border-amber-500"
         onClick={(_, e) => onMarkerClick(waypoint, e)}

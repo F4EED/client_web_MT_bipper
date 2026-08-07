@@ -29,12 +29,23 @@ Aucun backend Node n’est requis en production : build → fichiers statiques d
 
 | Route | Écran | Contenu |
 |:------|:------|:--------|
-| `/alerts` | **GerMaCrise** | 4 onglets : **Signalement** (Routes / Crises / Secouristes / Status), **Message**, **Alertes**, **ACK lecture** |
+| `/alerts` | **GerMaCrise** | 4 onglets : **Signalement** (Routes / Status / SDIS / Secourisme / Crise / ADRASEC — matrice `Signalement GerMaCrise_v1.xlsx`), **Message**, **Alertes**, **ACK lecture** |
 | `/settings/bipper` | **Paramétrer le Bipper** | Status, tags **T1–T10**, code, bips |
 | (prévu) | **Signaler POI** | Envoi waypoint / objet POI |
 | `/map` | Carte | Waypoints mesh (dont SOS à styliser) |
 
 Persistance locale (session coordinateur) : clé `localStorage` `gaulix.alertManager.v1` (store Zustand).
+
+### Signalement — objets Alerte + Fr_Balise
+
+Tous les boutons → **waypoint** `WAYPOINT_APP` (PortNum 8), GPS obligatoire, priorité **`ALERT`**, double envoi :
+
+1. **Alerte** (canal 7)  
+2. **Fr_Balise** (canal 0)
+
+Code : `ReportTab.tsx` (deux `sendPacket` WAYPOINT_APP).
+
+**MQTT** : ce n’est pas un bug UI si un objet n’apparaît pas sur le broker — le **PC crise** ne publie pas MQTT en usine ; l’uplink passe par une **passerelle MQTT dédiée** (MQTT activé + uplink canal + portée LoRa). Checklist : firmware `docs/ECOSYSTEME-GAULIX.md` § Checklist diagnostic MQTT.
 
 ---
 

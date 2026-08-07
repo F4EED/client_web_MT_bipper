@@ -198,6 +198,16 @@ export function useConnections() {
         device.setConnectionPhase("configured");
         updateStatus(id, "configured");
         startMaintenanceHeartbeat(id, meshDevice);
+        // Force radio RTC from PC clock once the config handshake is done
+        // (same timing as Android MeshConnectionManager.onNodeDbReady).
+        void meshDevice.setTimeOnly().then(
+          () => log.info("setTimeOnly ok — radio clock synced from PC", { id }),
+          (error) =>
+            log.warn("setTimeOnly failed", {
+              id,
+              message: error instanceof Error ? error.message : String(error),
+            }),
+        );
       };
 
       const unsubConfigComplete = meshDevice.events.onConfigComplete.subscribe(

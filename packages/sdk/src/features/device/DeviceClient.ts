@@ -4,6 +4,7 @@ import type { ReadonlySignal } from "../../core/signals/createStore.ts";
 import { DeviceStatusEnum } from "../../core/transport/Transport.ts";
 import { reboot, rebootOta, shutdown } from "./application/RebootService.ts";
 import { getMetadata } from "./application/GetMetadataUseCase.ts";
+import { setTimeOnly } from "./application/SetTimeOnlyUseCase.ts";
 import { createDeviceStore, type DeviceStore } from "./state/deviceStore.ts";
 
 /**
@@ -72,5 +73,10 @@ export class DeviceClient {
 
   public getMetadata(nodeNum: number): Promise<number> {
     return getMetadata(this.client, nodeNum);
+  }
+
+  /** Sync radio RTC from the host PC clock after configure. */
+  public setTimeOnly(epochSeconds?: number): Promise<number> {
+    return setTimeOnly(this.client, epochSeconds);
   }
 }

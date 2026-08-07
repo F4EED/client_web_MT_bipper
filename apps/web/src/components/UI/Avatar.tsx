@@ -18,6 +18,8 @@ interface AvatarProps {
   className?: string;
   showError?: boolean;
   showFavorite?: boolean;
+  /** Override disc text (e.g. waypoint emoji). Skips node shortName / UNK fallback. */
+  text?: string;
 }
 
 export const Avatar = ({
@@ -26,11 +28,13 @@ export const Avatar = ({
   showError = false,
   showFavorite = false,
   className,
+  text,
 }: AvatarProps) => {
   const { t } = useTranslation();
   const node = useNodeAsProto(nodeNum);
 
-  if (!nodeNum) {
+  // Waypoint markers pass an emoji via `text` and may use a non-node id.
+  if (!nodeNum && text === undefined) {
     return null;
   }
 
@@ -46,7 +50,8 @@ export const Avatar = ({
   const bgColor = getColorFromNodeNum(nodeNum);
   const isLight = isLightColor(bgColor);
   const textColor = isLight ? "#000000" : "#FFFFFF";
-  const initials = displayName.slice(0, 4) || t("unknown.shortName");
+  const initials =
+    text?.trim() || displayName.slice(0, 4) || t("unknown.shortName");
 
   return (
     <div

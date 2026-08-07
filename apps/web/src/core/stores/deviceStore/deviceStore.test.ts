@@ -177,6 +177,7 @@ describe("DeviceStore – traceroutes & waypoints retention + merge on setHardwa
     vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
     const { useDeviceStore } = await freshStore(false);
     const state = useDeviceStore.getState();
+    const sec = (iso: string) => Math.floor(Date.parse(iso) / 1000);
 
     // Old device with myNodeNum=777 and some waypoints (one expired)
     const oldDevice = state.addDevice(1);
@@ -185,14 +186,14 @@ describe("DeviceStore – traceroutes & waypoints retention + merge on setHardwa
 
     oldDevice.setHardware(makeHardware(777));
     oldDevice.addWaypoint(
-      makeWaypoint(1, Date.parse("2024-12-31T23:59:59Z")), // This is expired, will not be added
+      makeWaypoint(1, sec("2024-12-31T23:59:59Z")), // expired, not added
       0,
       0,
       new Date(),
-    ); // expired
+    );
     oldDevice.addWaypoint(makeWaypoint(2, 0), 0, 0, new Date()); // no expire
     oldDevice.addWaypoint(
-      makeWaypoint(3, Date.parse("2026-01-01T00:00:00Z")),
+      makeWaypoint(3, sec("2026-01-01T00:00:00Z")),
       0,
       0,
       new Date(),
@@ -202,7 +203,7 @@ describe("DeviceStore – traceroutes & waypoints retention + merge on setHardwa
 
     // Upsert waypoint by id
     oldDevice.addWaypoint(
-      makeWaypoint(2, Date.parse("2027-01-01T00:00:00Z")),
+      makeWaypoint(2, sec("2027-01-01T00:00:00Z")),
       0,
       0,
       new Date(),
@@ -211,7 +212,7 @@ describe("DeviceStore – traceroutes & waypoints retention + merge on setHardwa
     const wps = useDeviceStore.getState().devices.get(1)!.waypoints;
     expect(wps.length).toBe(2);
     expect(wps.find((w) => w.id === 2)?.expire).toBe(
-      Date.parse("2027-01-01T00:00:00Z"),
+      sec("2027-01-01T00:00:00Z"),
     );
 
     // Retention: push 102 total waypoints -> capped at 100. Oldest evicted

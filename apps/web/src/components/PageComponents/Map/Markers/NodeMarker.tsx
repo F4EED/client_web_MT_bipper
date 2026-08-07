@@ -16,6 +16,7 @@ export const NodeMarker = memo(function NodeMarker({
   id,
   lng,
   lat,
+  label,
   longLabel,
   tooltipLabel,
   hasError,
@@ -68,8 +69,11 @@ export const NodeMarker = memo(function NodeMarker({
             >
               <Avatar
                 nodeNum={id}
+                text={label}
                 className={cn(
                   "border-[1.5px] border-slate-600 shadow-m shadow-slate-600",
+                  // Emoji labels (waypoints) need a slightly larger glyph than node initials.
+                  label.length <= 2 && "text-base font-normal",
                   avatarClassName,
                 )}
                 showError={hasError}

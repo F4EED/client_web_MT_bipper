@@ -380,9 +380,12 @@ function deviceFactory(
             newDevice.neighborInfo = oldStore.neighborInfo;
 
             // Take this opportunity to remove stale waypoints
-            newDevice.waypoints = oldStore.waypoints.filter(
-              (waypoint) => !waypoint?.expire || waypoint.expire > Date.now(),
-            );
+            // Protobuf expire is Unix seconds (0 / INT32_MAX = never).
+            const nowSec = Math.floor(Date.now() / 1000);
+            newDevice.waypoints = oldStore.waypoints.filter((waypoint) => {
+              const expire = waypoint?.expire ?? 0;
+              return expire === 0 || expire === 0x7fffffff || expire > nowSec;
+            });
 
             // Drop old device
             draft.devices.delete(otherId);
@@ -424,6 +427,12 @@ function deviceFactory(
             (wp) => wp.id === waypoint.id,
           );
 
+          // Protobuf expire is Unix seconds (0 / INT32_MAX = never).
+          const nowSec = Math.floor(Date.now() / 1000);
+          const expire = waypoint.expire ?? 0;
+          const alive =
+            expire === 0 || expire === 0x7fffffff || expire > nowSec;
+
           if (index !== -1) {
             const created =
               device.waypoints[index]?.metadata.created ?? new Date();
@@ -435,15 +444,10 @@ function deviceFactory(
             // Remove existing waypoint
             device.waypoints.splice(index, 1);
 
-            // Push new if no expiry or not expired
-            if (waypoint.expire === 0 || waypoint.expire > Date.now()) {
+            if (alive) {
               device.waypoints.push(updatedWaypoint);
             }
-          } else if (
-            // only add if set to never expire or not already expired
-            waypoint.expire === 0 ||
-            (waypoint.expire !== 0 && waypoint.expire < Date.now())
-          ) {
+          } else if (alive) {
             device.waypoints.push({
               ...waypoint,
               metadata: { created: rxTime, from, channel },

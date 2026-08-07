@@ -264,6 +264,8 @@ export class MeshClient {
     replyId?: number,
     emoji?: number,
     packetId?: number,
+    priority: Protobuf.Mesh.MeshPacket_Priority = Protobuf.Mesh
+      .MeshPacket_Priority.UNSET,
   ): Promise<number> {
     this.log.trace(
       Emitter[Emitter.SendPacket],
@@ -295,6 +297,7 @@ export class MeshClient {
       id: packetId ?? generatePacketId(),
       wantAck,
       channel,
+      priority,
     });
 
     const toRadioMessage = create(Protobuf.Mesh.ToRadioSchema, {

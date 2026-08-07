@@ -57,7 +57,6 @@ export function ReportTab() {
   const [category, setCategory] = useState<ReportCategoryId>("routes");
   const [typeId, setTypeId] = useState<ReportTypeId>("axe_inonde");
   const [busy, setBusy] = useState(false);
-  const [browserHasPosition, setBrowserHasPosition] = useState(false);
 
   const categoryTypes = useMemo(
     () => reportTypesForCategory(category),
@@ -69,25 +68,24 @@ export function ReportTab() {
     [categoryTypes, typeId],
   );
 
-  const baliseChannel = useMemo(
-    () => findChannelIndex(channels, ["fr_balise", "frbalise"]),
-    [channels],
-  );
   const alerteChannel = useMemo(
     () => findChannelIndex(channels, ["alerte"]),
     [channels],
   );
-
-  const radioHasPosition = Boolean(
-    myNode?.position?.latitudeI || myNode?.position?.longitudeI,
+  const baliseChannel = useMemo(
+    () => findChannelIndex(channels, ["fr_balise", "frbalise"]),
+    [channels],
   );
-  const canSendPosition = radioHasPosition || browserHasPosition;
-  const needsGps = type?.kind === "waypoint";
-  const canSend =
-    Boolean(meshClient) &&
-    !busy &&
-    Boolean(type) &&
-    (!needsGps || canSendPosition);
+
+  const isValidLatLonI = (latI: number, lonI: number): boolean => {
+    if (!latI || !lonI) return false;
+    const lat = latI * 1e-7;
+    const lon = lonI * 1e-7;
+    return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+  };
+
+  /** Button enabled when connected; GPS resolved at send (hardware then phone). */
+  const canSend = Boolean(meshClient) && !busy && Boolean(type);
 
   useEffect(() => {
     const types = reportTypesForCategory(category);
@@ -97,24 +95,7 @@ export function ReportTab() {
     }
   }, [category, typeId]);
 
-  useEffect(() => {
-    if (radioHasPosition || !navigator.geolocation) {
-      if (radioHasPosition) setBrowserHasPosition(false);
-      return;
-    }
-    let cancelled = false;
-    void readBrowserPosition()
-      .then(() => {
-        if (!cancelled) setBrowserHasPosition(true);
-      })
-      .catch(() => {
-        if (!cancelled) setBrowserHasPosition(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [radioHasPosition]);
-
+  /** (1) hardware / radio, (2) smartphone — null if neither usable. */
   const resolvePosition = async (): Promise<{
     latI: number;
     lonI: number;
@@ -122,15 +103,15 @@ export function ReportTab() {
   } | null> => {
     const radioLat = myNode?.position?.latitudeI ?? 0;
     const radioLon = myNode?.position?.longitudeI ?? 0;
-    if (radioLat || radioLon) {
-      return { latI: radioLat, lonI: radioLon, sourceLabel: "GPS radio" };
+    if (isValidLatLonI(radioLat, radioLon)) {
+      return { latI: radioLat, lonI: radioLon, sourceLabel: "GPS hardware" };
     }
+    if (!navigator.geolocation) return null;
     try {
       const coords = await readBrowserPosition();
-      setBrowserHasPosition(true);
-      return { ...coords, sourceLabel: "GPS terminal" };
+      if (!isValidLatLonI(coords.latI, coords.lonI)) return null;
+      return { ...coords, sourceLabel: "GPS smartphone" };
     } catch {
-      setBrowserHasPosition(false);
       return null;
     }
   };
@@ -146,30 +127,6 @@ export function ReportTab() {
 
     setBusy(true);
     try {
-      if (type.kind === "status") {
-        const channel =
-          alerteChannel !== null
-            ? (alerteChannel as Types.ChannelNumber)
-            : Types.ChannelNumber.Primary;
-        const result = await meshClient.chat.send({
-          text: type.label,
-          destination: "broadcast",
-          channel,
-        });
-        if (result.status === "error") {
-          toast({
-            title: t("toast.sendFailed.title"),
-            description: String(result.error),
-          });
-        } else {
-          toast({
-            title: t("report.sent.title"),
-            description: `${type.emoji} ${type.label}`,
-          });
-        }
-        return;
-      }
-
       const pos = await resolvePosition();
       if (!pos) {
         toast({
@@ -179,13 +136,24 @@ export function ReportTab() {
         return;
       }
 
-      const channel =
-        baliseChannel !== null
-          ? (baliseChannel as Types.ChannelNumber)
-          : Types.ChannelNumber.Primary;
+      if (alerteChannel === null) {
+        toast({
+          title: t("send.noAlerteChannel.title"),
+          description: t("send.noAlerteChannel.description"),
+        });
+        return;
+      }
+      // Dual TX: Alerte (7) + Fr_Balise (0) — PortNum WAYPOINT_APP (8).
+      const channelsToSend = Array.from(
+        new Set([
+          alerteChannel,
+          baliseChannel !== null ? baliseChannel : Types.ChannelNumber.Primary,
+        ]),
+      ) as Types.ChannelNumber[];
 
+      const waypointId = Math.floor(Math.random() * 0x7fffffff) || 1;
       const waypoint = create(Protobuf.Mesh.WaypointSchema, {
-        id: Math.floor(Math.random() * 0x7fffffff) || 1,
+        id: waypointId,
         latitudeI: pos.latI,
         longitudeI: pos.lonI,
         name: reportWaypointName(type),
@@ -194,15 +162,23 @@ export function ReportTab() {
         expire: 0,
         lockedTo: 0,
       });
+      const payload = toBinary(Protobuf.Mesh.WaypointSchema, waypoint);
 
-      await meshClient.sendPacket(
-        toBinary(Protobuf.Mesh.WaypointSchema, waypoint),
-        Protobuf.Portnums.PortNum.WAYPOINT_APP,
-        "broadcast",
-        channel,
-        true,
-        false,
-      );
+      for (const channel of channelsToSend) {
+        await meshClient.sendPacket(
+          payload,
+          Protobuf.Portnums.PortNum.WAYPOINT_APP,
+          "broadcast",
+          channel,
+          true,
+          false,
+          false,
+          undefined,
+          undefined,
+          undefined,
+          Protobuf.Mesh.MeshPacket_Priority.ALERT,
+        );
+      }
       toast({
         title: t("report.sent.title"),
         description: `${type.emoji} ${type.label}`,
@@ -222,7 +198,7 @@ export function ReportTab() {
       <div
         role="tablist"
         aria-label={t("manager.tabs.report")}
-        className="grid grid-cols-4 gap-1 rounded-lg bg-slate-200 p-1 dark:bg-slate-700"
+        className="grid grid-cols-3 gap-1 rounded-lg bg-slate-200 p-1 sm:grid-cols-6 dark:bg-slate-700"
       >
         {REPORT_CATEGORIES.map((cat) => {
           const selected = category === cat;
@@ -280,6 +256,12 @@ export function ReportTab() {
           })}
         </div>
       )}
+
+      {type ? (
+        <Subtle className="text-xs text-center">
+          {t("report.hintWaypoint")}
+        </Subtle>
+      ) : null}
 
       <Button type="button" disabled={!canSend} onClick={() => void send()}>
         {type ? `${type.emoji} ${t("report.submit")}` : t("report.submit")}

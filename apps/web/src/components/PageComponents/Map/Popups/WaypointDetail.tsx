@@ -54,7 +54,16 @@ export const WaypointDetail = ({ waypoint, myNode }: WaypointDetailProps) => {
           id={`wp-${waypoint.id}-title`}
           className="flex items-center gap-2 font-semibold text-slate-900"
         >
-          <span aria-hidden>{String.fromCodePoint(waypoint.icon) ?? "📍"}</span>
+          <span aria-hidden>
+            {(() => {
+              if (!waypoint.icon) return "📍";
+              try {
+                return String.fromCodePoint(waypoint.icon);
+              } catch {
+                return "📍";
+              }
+            })()}
+          </span>
           <span>{waypoint.name}</span>
         </h3>
       </header>
