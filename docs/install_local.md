@@ -17,11 +17,44 @@ bash install.sh
 2. Attendre la fin (quelques minutes)  
 3. Ouvrir **Chrome** ou **Chromium** sur : **http://localhost:5173**
 
+L’install crée aussi une **icône GerMaCrise** sur le Bureau et dans le menu Applications.
+
 ### Relancer plus tard
 
+| Méthode | Action |
+|:--------|:-------|
+| **Icône Bureau** | Double-clic sur **GerMaCrise** |
+| **Menu Applications** | Chercher **GerMaCrise** |
+| **Ligne de commande** | `~/demarrer-GerMaCrise.sh` |
+
+Une fenêtre terminal s’ouvre : **la laisser ouverte** pendant l’utilisation. Arrêt : `Ctrl+C`.
+
+### Icône Bureau — si le double-clic est bloqué
+
+Sur GNOME / Cinnamon, au premier clic :
+
+1. Clic droit sur l’icône **GerMaCrise**  
+2. **Autoriser le lancement** (ou *Allow Launching*)
+
+Ou recréer l’icône :
+
 ```bash
-~/demarrer-GerMaCrise.sh
+~/GerMaCrise/creer-icone.sh
 ```
+
+(adapter si le dossier d’install n’est pas `~/GerMaCrise`)
+
+### Créer l’icône à la main (déjà installé)
+
+```bash
+# Si GerMaCrise est dans ~/GerMaCrise :
+~/GerMaCrise/creer-icone.sh
+
+# Sinon, depuis le dossier du projet :
+bash creer-icone.sh
+```
+
+Fichier créé : `~/Bureau/GerMaCrise.desktop` (ou `~/Desktop/…`).
 
 ---
 
@@ -49,17 +82,15 @@ Si `install.sh` affiche `<!DOCTYPE html>` : mauvaise URL. Recopier **exactement*
 
 ## Pour les administrateurs
 
-Détail technique (Node 22, pnpm, build serveur, Docker) :
-
 - [BIPPER-WEB.md](./BIPPER-WEB.md)
 - [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md)
 - [INSTALL-DOCKER.md](./INSTALL-DOCKER.md)
 
-Fichiers :
-
 | Fichier | Rôle |
 |:--------|:-----|
-| [`install.sh`](../install.sh) | Install + démarrage Debian |
+| [`install.sh`](../install.sh) | Install + démarrage + icône Debian |
 | [`install.bat`](../install.bat) | Install Windows |
-| `~/GerMaCrise/demarrer.sh` | Relance Debian |
+| `~/GerMaCrise/demarrer.sh` | Lance le serveur |
+| `~/GerMaCrise/GerMaCrise.desktop` | Raccourci (icône) |
+| `~/GerMaCrise/creer-icone.sh` | Recrée l’icône Bureau / menu |
 | `demarrer-GerMaCrise.bat` | Relance Windows |

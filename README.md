@@ -22,7 +22,7 @@ bash install.sh
 ```
 
 Puis **Chrome / Chromium** → **http://localhost:5173**  
-Relancer : `~/demarrer-GerMaCrise.sh`
+Relancer : icône **GerMaCrise** sur le Bureau (ou `~/demarrer-GerMaCrise.sh`)
 
 ### Windows — 1 double-clic
 

@@ -5,3 +5,6 @@ scripts/install-local.sh text eol=lf
 install.sh text eol=lf
 scripts/install-local.sh text eol=lf
 
+
+creer-icone.sh text eol=lf
+
