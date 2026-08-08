@@ -16,17 +16,20 @@ Guide : **[docs/install_local.md](docs/install_local.md)**.
 
 ### Debian — 2 commandes
 
-\\ash
+`ash
 wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 bash install.sh
-\
+`
+
 Puis **Chrome / Chromium** → **http://localhost:5173**  
-Relancer : \~/demarrer-GerMaCrise.sh
+Relancer : ~/demarrer-GerMaCrise.sh
+
 ### Windows — 1 double-clic
 
-Double-cliquer **\install.bat\**.  
+Double-cliquer **install.bat**.  
 Puis **Chrome / Edge** → **http://localhost:5173**  
-Relancer : \demarrer-GerMaCrise.bat
+Relancer : demarrer-GerMaCrise.bat
+
 Serveur / Docker : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
 
 ---
