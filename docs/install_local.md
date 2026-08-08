@@ -15,19 +15,29 @@ Puis **Chrome / Chromium** → **http://localhost:5173**
 
 Relancer : icône **GerMaCrise** sur le Bureau (ou `~/demarrer-GerMaCrise.sh`).
 
-Recréer l’icône (XFCE, MATE, Cinnamon, GNOME, …) :
+Recréer l’icône / entrée menu (XFCE, MATE, Cinnamon, GNOME, …) :
 
 ```bash
-bash ~/GerMaCrise/creer-icone.sh
+cd ~/GerMaCrise && git pull && bash creer-icone.sh
 ```
 
-Ça place sur le Bureau **GerMaCrise.desktop** et **GerMaCrise.sh** (double-clic).  
-Sous XFCE, si le `.desktop` s’ouvre en texte : clic droit → Propriétés → cocher **Autoriser l’exécution**, ou utiliser **GerMaCrise.sh**.
+Puis dans le menu Applications, cherchez **GerMaCrise** (ou « crise »).  
+Aussi sur le Bureau : **GerMaCrise.desktop** et **GerMaCrise.sh**.
+
+Si le menu ne liste toujours rien :
+
+```bash
+sudo cp ~/.local/share/applications/germa-crise.desktop /usr/local/share/applications/
+sudo update-desktop-database
+```
+
+Puis déconnexion / reconnexion (ou redémarrage du panneau XFCE).
 
 Voir l’environnement graphique :
 
 ```bash
 echo "${XDG_CURRENT_DESKTOP:-?} / ${DESKTOP_SESSION:-?}"
+ls -la ~/.local/share/applications/germa-crise.desktop
 ```
 
 ---
