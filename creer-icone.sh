@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Recree l'icone Bureau / menu Applications pour GerMaCrise (Debian).
+# Compatible XFCE, MATE, Cinnamon, LXDE/LXQt, GNOME.
 # Usage : bash ~/GerMaCrise/creer-icone.sh
 set -euo pipefail
 
@@ -12,9 +13,11 @@ if [[ ! -f "${INSTALL_DIR}/package.json" ]]; then
   exit 1
 fi
 
+DE="${XDG_CURRENT_DESKTOP:-${DESKTOP_SESSION:-inconnu}}"
+echo "Environnement detecte : ${DE}"
+
 ICON_SRC="${INSTALL_DIR}/apps/web/public/images/germacrise_icon.png"
 if [[ ! -f "${ICON_SRC}" ]]; then
-  # repli favicon si image manquante
   if [[ -f "${INSTALL_DIR}/apps/web/public/favicon.png" ]]; then
     ICON_SRC="${INSTALL_DIR}/apps/web/public/favicon.png"
   else
@@ -23,7 +26,7 @@ if [[ ! -f "${ICON_SRC}" ]]; then
   fi
 fi
 
-# Dossier Bureau reel (xdg), pas un faux ~/Bureau cree par erreur
+# Dossier Bureau reel (xdg) — marche FR (Bureau) et EN (Desktop)
 if command -v xdg-user-dir >/dev/null 2>&1; then
   DESKTOP_DIR="$(xdg-user-dir DESKTOP)"
 fi
@@ -42,15 +45,15 @@ APPS_DIR="${HOME}/.local/share/applications"
 ICON_THEME_DIR="${HOME}/.local/share/icons/hicolor/256x256/apps"
 mkdir -p "${APPS_DIR}" "${DESKTOP_DIR}" "${ICON_THEME_DIR}"
 
-# Icone theme Freedesktop (plus fiable qu'un chemin absolu pour GNOME)
 cp -f "${ICON_SRC}" "${ICON_THEME_DIR}/germa-crise.png"
+# Chemin absolu : souvent mieux reconnu sous XFCE / MATE
+ICON_ABS="${ICON_THEME_DIR}/germa-crise.png"
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then
   gtk-update-icon-cache -f "${HOME}/.local/share/icons/hicolor" >/dev/null 2>&1 || true
 fi
 
 # Script de demarrage
-if [[ ! -x "${INSTALL_DIR}/demarrer.sh" ]]; then
-  cat > "${INSTALL_DIR}/demarrer.sh" <<EOF
+cat > "${INSTALL_DIR}/demarrer.sh" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 cd "${INSTALL_DIR}"
@@ -69,24 +72,32 @@ if command -v xdg-open >/dev/null 2>&1; then
 fi
 exec pnpm --filter meshtastic-web exec vite -- --host 0.0.0.0 --port ${PORT}
 EOF
-  chmod +x "${INSTALL_DIR}/demarrer.sh"
-fi
+chmod +x "${INSTALL_DIR}/demarrer.sh"
 ln -sfn "${INSTALL_DIR}/demarrer.sh" "${HOME}/demarrer-GerMaCrise.sh"
 
-# x-terminal-emulator = alternatif Debian (gnome-terminal, xfce4-terminal, ...)
-# plus fiable que Terminal=true seul
-TERMINAL_EXEC="x-terminal-emulator -e ${INSTALL_DIR}/demarrer.sh"
-if ! command -v x-terminal-emulator >/dev/null 2>&1; then
-  if command -v gnome-terminal >/dev/null 2>&1; then
-    TERMINAL_EXEC="gnome-terminal --working-directory=${INSTALL_DIR} -- ${INSTALL_DIR}/demarrer.sh"
-  elif command -v xfce4-terminal >/dev/null 2>&1; then
-    TERMINAL_EXEC="xfce4-terminal --working-directory=${INSTALL_DIR} -e ${INSTALL_DIR}/demarrer.sh"
-  elif command -v konsole >/dev/null 2>&1; then
-    TERMINAL_EXEC="konsole --workdir ${INSTALL_DIR} -e ${INSTALL_DIR}/demarrer.sh"
-  else
-    TERMINAL_EXEC="${INSTALL_DIR}/demarrer.sh"
-  fi
-fi
+# Lancement terminal : portable (Terminal=true) + Exec simple
+# Sur XFCE / MATE / LXDE / GNOME, le DE ouvre le terminal par defaut.
+EXEC_LINE="${INSTALL_DIR}/demarrer.sh"
+USE_TERMINAL_KEY=true
+
+# Si on peut cibler explicitement un terminal (plus propre sous XFCE)
+case "${DE,,}" in
+  *xfce*)
+    if command -v xfce4-terminal >/dev/null 2>&1; then
+      EXEC_LINE="xfce4-terminal --working-directory=${INSTALL_DIR} -e ${INSTALL_DIR}/demarrer.sh"
+      USE_TERMINAL_KEY=false
+    elif command -v x-terminal-emulator >/dev/null 2>&1; then
+      EXEC_LINE="x-terminal-emulator -e ${INSTALL_DIR}/demarrer.sh"
+      USE_TERMINAL_KEY=false
+    fi
+    ;;
+  *mate*|*cinnamon*|*lxde*|*lxqt*|*gnome*|*ubuntu*|*unity*)
+    if command -v x-terminal-emulator >/dev/null 2>&1; then
+      EXEC_LINE="x-terminal-emulator -e ${INSTALL_DIR}/demarrer.sh"
+      USE_TERMINAL_KEY=false
+    fi
+    ;;
+esac
 
 DESKTOP_FILE="${INSTALL_DIR}/GerMaCrise.desktop"
 cat > "${DESKTOP_FILE}" <<EOF
@@ -95,10 +106,10 @@ Version=1.0
 Type=Application
 Name=GerMaCrise
 Comment=Demarrer le serveur web GerMaCrise
-Exec=${TERMINAL_EXEC}
+Exec=${EXEC_LINE}
 Path=${INSTALL_DIR}
-Icon=germa-crise
-Terminal=false
+Icon=${ICON_ABS}
+Terminal=${USE_TERMINAL_KEY}
 Categories=Network;Utility;
 StartupNotify=true
 EOF
@@ -109,35 +120,36 @@ cp -f "${DESKTOP_FILE}" "${DESKTOP_LAUNCHER}"
 cp -f "${DESKTOP_FILE}" "${APPS_DIR}/germa-crise.desktop"
 chmod +x "${DESKTOP_LAUNCHER}" "${APPS_DIR}/germa-crise.desktop"
 
-# Marquer comme fiable (GNOME / Cinnamon) — a faire dans la session graphique
-trust_desktop() {
-  local f="$1"
-  [[ -f "$f" ]] || return 0
-  if command -v gio >/dev/null 2>&1; then
-    gio set "$f" "metadata::trusted" true 2>/dev/null || true
-    # Variante vue sur certains GNOME
-    gio set -t string "$f" "metadata::xfce-exe-checksum" "$(sha256sum "$f" | awk '{print $1}')" 2>/dev/null || true
-  fi
-}
-trust_desktop "${DESKTOP_LAUNCHER}"
-trust_desktop "${APPS_DIR}/germa-crise.desktop"
+# Repli ultra-simple : script visible sur le Bureau (double-clic OK sous XFCE)
+DESKTOP_SH="${DESKTOP_DIR}/GerMaCrise.sh"
+cat > "${DESKTOP_SH}" <<EOF
+#!/usr/bin/env bash
+exec "${INSTALL_DIR}/demarrer.sh"
+EOF
+chmod +x "${DESKTOP_SH}"
+
+# Confiance lanceur (utile surtout GNOME/Cinnamon ; inoffensif ailleurs)
+if command -v gio >/dev/null 2>&1; then
+  gio set "${DESKTOP_LAUNCHER}" "metadata::trusted" true 2>/dev/null || true
+fi
 
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database "${APPS_DIR}" 2>/dev/null || true
 fi
 
-echo ""
-echo "Icone creee :"
-echo "  • Bureau : ${DESKTOP_LAUNCHER}"
-echo "  • Menu   : Applications → GerMaCrise"
-echo "  • Script : ~/demarrer-GerMaCrise.sh"
-echo ""
-if [[ ! -f "${DESKTOP_LAUNCHER}" ]]; then
-  echo "ECHEC : fichier Bureau introuvable."
-  exit 1
+# Rafraichir le Bureau XFCE si present
+if command -v xfdesktop >/dev/null 2>&1; then
+  xfdesktop --reload >/dev/null 2>&1 || true
 fi
-echo "Si le double-clic est bloque : clic droit sur l'icone → Autoriser le lancement."
-echo "Si rien n'apparait sur le Bureau (GNOME) :"
-echo "  sudo apt-get install -y gnome-shell-extension-desktop-icons-ng"
-echo "  puis : bash ${INSTALL_DIR}/creer-icone.sh"
+
+echo ""
+echo "Icone / lanceurs crees :"
+echo "  • Bureau (.desktop) : ${DESKTOP_LAUNCHER}"
+echo "  • Bureau (.sh)      : ${DESKTOP_SH}"
+echo "  • Menu Applications : GerMaCrise"
+echo "  • Script            : ~/demarrer-GerMaCrise.sh"
+echo ""
+echo "Sous XFCE : si le .desktop s'ouvre comme texte,"
+echo "  clic droit → Proprietes → cocher « Autoriser l'execution »"
+echo "  ou double-cliquer plutot sur GerMaCrise.sh"
 echo ""
