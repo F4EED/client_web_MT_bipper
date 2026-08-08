@@ -1,11 +1,7 @@
 #Requires -Version 5.1
-<#
-  GerMaCrise - installation simple Windows 10/11
-
-    irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
-
-  ou double-clic install.bat
-#>
+# GerMaCrise - installation simple Windows 10/11
+#   irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
+#   ou double-clic install.bat
 $ErrorActionPreference = "Stop"
 
 $RepoUrl = "https://github.com/F4EED/client_web_MT_bipper.git"
@@ -30,7 +26,6 @@ function Refresh-Path {
     if ($machine -and $user) { $env:Path = "$machine;$user" }
     elseif ($machine) { $env:Path = $machine }
     elseif ($user) { $env:Path = $user }
-    # Eviter que meshtastic.exe (pip) se mette devant npm/pnpm
     $parts = $env:Path -split ";" | Where-Object {
         $_ -and ($_ -notmatch '(?i)[\\/]Python[\\/].*[\\/]Scripts') -and ($_ -notmatch '(?i)meshtastic')
     }
@@ -156,12 +151,12 @@ $creerIcone = Join-Path $InstallDir "creer-icone.ps1"
 if (Test-Path $creerIcone) {
     & powershell -NoProfile -ExecutionPolicy Bypass -File $creerIcone
 } else {
-    Write-Host "creer-icone.ps1 absent — raccourci non cree."
+    Write-Host "creer-icone.ps1 absent - raccourci non cree."
 }
 
 Write-Host ""
 Write-Host "========================================"
-Write-Host "  C'est pret."
+Write-Host "  C est pret."
 Write-Host ""
 Write-Host "  Ouvrez Chrome / Edge :"
 Write-Host ("    http://localhost:{0}" -f $Port)

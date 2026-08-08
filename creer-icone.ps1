@@ -1,9 +1,7 @@
 #Requires -Version 5.1
-<#
-  Recree le raccourci Bureau GerMaCrise (Windows).
-  Usage :
-    powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\creer-icone.ps1"
-#>
+# Recree le raccourci Bureau GerMaCrise (Windows).
+# Usage:
+#   powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\creer-icone.ps1"
 $ErrorActionPreference = "Stop"
 
 $PnpmVersion = "11.9.0"
@@ -21,7 +19,6 @@ if (-not (Test-Path (Join-Path $InstallDir "package.json"))) {
 }
 
 function Get-DesktopDir {
-    # OneDrive / FR / EN : GetFolderPath est la source de verite
     $desktop = [Environment]::GetFolderPath("Desktop")
     if ($desktop -and (Test-Path $desktop)) { return $desktop }
     foreach ($name in @("Bureau", "Desktop")) {
@@ -113,7 +110,6 @@ $lnkOk = $false
 try {
     $w = New-Object -ComObject WScript.Shell
     $s = $w.CreateShortcut($desktopLnk)
-    # cmd.exe lance mieux les .bat depuis un .lnk
     $s.TargetPath = "$env:ComSpec"
     $s.Arguments = "/c `"$demarrerBat`""
     $s.WorkingDirectory = $InstallDir
@@ -131,7 +127,7 @@ Write-Host ("Bureau detecte : {0}" -f $desktopDir)
 if ($lnkOk) {
     Write-Host ("Raccourci : {0}" -f $desktopLnk)
 } else {
-    Write-Host "Echec .lnk — utilisez GerMaCrise.bat sur le Bureau."
+    Write-Host "Echec .lnk - utilisez GerMaCrise.bat sur le Bureau."
 }
 Write-Host ("Bat       : {0}" -f $desktopBat)
 Write-Host ("Aussi     : {0}" -f (Join-Path $env:USERPROFILE "demarrer-GerMaCrise.bat"))
