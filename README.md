@@ -75,8 +75,14 @@ chmod +x scripts/install-local.sh
 Si tu télécharges le script seul, URL **raw** uniquement (pas `/blob/…`) :
 
 ```bash
+# avec wget
+wget -O install-local.sh \
+  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
+
+# ou avec curl
 curl -fsSL -o install-local.sh \
   https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
+
 head -n 1 install-local.sh   # PAS <!DOCTYPE html>
 chmod +x install-local.sh && ./install-local.sh --start-dev
 ```

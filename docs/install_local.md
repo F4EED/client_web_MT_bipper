@@ -102,12 +102,16 @@ Si tu utilises `curl`/`wget`, **ne pas** copier l’URL de la page GitHub (`…/
 Utiliser uniquement l’URL **raw** :
 
 ```bash
-# BON — fichier brut
+# BON — fichier brut (wget)
+wget -O install-local.sh \
+  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
+
+# BON — fichier brut (curl)
 curl -fsSL -o install-local.sh \
   https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
 
 # MAUVAIS — page HTML (provoque : ligne 7: <!DOCTYPE html>)
-# curl … https://github.com/F4EED/client_web_MT_bipper/blob/main/scripts/install-local.sh
+# wget/curl … https://github.com/F4EED/client_web_MT_bipper/blob/main/scripts/install-local.sh
 ```
 
 Vérification :
