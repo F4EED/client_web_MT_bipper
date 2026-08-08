@@ -80,14 +80,7 @@ say "4/4 — Installation des composants (patientez)…"
 cd "${INSTALL_DIR}"
 pnpm install
 
-ICON_PNG="${INSTALL_DIR}/apps/web/public/images/germacrise_icon.png"
-DESKTOP_DIR="${HOME}/Bureau"
-[[ -d "${DESKTOP_DIR}" ]] || DESKTOP_DIR="${HOME}/Desktop"
-APPS_DIR="${HOME}/.local/share/applications"
-mkdir -p "${APPS_DIR}"
-[[ -d "${DESKTOP_DIR}" ]] || mkdir -p "${DESKTOP_DIR}"
-
-# Script de démarrage (terminal)
+# demarrer.sh (aussi créé/rafraîchi par creer-icone.sh)
 cat > "${INSTALL_DIR}/demarrer.sh" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
@@ -110,55 +103,13 @@ EOF
 chmod +x "${INSTALL_DIR}/demarrer.sh"
 ln -sfn "${INSTALL_DIR}/demarrer.sh" "${HOME}/demarrer-GerMaCrise.sh"
 
-# Fichier .desktop (icône cliquable)
-DESKTOP_FILE="${INSTALL_DIR}/GerMaCrise.desktop"
-cat > "${DESKTOP_FILE}" <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=GerMaCrise
-Comment=Démarrer le serveur web GerMaCrise
-Exec=${INSTALL_DIR}/demarrer.sh
-Path=${INSTALL_DIR}
-Icon=${ICON_PNG}
-Terminal=true
-Categories=Network;Utility;
-StartupNotify=true
-EOF
-chmod +x "${DESKTOP_FILE}"
-
-# Copie Bureau + menu Applications
-cp -f "${DESKTOP_FILE}" "${DESKTOP_DIR}/GerMaCrise.desktop"
-chmod +x "${DESKTOP_DIR}/GerMaCrise.desktop"
-cp -f "${DESKTOP_FILE}" "${APPS_DIR}/germa-crise.desktop"
-chmod +x "${APPS_DIR}/germa-crise.desktop"
-
-# GNOME / Cinnamon : autoriser le lancement depuis le Bureau
-if have gio; then
-  gio set "${DESKTOP_DIR}/GerMaCrise.desktop" metadata::trusted true 2>/dev/null || true
+# Icône Bureau / menu — logique unique dans creer-icone.sh
+if [[ -f "${INSTALL_DIR}/creer-icone.sh" ]]; then
+  say "Création de l'icône Bureau…"
+  bash "${INSTALL_DIR}/creer-icone.sh" || true
+else
+  echo "Avertissement : creer-icone.sh absent — icône non créée."
 fi
-if have update-desktop-database; then
-  update-desktop-database "${APPS_DIR}" 2>/dev/null || true
-fi
-
-# Script pour recréer l'icône plus tard
-cat > "${INSTALL_DIR}/creer-icone.sh" <<EOF
-#!/usr/bin/env bash
-set -euo pipefail
-INSTALL_DIR="${INSTALL_DIR}"
-ICON_PNG="${ICON_PNG}"
-DESKTOP_DIR="${HOME}/Bureau"
-[[ -d "\${DESKTOP_DIR}" ]] || DESKTOP_DIR="${HOME}/Desktop"
-APPS_DIR="${HOME}/.local/share/applications"
-mkdir -p "\${APPS_DIR}" "\${DESKTOP_DIR}"
-cp -f "\${INSTALL_DIR}/GerMaCrise.desktop" "\${DESKTOP_DIR}/GerMaCrise.desktop"
-cp -f "\${INSTALL_DIR}/GerMaCrise.desktop" "\${APPS_DIR}/germa-crise.desktop"
-chmod +x "\${DESKTOP_DIR}/GerMaCrise.desktop" "\${APPS_DIR}/germa-crise.desktop"
-command -v gio >/dev/null && gio set "\${DESKTOP_DIR}/GerMaCrise.desktop" metadata::trusted true 2>/dev/null || true
-echo "Icône créée sur le Bureau : \${DESKTOP_DIR}/GerMaCrise.desktop"
-echo "Si le double-clic est bloqué : clic droit → Autoriser le lancement."
-EOF
-chmod +x "${INSTALL_DIR}/creer-icone.sh"
 
 echo ""
 echo "========================================"
@@ -174,7 +125,8 @@ echo "       • ou : ~/demarrer-GerMaCrise.sh"
 echo ""
 echo "  Si l'icône Bureau refuse de démarrer :"
 echo "       clic droit → Autoriser le lancement"
-echo "  (ou : ${INSTALL_DIR}/creer-icone.sh )"
+echo "  Recréer l'icône :"
+echo "       bash ${INSTALL_DIR}/creer-icone.sh"
 echo "========================================"
 echo ""
 echo "Démarrage… (fenêtre à laisser ouverte)"

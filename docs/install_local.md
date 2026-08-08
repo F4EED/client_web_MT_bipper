@@ -16,7 +16,18 @@ Puis **Chrome / Chromium** → **http://localhost:5173**
 Relancer : icône **GerMaCrise** sur le Bureau (ou `~/demarrer-GerMaCrise.sh`).
 
 Si l’icône refuse de démarrer : clic droit → **Autoriser le lancement**.  
-Recréer l’icône : `~/GerMaCrise/creer-icone.sh`
+Recréer l’icône :
+
+```bash
+bash ~/GerMaCrise/creer-icone.sh
+```
+
+Sous GNOME, si le Bureau n’affiche aucune icône :
+
+```bash
+sudo apt-get install -y gnome-shell-extension-desktop-icons-ng
+bash ~/GerMaCrise/creer-icone.sh
+```
 
 ---
 
