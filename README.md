@@ -22,13 +22,20 @@ bash install.sh
 ```
 
 Puis **Chrome / Chromium** → **http://localhost:5173**  
-Relancer : icône **GerMaCrise** sur le Bureau (ou `~/demarrer-GerMaCrise.sh`)
+Relancer : icône **GerMaCrise** sur le Bureau.
 
-### Windows — 1 double-clic
+### Windows 11 — 1 commande PowerShell
 
-Double-cliquer **`install.bat`**.  
+Ouvrir **Terminal**, coller :
+
+```powershell
+irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
+```
+
 Puis **Chrome / Edge** → **http://localhost:5173**  
-Relancer : `demarrer-GerMaCrise.bat`
+Relancer : raccourci **GerMaCrise** sur le Bureau.
+
+Variante : double-clic sur **`install.bat`** (ZIP du dépôt).
 
 Serveur / Docker : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
 
