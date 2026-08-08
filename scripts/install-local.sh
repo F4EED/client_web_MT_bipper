@@ -58,18 +58,29 @@ install_packages() {
     echo "skip-apt : installation manuelle de git / nodejs si besoin"
     return 0
   fi
-  if have_cmd git && have_cmd node; then
+
+  local need_git=0 need_node=0
+  have_cmd git || need_git=1
+  if ! have_cmd node; then
+    need_node=1
+  else
     local major
     major="$(node -v | sed 's/^v//' | cut -d. -f1)"
-    if [[ "$major" -ge 20 ]]; then
-      return 0
+    # Node 20 + corepack + pnpm 11 → ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING
+    # On installe Node 22 LTS pour les installs neuves / trop anciennes.
+    if [[ "$major" -lt 22 ]]; then
+      need_node=1
     fi
   fi
 
-  step "Installation dépendances système (git, curl, Node.js 20) — Debian/apt"
+  if [[ "$need_git" -eq 0 && "$need_node" -eq 0 ]]; then
+    return 0
+  fi
+
+  step "Installation dépendances système (git, curl, Node.js 22) — Debian/apt"
   if ! have_cmd apt-get; then
     echo "apt-get introuvable. Ce script cible Debian (ou Ubuntu)." >&2
-    echo "Installez Git + Node.js 20+ manuellement, puis relancez avec --skip-apt." >&2
+    echo "Installez Git + Node.js 22+ manuellement, puis relancez avec --skip-apt." >&2
     return 0
   fi
   if ! have_cmd sudo; then
@@ -78,9 +89,9 @@ install_packages() {
   fi
   sudo apt-get update -y
   sudo apt-get install -y git curl ca-certificates gnupg
-  if ! have_cmd node || [[ "$(node -v | sed 's/^v//' | cut -d. -f1)" -lt 20 ]]; then
-    # Paquet Debian « nodejs » est souvent trop vieux → NodeSource 20.x
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  if [[ "$need_node" -eq 1 ]]; then
+    # NodeSource 22.x (évite le bug corepack/pnpm 11 sous Node 20)
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
     sudo apt-get install -y nodejs
   fi
 }
@@ -115,13 +126,18 @@ if ! have_cmd git; then
   exit 1
 fi
 if ! have_cmd node; then
-  echo "Node.js 20+ est requis (https://nodejs.org/)." >&2
+  echo "Node.js 22+ est requis (https://nodejs.org/)." >&2
   exit 1
 fi
 
 node_major="$(node -v | sed 's/^v//' | cut -d. -f1)"
 if [[ "$node_major" -lt 20 ]]; then
-  echo "Node $(node -v) détecté — version 20+ recommandée." >&2
+  echo "Node $(node -v) détecté — trop ancien (minimum 20, recommandé 22)." >&2
+  exit 1
+fi
+if [[ "$node_major" -eq 20 ]]; then
+  echo "Avertissement : Node 20 + corepack/pnpm 11 peut échouer (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING)." >&2
+  echo "Le script installera pnpm via npm (sans corepack). Préférez Node 22 si possible." >&2
 fi
 
 echo "Node : $(node -v) | npm : $(npm -v) | Git : $(git --version)"
@@ -152,24 +168,31 @@ fi
 
 cd "$REPO_ROOT"
 
-step "Activation pnpm@${PNPM_VERSION}"
+# corepack + pnpm 11 sous Node 20 → ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING
+# On installe pnpm avec npm -g (ou npx), sans passer par corepack.
+step "Activation pnpm@${PNPM_VERSION} (sans corepack)"
 PNPM=(pnpm)
-if have_cmd pnpm; then
+pnpm_ok=0
+if have_cmd pnpm && pnpm -v >/dev/null 2>&1; then
   echo "pnpm déjà disponible : $(pnpm -v)"
-elif have_cmd corepack; then
-  # Sous Windows, corepack enable peut échouer (EPERM sur Program Files) → repli npx
-  if corepack enable >/dev/null 2>&1 && corepack prepare "pnpm@${PNPM_VERSION}" --activate >/dev/null 2>&1 && have_cmd pnpm; then
-    echo "pnpm via corepack : $(pnpm -v)"
-  else
-    echo "corepack indisponible (souvent EPERM sous Windows) — repli npx pnpm@${PNPM_VERSION}"
-    PNPM=(npx "pnpm@${PNPM_VERSION}")
-  fi
-else
-  echo "pnpm absent — utilisation de npx pnpm@${PNPM_VERSION}"
-  PNPM=(npx "pnpm@${PNPM_VERSION}")
+  pnpm_ok=1
 fi
-if ! have_cmd pnpm && [[ "${PNPM[0]}" == "pnpm" ]]; then
-  PNPM=(npx "pnpm@${PNPM_VERSION}")
+if [[ "$pnpm_ok" -eq 0 ]]; then
+  echo "Installation de pnpm@${PNPM_VERSION} via npm -g …"
+  if have_cmd sudo; then
+    sudo npm install -g "pnpm@${PNPM_VERSION}" || npm install -g "pnpm@${PNPM_VERSION}" || true
+  else
+    npm install -g "pnpm@${PNPM_VERSION}" || true
+  fi
+  hash -r 2>/dev/null || true
+  if have_cmd pnpm && pnpm -v >/dev/null 2>&1; then
+    echo "pnpm via npm -g : $(pnpm -v)"
+    pnpm_ok=1
+  fi
+fi
+if [[ "$pnpm_ok" -eq 0 ]]; then
+  echo "Repli : npx pnpm@${PNPM_VERSION}"
+  PNPM=(npx --yes "pnpm@${PNPM_VERSION}")
 fi
 
 step "pnpm install (peut prendre plusieurs minutes)"

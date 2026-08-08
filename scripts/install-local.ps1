@@ -145,18 +145,28 @@ if (-not $isRepo) {
 
 Set-Location $repoRoot
 
-Write-Step "Activation pnpm@$PnpmVersion"
+# Eviter corepack + pnpm 11 sous Node 20 (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING)
+Write-Step "Activation pnpm@$PnpmVersion (sans corepack)"
 $UseNpxPnpm = $true
-try {
-    & corepack enable 2>$null | Out-Null
-    & corepack prepare "pnpm@$PnpmVersion" --activate
-    Refresh-Path
-    if (Test-Cmd "pnpm") {
-        $UseNpxPnpm = $false
-        Write-Host "pnpm : $(pnpm -v)"
+$pnpmWorks = $false
+if (Test-Cmd "pnpm") {
+    try {
+        $null = & pnpm -v 2>$null
+        if ($LASTEXITCODE -eq 0) { $pnpmWorks = $true; $UseNpxPnpm = $false; Write-Host "pnpm : $(pnpm -v)" }
+    } catch { }
+}
+if (-not $pnpmWorks) {
+    Write-Host "Installation pnpm@$PnpmVersion via npm -g …"
+    try {
+        & npm install -g "pnpm@$PnpmVersion"
+        Refresh-Path
+        if (Test-Cmd "pnpm") {
+            $null = & pnpm -v 2>$null
+            if ($LASTEXITCODE -eq 0) { $pnpmWorks = $true; $UseNpxPnpm = $false; Write-Host "pnpm : $(pnpm -v)" }
+        }
+    } catch {
+        Write-Host "npm -g pnpm a echoue, repli npx" -ForegroundColor Yellow
     }
-} catch {
-    Write-Host "corepack indisponible, repli sur npx pnpm@$PnpmVersion" -ForegroundColor Yellow
 }
 if ($UseNpxPnpm) {
     Write-Host "Utilisation de : npx pnpm@$PnpmVersion …"

@@ -29,7 +29,7 @@ Node.js + pnpm servent uniquement à **télécharger les dépendances**, **compi
 | Outil | Version | Rôle |
 |:------|:--------|:-----|
 | **Git** | récent | Cloner le dépôt |
-| **Node.js** | **20 LTS** ou plus | Runtime JS |
+| **Node.js** | **22 LTS** recommandé (20+ minimum) | Runtime JS — éviter Node 20 + corepack/pnpm 11 |
 | **pnpm** | **11.9.0** | Gestionnaire de paquets du monorepo |
 | Navigateur | Chrome / Edge | Web Serial (USB) + Web Bluetooth |
 
@@ -256,15 +256,15 @@ Les fichiers statiques sont dans `apps\web\dist\` (déployables ensuite via [INS
 sudo apt update
 sudo apt install -y git curl ca-certificates
 
-# Node 20 LTS (le paquet Debian « nodejs » est souvent trop ancien)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node 22 LTS (évite ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING avec pnpm 11)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 
 git clone https://github.com/F4EED/client_web_MT_bipper.git
 cd client_web_MT_bipper
 
-corepack enable
-corepack prepare pnpm@11.9.0 --activate
+# pnpm sans corepack
+sudo npm install -g pnpm@11.9.0
 pnpm install
 pnpm --filter meshtastic-web dev
 ```
@@ -297,7 +297,35 @@ pnpm --filter meshtastic-web dev
 | `Permission denied` | `chmod +x scripts/install-local.sh` puis `./scripts/install-local.sh …` |
 | Script lancé sous Windows | Sur Debian uniquement ; sous Windows → **`install-local.ps1`** |
 | `sudo: command not found` / apt refuse | Compte avec sudo, ou `su -` puis relancer |
-| Node trop vieux (`v12` / `v18`) | Le script (ou NodeSource ci-dessus) installe Node **20** |
+| Node trop vieux (`v12` / `v18`) | Le script installe Node **22** via NodeSource |
+| `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING` | Bug **Node 20 + corepack + pnpm 11** — voir section ci-dessous |
+
+### Contournement `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`
+
+Sur Debian, si l’install plante avec ce code :
+
+```bash
+# 1) Passer à Node 22 (recommandé)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v   # v22.x
+
+# 2) Installer pnpm SANS corepack
+sudo npm install -g pnpm@11.9.0
+pnpm -v
+
+# 3) Relancer depuis le dépôt
+cd ~/client_web_MT_bipper   # adapter
+git pull
+./scripts/install-local.sh --skip-apt --start-dev
+```
+
+Ou en une ligne sans réinstaller Node (parfois suffisant) :
+
+```bash
+sudo npm install -g pnpm@11.9.0
+cd ~/client_web_MT_bipper && pnpm install && pnpm --filter meshtastic-web dev
+```
 
 ---
 

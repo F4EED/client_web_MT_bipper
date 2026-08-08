@@ -134,7 +134,7 @@ Portail / POC : [germacrise.wordpress.com](https://germacrise.wordpress.com/).
 ## Développement local
 
 Guide pas à pas (PC neuf, sans Cursor / Docker) : **[install_local.md](install_local.md)**  
-Scripts : `scripts/install-local.ps1` (Windows) · `scripts/install-local.sh` (Linux).
+Scripts : `scripts/install-local.ps1` (Windows) · `scripts/install-local.sh` (Debian ; Node 22 + pnpm sans corepack).
 
 ```bash
 git clone https://github.com/F4EED/client_web_MT_bipper.git

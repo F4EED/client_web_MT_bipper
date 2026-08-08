@@ -20,7 +20,7 @@ Guide détaillé : **[docs/install_local.md](docs/install_local.md)**.
 | **Windows** | [`scripts/install-local.ps1`](scripts/install-local.ps1) (ou `.bat`) |
 | **Debian** | [`scripts/install-local.sh`](scripts/install-local.sh) — à lancer **sur la machine Debian** |
 
-Prérequis : **Git**, **Node.js 20 LTS+**, **pnpm 11.9.0**, navigateur **Chrome** / Chromium / **Edge** (USB / BLE).
+Prérequis : **Git**, **Node.js 22 LTS** (recommandé ; 20+ min.), **pnpm 11.9.0**, navigateur **Chrome** / Chromium / **Edge** (USB / BLE).
 
 ### Windows (PowerShell)
 
@@ -89,8 +89,17 @@ chmod +x install-local.sh && ./install-local.sh --start-dev
 
 Erreur `ligne 7: <!DOCTYPE html>` → mauvaise URL (page GitHub). Reprendre avec **raw** ou `git clone`.
 
-Le script installe Node 20 si besoin, puis `pnpm install`, puis lance Vite.  
+Le script installe **Node 22** + **pnpm via npm** (sans corepack — évite `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`), puis lance Vite.  
 Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans Chromium/Chrome.
+
+Si tu as déjà cette erreur sous Node 20 :
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo npm install -g pnpm@11.9.0
+cd ~/client_web_MT_bipper && git pull && ./scripts/install-local.sh --skip-apt --start-dev
+```
 
 ```bash
 ./scripts/install-local.sh --build   # → apps/web/dist/
