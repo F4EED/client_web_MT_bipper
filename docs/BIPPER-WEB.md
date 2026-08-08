@@ -6,7 +6,7 @@
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
 | **Firmware cible** | Gaulix Bipper **v1.12+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
-| **Install** | [install_local.md](install_local.md) (PC Windows/Linux) · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
+| **Install** | [install_local.md](install_local.md) — Debian : `wget` + `bash install.sh` · Windows : `install.bat` · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
 | **Écosystème** | Firmware + Android — voir firmware [`docs/ECOSYSTEME-GAULIX.md`](https://github.com/F4EED/Bipper_L1Pro/blob/develop/docs/ECOSYSTEME-GAULIX.md) · install APK Android : [`BIPPER-ANDROID.md`](https://github.com/F4EED/bipper_android/blob/main/docs/BIPPER-ANDROID.md#installation-sur-téléphone) |
 
 > **Règle** : ce client évolue **en même temps** que le firmware et l’app Android (protocole, tags, docs).
@@ -133,13 +133,17 @@ Portail / POC : [germacrise.wordpress.com](https://germacrise.wordpress.com/).
 
 ## Développement local
 
-Guide pas à pas (PC neuf, sans Cursor / Docker) : **[install_local.md](install_local.md)**  
-Scripts : `scripts/install-local.ps1` (Windows) · `scripts/install-local.sh` (Debian ; Node 22 + pnpm sans corepack).
+Installation utilisateur : **[install_local.md](install_local.md)** (`install.sh` / `install.bat`).
 
 ```bash
-git clone https://github.com/F4EED/client_web_MT_bipper.git
-cd client_web_MT_bipper
-corepack enable && corepack prepare pnpm@11.9.0 --activate
+# Debian (tout-en-un)
+wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
+bash install.sh
+```
+
+Développeur (déjà cloné) :
+
+```bash
 pnpm install
 pnpm --filter meshtastic-web dev
 ```

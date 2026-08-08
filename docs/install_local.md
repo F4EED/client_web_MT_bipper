@@ -1,351 +1,65 @@
-# Installation locale — Client web GerMaCrise / Gaulix Bipper
+# Installation locale — GerMaCrise (simple)
 
-Procédure pour installer et lancer le client web sur un PC **sans Cursor**, **sans Docker** :
-
-- **Windows** → `scripts/install-local.ps1`
-- **Debian** (et dérivés) → `scripts/install-local.sh`
-
-> Dépôt : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
-> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md)  
-> Autres guides : [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md) (serveur) · [INSTALL-DOCKER.md](./INSTALL-DOCKER.md) (Docker)
+Sans Cursor, sans Docker. **Deux commandes** sur Debian, ou un double-clic sous Windows.
 
 ---
 
-## Ce que vous obtiendrez
+## Debian (PC crise)
 
-- Le client web **GerMaCrise** (pages `/alerts`, `/settings/bipper`, carte, connexion radio)
-- En mode **développement** : serveur Vite sur `http://localhost:5173` (ou port indiqué dans le terminal)
-- En mode **production locale** : build statique dans `apps/web/dist/` + aperçu local
-
-Aucun backend Node n’est requis pour *utiliser* le client après build : c’est une SPA.  
-Node.js + pnpm servent uniquement à **télécharger les dépendances**, **compiler** et éventuellement **servir** en local.
-
-**USB / Bluetooth** : utiliser **Chrome** ou **Edge**. Contexte sécurisé obligatoire (`http://localhost` ou `https://`).
-
----
-
-## Prérequis
-
-| Outil | Version | Rôle |
-|:------|:--------|:-----|
-| **Git** | récent | Cloner le dépôt |
-| **Node.js** | **22 LTS** recommandé (20+ minimum) | Runtime JS — éviter Node 20 + corepack/pnpm 11 |
-| **pnpm** | **11.9.0** | Gestionnaire de paquets du monorepo |
-| Navigateur | Chrome / Edge | Web Serial (USB) + Web Bluetooth |
-
-Espace disque recommandé : **≥ 2 Go** libres (dépendances + build).
-
----
-
-## Méthode rapide — scripts d’installation
-
-Les scripts installent (si besoin) Git / Node, activent pnpm, clônent le dépôt si nécessaire, puis `pnpm install`.
-
-### Windows (PowerShell)
-
-1. Ouvrir **PowerShell** (pas besoin d’admin si Git et Node sont déjà installés ; `winget` peut demander une élévation).
-2. Autoriser l’exécution du script pour la session :
-
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-```
-
-3. Télécharger le dépôt **ou** lancer le script depuis une copie déjà présente :
-
-```powershell
-# Option A — depuis une copie du dépôt (dossier scripts\ déjà là)
-cd "C:\chemin\vers\client_web_MT_bipper"
-.\scripts\install-local.ps1
-
-# Option B — tout-en-un : clone dans %USERPROFILE%\client_web_MT_bipper puis install
-irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.ps1 -OutFile "$env:TEMP\install-local.ps1"
-powershell -ExecutionPolicy Bypass -File "$env:TEMP\install-local.ps1"
-```
-
-Options utiles :
-
-```powershell
-.\scripts\install-local.ps1 -SkipWinget          # ne pas installer Git/Node via winget
-.\scripts\install-local.ps1 -StartDev            # lancer le serveur après install
-.\scripts\install-local.ps1 -Build               # build production (apps/web/dist)
-.\scripts\install-local.ps1 -TargetDir "D:\GerMaCrise\web"
-```
-
-Double-clic possible : `scripts\install-local.bat` (appelle le `.ps1`).
-
-### Debian (script `install-local.sh`)
-
-À lancer **sur la machine Debian** (pas depuis Windows). Le script utilise `apt` + NodeSource pour Node 20, puis `pnpm install`.
-
-#### Méthode recommandée : `git clone` (évite les erreurs HTML)
+Dans un terminal :
 
 ```bash
-sudo apt update
-sudo apt install -y git curl ca-certificates
-
-git clone https://github.com/F4EED/client_web_MT_bipper.git
-cd client_web_MT_bipper
-
-# Vérifier que c'est bien un script bash (doit commencer par #!/usr/bin/env bash)
-head -n 1 scripts/install-local.sh
-
-chmod +x scripts/install-local.sh
-./scripts/install-local.sh --start-dev
+wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
+bash install.sh
 ```
 
-Le script demandera le mot de passe `sudo` si Git/Node manquent.  
-Puis ouvrir dans Chromium/Chrome : l’URL affichée (souvent `http://localhost:5173`).
+1. Saisir le mot de passe si demandé  
+2. Attendre la fin (quelques minutes)  
+3. Ouvrir **Chrome** ou **Chromium** sur : **http://localhost:5173**
 
-#### Télécharger seulement le script (URL **raw** obligatoire)
-
-Si tu utilises `curl`/`wget`, **ne pas** copier l’URL de la page GitHub (`…/blob/main/…` → page HTML).  
-Utiliser uniquement l’URL **raw** :
+### Relancer plus tard
 
 ```bash
-# BON — fichier brut (wget)
-wget -O install-local.sh \
-  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
-
-# BON — fichier brut (curl)
-curl -fsSL -o install-local.sh \
-  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
-
-# MAUVAIS — page HTML (provoque : ligne 7: <!DOCTYPE html>)
-# wget/curl … https://github.com/F4EED/client_web_MT_bipper/blob/main/scripts/install-local.sh
-```
-
-Vérification :
-
-```bash
-head -n 3 install-local.sh
-# Attendu :
-# #!/usr/bin/env bash
-# # Install local …
-```
-
-Si tu vois `<!DOCTYPE html>`, le fichier est faux : le supprimer et reprendre avec l’URL **raw**, ou mieux : `git clone` comme ci-dessus.
-
-Le script seul clone ensuite le dépôt dans `~/client_web_MT_bipper` :
-
-```bash
-chmod +x install-local.sh
-./install-local.sh --start-dev
-```
-
-**Déjà cloné :**
-
-```bash
-cd ~/client_web_MT_bipper   # adapter le chemin
-git pull
-chmod +x scripts/install-local.sh
-./scripts/install-local.sh --start-dev
-```
-
-Options :
-
-```bash
-./scripts/install-local.sh --skip-apt     # ne pas toucher à apt (Git/Node déjà OK)
-./scripts/install-local.sh --start-dev    # lancer Vite après install
-./scripts/install-local.sh --build        # build → apps/web/dist/
-./scripts/install-local.sh --dir ~/GerMaCrise/web
-./scripts/install-local.sh --help
-```
-
-Si erreur `bash\r` / `$'\r': command not found` (CRLF) :
-
-```bash
-sed -i 's/\r$//' scripts/install-local.sh
-chmod +x scripts/install-local.sh
-./scripts/install-local.sh --start-dev
+~/demarrer-GerMaCrise.sh
 ```
 
 ---
 
-## Méthode manuelle (Windows — machine neuve)
+## Windows
 
-### 1. Installer Git
+1. Télécharger le dépôt (ZIP GitHub) ou le cloner  
+2. Double-cliquer sur **`install.bat`** à la racine  
+3. Ouvrir **Chrome** ou **Edge** sur : **http://localhost:5173**
 
-1. Télécharger : [https://git-scm.com/download/win](https://git-scm.com/download/win)
-2. Installer avec les options par défaut (Git dans le PATH).
-3. Fermer / rouvrir PowerShell, vérifier :
-
-```powershell
-git --version
-```
-
-Ou avec **winget** :
-
-```powershell
-winget install --id Git.Git -e --source winget
-```
-
-### 2. Installer Node.js 20 LTS
-
-1. Télécharger : [https://nodejs.org/](https://nodejs.org/) → **LTS** (20.x ou supérieur)
-2. Cocher « Add to PATH » à l’installation.
-3. Nouveau PowerShell :
-
-```powershell
-node -v    # v20.x ou plus
-npm -v
-```
-
-Ou :
-
-```powershell
-winget install --id OpenJS.NodeJS.LTS -e --source winget
-```
-
-### 3. Cloner le dépôt
-
-```powershell
-cd $env:USERPROFILE
-git clone https://github.com/F4EED/client_web_MT_bipper.git
-cd client_web_MT_bipper
-```
-
-Sans Git : sur GitHub → **Code** → **Download ZIP** → décompresser, puis `cd` dans le dossier.
-
-### 4. Activer pnpm 11.9.0
-
-```powershell
-corepack enable
-corepack prepare pnpm@11.9.0 --activate
-pnpm -v
-```
-
-Si `corepack` échoue :
-
-```powershell
-npx pnpm@11.9.0 -v
-# ensuite préfixer les commandes par : npx pnpm@11.9.0 …
-```
-
-### 5. Installer les dépendances
-
-```powershell
-pnpm install
-```
-
-Première fois : plusieurs minutes selon la connexion.
-
-### 6. Lancer le client
-
-**Mode développement** (rechargement à chaud) :
-
-```powershell
-pnpm --filter meshtastic-web dev
-```
-
-Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans **Chrome** ou **Edge**.
-
-**Build + aperçu production** :
-
-```powershell
-pnpm --filter meshtastic-web build
-pnpm --filter meshtastic-web preview
-```
-
-Les fichiers statiques sont dans `apps\web\dist\` (déployables ensuite via [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md)).
+Relancer : double-clic sur **`demarrer-GerMaCrise.bat`** (dossier utilisateur) ou **`GerMaCrise.bat`** sur le Bureau.
 
 ---
 
-## Méthode manuelle (Debian, sans script)
+## Important
 
-```bash
-sudo apt update
-sudo apt install -y git curl ca-certificates
+| | |
+|:--|:--|
+| Navigateur | **Chrome / Chromium / Edge** (USB radio) |
+| Fenêtre terminal | **À laisser ouverte** pendant l’utilisation |
+| Arrêt | `Ctrl+C` dans le terminal |
 
-# Node 22 LTS (évite ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING avec pnpm 11)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt install -y nodejs
-
-git clone https://github.com/F4EED/client_web_MT_bipper.git
-cd client_web_MT_bipper
-
-# pnpm sans corepack
-sudo npm install -g pnpm@11.9.0
-pnpm install
-pnpm --filter meshtastic-web dev
-```
+Si `install.sh` affiche `<!DOCTYPE html>` : mauvaise URL. Recopier **exactement** la commande `wget` ci-dessus (lien `raw.githubusercontent.com`).
 
 ---
 
-## Vérifications après démarrage
+## Pour les administrateurs
 
-1. La page d’accueil du client s’affiche.
-2. Menu / routes **GerMaCrise** : `/alerts`, `/settings/bipper`.
-3. Connexion radio USB : Chrome/Edge → choisir le port série du PC crise / bipper.
-4. Un seul logiciel à la fois sur le port COM (pas Chrome + autre outil série).
+Détail technique (Node 22, pnpm, build serveur, Docker) :
 
----
+- [BIPPER-WEB.md](./BIPPER-WEB.md)
+- [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md)
+- [INSTALL-DOCKER.md](./INSTALL-DOCKER.md)
 
-## Dépannage
+Fichiers :
 
-| Problème | Piste |
-|:---------|:------|
-| `pnpm : commande introuvable` | `corepack enable` puis `corepack prepare pnpm@11.9.0 --activate`, ou `npx pnpm@11.9.0 …` |
-| `preinstall: only-allow pnpm` | Ne pas utiliser `npm install` / `yarn` — uniquement **pnpm** |
-| `node` / `git` introuvable après install | Fermer le terminal et en ouvrir un nouveau (PATH) |
-| `EACCES` / droits npm (Linux) | Éviter `sudo pnpm` ; corriger le préfixe npm ou utiliser nvm |
-| `Web Serial not supported` | Chrome ou Edge ; pas Safari ; Firefox ≥ 151 seulement |
-| Port déjà utilisé | Arrêter l’autre process, ou noter le port alternatif affiché par Vite |
-| `husky` / `prepare` en erreur | Le dépôt doit être un clone Git (pas toujours critique ; réessayer `pnpm install`) |
-| Build très lent / antivirus | Ajouter une exclusion sur le dossier du projet (Windows Defender) |
-| `bash\r` / `$'\r': command not found` | Fins de ligne CRLF — `sed -i 's/\r$//' scripts/install-local.sh` puis `chmod +x` |
-| `ligne 7: <!DOCTYPE html>` / erreur de syntaxe | Tu as téléchargé la **page HTML** GitHub (`/blob/…`). Utiliser l’URL **raw** ou `git clone` (voir ci-dessus) |
-| `Permission denied` | `chmod +x scripts/install-local.sh` puis `./scripts/install-local.sh …` |
-| Script lancé sous Windows | Sur Debian uniquement ; sous Windows → **`install-local.ps1`** |
-| `sudo: command not found` / apt refuse | Compte avec sudo, ou `su -` puis relancer |
-| Node trop vieux (`v12` / `v18`) | Le script installe Node **22** via NodeSource |
-| `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING` | Bug **Node 20 + corepack + pnpm 11** — voir section ci-dessous |
-
-### Contournement `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`
-
-Sur Debian, si l’install plante avec ce code :
-
-```bash
-# 1) Passer à Node 22 (recommandé)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-node -v   # v22.x
-
-# 2) Installer pnpm SANS corepack
-sudo npm install -g pnpm@11.9.0
-pnpm -v
-
-# 3) Relancer depuis le dépôt
-cd ~/client_web_MT_bipper   # adapter
-git pull
-./scripts/install-local.sh --skip-apt --start-dev
-```
-
-Ou en une ligne sans réinstaller Node (parfois suffisant) :
-
-```bash
-sudo npm install -g pnpm@11.9.0
-cd ~/client_web_MT_bipper && pnpm install && pnpm --filter meshtastic-web dev
-```
-
----
-
-## Mise à jour
-
-```bash
-cd client_web_MT_bipper
-git pull
-pnpm install
-pnpm --filter meshtastic-web build   # si vous utilisez dist/
-```
-
-Ou relancer `scripts/install-local.ps1` / `scripts/install-local.sh` (réinstall des deps sans forcément recloner).
-
----
-
-## Scripts fournis
-
-| Fichier | Plateforme |
-|:--------|:-----------|
-| [`scripts/install-local.ps1`](../scripts/install-local.ps1) | Windows (PowerShell) |
-| [`scripts/install-local.bat`](../scripts/install-local.bat) | Windows (lanceur) |
-| [`scripts/install-local.sh`](../scripts/install-local.sh) | **Debian** (bash / apt) |
+| Fichier | Rôle |
+|:--------|:-----|
+| [`install.sh`](../install.sh) | Install + démarrage Debian |
+| [`install.bat`](../install.bat) | Install Windows |
+| `~/GerMaCrise/demarrer.sh` | Relance Debian |
+| `demarrer-GerMaCrise.bat` | Relance Windows |

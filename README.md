@@ -10,108 +10,24 @@
 
 Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).
 
-## Installation locale (Windows / Debian)
+## Installation (utilisateur)
 
-Sans **Cursor**, sans **Docker** : Git + Node.js 20+ + pnpm suffisent.  
-Guide détaillé : **[docs/install_local.md](docs/install_local.md)**.
+Guide : **[docs/install_local.md](docs/install_local.md)**.
 
-| OS | Script |
-|:---|:-------|
-| **Windows** | [`scripts/install-local.ps1`](scripts/install-local.ps1) (ou `.bat`) |
-| **Debian** | [`scripts/install-local.sh`](scripts/install-local.sh) — à lancer **sur la machine Debian** |
+### Debian — 2 commandes
 
-Prérequis : **Git**, **Node.js 22 LTS** (recommandé ; 20+ min.), **pnpm 11.9.0**, navigateur **Chrome** / Chromium / **Edge** (USB / BLE).
+\\ash
+wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
+bash install.sh
+\
+Puis **Chrome / Chromium** → **http://localhost:5173**  
+Relancer : \~/demarrer-GerMaCrise.sh
+### Windows — 1 double-clic
 
-### Windows (PowerShell)
-
-```powershell
-# 1) Outils (si absents) — ou télécharger Git + Node LTS depuis git-scm.com / nodejs.org
-winget install --id Git.Git -e --source winget
-winget install --id OpenJS.NodeJS.LTS -e --source winget
-# Rouvrir PowerShell après installation
-
-# 2) Cloner
-cd $env:USERPROFILE
-git clone https://github.com/F4EED/client_web_MT_bipper.git
-cd client_web_MT_bipper
-
-# 3) Script d'install (deps + pnpm) puis serveur
-Set-ExecutionPolicy -Scope Process Bypass
-.\scripts\install-local.ps1 -StartDev
-```
-
-Équivalent manuel :
-
-```powershell
-corepack enable
-corepack prepare pnpm@11.9.0 --activate
-pnpm install
-pnpm --filter meshtastic-web dev
-```
-
-Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans **Chrome** ou **Edge**.
-
-Build production locale :
-
-```powershell
-.\scripts\install-local.ps1 -Build
-# → apps\web\dist\
-```
-
-### Debian (`install-local.sh`)
-
-À exécuter **sur le PC Debian** (terminal local ou SSH), pas depuis Windows.  
-Préférer **`git clone`** (évite de télécharger une page HTML par erreur).
-
-```bash
-sudo apt update && sudo apt install -y git curl ca-certificates
-git clone https://github.com/F4EED/client_web_MT_bipper.git
-cd client_web_MT_bipper
-head -n 1 scripts/install-local.sh   # doit afficher : #!/usr/bin/env bash
-chmod +x scripts/install-local.sh
-./scripts/install-local.sh --start-dev
-```
-
-Si tu télécharges le script seul, URL **raw** uniquement (pas `/blob/…`) :
-
-```bash
-# avec wget
-wget -O install-local.sh \
-  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
-
-# ou avec curl
-curl -fsSL -o install-local.sh \
-  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
-
-head -n 1 install-local.sh   # PAS <!DOCTYPE html>
-chmod +x install-local.sh && ./install-local.sh --start-dev
-```
-
-Erreur `ligne 7: <!DOCTYPE html>` → mauvaise URL (page GitHub). Reprendre avec **raw** ou `git clone`.
-
-Le script installe **Node 22** + **pnpm via npm** (sans corepack — évite `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`), puis lance Vite.  
-Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans Chromium/Chrome.
-
-Si tu as déjà cette erreur sous Node 20 :
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-sudo npm install -g pnpm@11.9.0
-cd ~/client_web_MT_bipper && git pull && ./scripts/install-local.sh --skip-apt --start-dev
-```
-
-```bash
-./scripts/install-local.sh --build   # → apps/web/dist/
-```
-
-### Après le démarrage
-
-1. Accueil du client OK  
-2. Routes GerMaCrise : `/alerts`, `/settings/bipper`  
-3. Connexion radio USB sous Chrome/Edge (un seul outil sur le port série)
-
-Autres déploiements : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) (Nginx/Apache/IIS) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
+Double-cliquer **\install.bat\**.  
+Puis **Chrome / Edge** → **http://localhost:5173**  
+Relancer : \demarrer-GerMaCrise.bat
+Serveur / Docker : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
 
 ---
 
