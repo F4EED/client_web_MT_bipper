@@ -60,26 +60,35 @@ Build production locale :
 
 ### Debian (`install-local.sh`)
 
-À exécuter **sur le PC Debian** (terminal local ou SSH), pas depuis Windows.
+À exécuter **sur le PC Debian** (terminal local ou SSH), pas depuis Windows.  
+Préférer **`git clone`** (évite de télécharger une page HTML par erreur).
 
 ```bash
 sudo apt update && sudo apt install -y git curl ca-certificates
 git clone https://github.com/F4EED/client_web_MT_bipper.git
 cd client_web_MT_bipper
+head -n 1 scripts/install-local.sh   # doit afficher : #!/usr/bin/env bash
 chmod +x scripts/install-local.sh
 ./scripts/install-local.sh --start-dev
 ```
 
-Le script installe Node 20 via apt/NodeSource si besoin, puis `pnpm install`, puis lance Vite.  
+Si tu télécharges le script seul, URL **raw** uniquement (pas `/blob/…`) :
+
+```bash
+curl -fsSL -o install-local.sh \
+  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
+head -n 1 install-local.sh   # PAS <!DOCTYPE html>
+chmod +x install-local.sh && ./install-local.sh --start-dev
+```
+
+Erreur `ligne 7: <!DOCTYPE html>` → mauvaise URL (page GitHub). Reprendre avec **raw** ou `git clone`.
+
+Le script installe Node 20 si besoin, puis `pnpm install`, puis lance Vite.  
 Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans Chromium/Chrome.
 
 ```bash
-# Build production seulement
-./scripts/install-local.sh --build
-# → apps/web/dist/
+./scripts/install-local.sh --build   # → apps/web/dist/
 ```
-
-Si erreur `bash\r` : `sed -i 's/\r$//' scripts/install-local.sh && chmod +x scripts/install-local.sh`
 
 ### Après le démarrage
 

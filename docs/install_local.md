@@ -77,7 +77,7 @@ Double-clic possible : `scripts\install-local.bat` (appelle le `.ps1`).
 
 À lancer **sur la machine Debian** (pas depuis Windows). Le script utilise `apt` + NodeSource pour Node 20, puis `pnpm install`.
 
-**Machine Debian neuve — tout en une fois :**
+#### Méthode recommandée : `git clone` (évite les erreurs HTML)
 
 ```bash
 sudo apt update
@@ -86,12 +86,47 @@ sudo apt install -y git curl ca-certificates
 git clone https://github.com/F4EED/client_web_MT_bipper.git
 cd client_web_MT_bipper
 
+# Vérifier que c'est bien un script bash (doit commencer par #!/usr/bin/env bash)
+head -n 1 scripts/install-local.sh
+
 chmod +x scripts/install-local.sh
 ./scripts/install-local.sh --start-dev
 ```
 
 Le script demandera le mot de passe `sudo` si Git/Node manquent.  
 Puis ouvrir dans Chromium/Chrome : l’URL affichée (souvent `http://localhost:5173`).
+
+#### Télécharger seulement le script (URL **raw** obligatoire)
+
+Si tu utilises `curl`/`wget`, **ne pas** copier l’URL de la page GitHub (`…/blob/main/…` → page HTML).  
+Utiliser uniquement l’URL **raw** :
+
+```bash
+# BON — fichier brut
+curl -fsSL -o install-local.sh \
+  https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/scripts/install-local.sh
+
+# MAUVAIS — page HTML (provoque : ligne 7: <!DOCTYPE html>)
+# curl … https://github.com/F4EED/client_web_MT_bipper/blob/main/scripts/install-local.sh
+```
+
+Vérification :
+
+```bash
+head -n 3 install-local.sh
+# Attendu :
+# #!/usr/bin/env bash
+# # Install local …
+```
+
+Si tu vois `<!DOCTYPE html>`, le fichier est faux : le supprimer et reprendre avec l’URL **raw**, ou mieux : `git clone` comme ci-dessus.
+
+Le script seul clone ensuite le dépôt dans `~/client_web_MT_bipper` :
+
+```bash
+chmod +x install-local.sh
+./install-local.sh --start-dev
+```
 
 **Déjà cloné :**
 
@@ -254,6 +289,7 @@ pnpm --filter meshtastic-web dev
 | `husky` / `prepare` en erreur | Le dépôt doit être un clone Git (pas toujours critique ; réessayer `pnpm install`) |
 | Build très lent / antivirus | Ajouter une exclusion sur le dossier du projet (Windows Defender) |
 | `bash\r` / `$'\r': command not found` | Fins de ligne CRLF — `sed -i 's/\r$//' scripts/install-local.sh` puis `chmod +x` |
+| `ligne 7: <!DOCTYPE html>` / erreur de syntaxe | Tu as téléchargé la **page HTML** GitHub (`/blob/…`). Utiliser l’URL **raw** ou `git clone` (voir ci-dessus) |
 | `Permission denied` | `chmod +x scripts/install-local.sh` puis `./scripts/install-local.sh …` |
 | Script lancé sous Windows | Sur Debian uniquement ; sous Windows → **`install-local.ps1`** |
 | `sudo: command not found` / apt refuse | Compte avec sudo, ou `su -` puis relancer |
@@ -280,4 +316,4 @@ Ou relancer `scripts/install-local.ps1` / `scripts/install-local.sh` (réinstall
 |:--------|:-----------|
 | [`scripts/install-local.ps1`](../scripts/install-local.ps1) | Windows (PowerShell) |
 | [`scripts/install-local.bat`](../scripts/install-local.bat) | Windows (lanceur) |
-| [`scripts/install-local.sh`](../scripts/install-local.sh) | Linux / macOS (bash) |
+| [`scripts/install-local.sh`](../scripts/install-local.sh) | **Debian** (bash / apt) |
