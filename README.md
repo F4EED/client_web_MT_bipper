@@ -1,7 +1,7 @@
 # Meshtastic Web Monorepo — fork **Gaulix Bipper**
 
 > **Fork Gaulix** : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
-> Doc produit : **[docs/BIPPER-WEB.md](docs/BIPPER-WEB.md)** · Install : [INSTALL-SRV-WEB](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER](docs/INSTALL-DOCKER.md)  
+> Doc produit : **[docs/BIPPER-WEB.md](docs/BIPPER-WEB.md)** · Install local : [install_local.md](docs/install_local.md) · Serveur : [INSTALL-SRV-WEB](docs/INSTALL-SRV-WEB.md) · Docker : [INSTALL-DOCKER](docs/INSTALL-DOCKER.md)  
 > Firmware cible : **v1.12+** — [F4EED/Bipper_L1Pro](https://github.com/F4EED/Bipper_L1Pro)  
 > Matériels : pagers L1 / M1 / M2 · PC crise XIAO S3+SX1262 (`seeed-xiao-s3-gaulix`) · PC crise ThinkNode M2 (`thinknode_m2-gaulix`, OLED)  
 
@@ -9,6 +9,84 @@
 > App Android : [F4EED/bipper_android](https://github.com/F4EED/bipper_android)
 
 Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).
+
+## Installation locale (Windows / Linux)
+
+Sans **Cursor**, sans **Docker** : Git + Node.js 20+ + pnpm suffisent.  
+Guide détaillé : **[docs/install_local.md](docs/install_local.md)**.
+
+| | |
+|:--|:--|
+| Prérequis | **Git**, **Node.js 20 LTS+**, **pnpm 11.9.0**, navigateur **Chrome** ou **Edge** (USB / BLE) |
+| Scripts | [`scripts/install-local.ps1`](scripts/install-local.ps1) · [`install-local.bat`](scripts/install-local.bat) · [`install-local.sh`](scripts/install-local.sh) |
+
+### Windows (PowerShell)
+
+```powershell
+# 1) Outils (si absents) — ou télécharger Git + Node LTS depuis git-scm.com / nodejs.org
+winget install --id Git.Git -e --source winget
+winget install --id OpenJS.NodeJS.LTS -e --source winget
+# Rouvrir PowerShell après installation
+
+# 2) Cloner
+cd $env:USERPROFILE
+git clone https://github.com/F4EED/client_web_MT_bipper.git
+cd client_web_MT_bipper
+
+# 3) Script d'install (deps + pnpm) puis serveur
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\install-local.ps1 -StartDev
+```
+
+Équivalent manuel :
+
+```powershell
+corepack enable
+corepack prepare pnpm@11.9.0 --activate
+pnpm install
+pnpm --filter meshtastic-web dev
+```
+
+Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans **Chrome** ou **Edge**.
+
+Build production locale :
+
+```powershell
+.\scripts\install-local.ps1 -Build
+# → apps\web\dist\
+```
+
+### Linux
+
+```bash
+git clone https://github.com/F4EED/client_web_MT_bipper.git
+cd client_web_MT_bipper
+chmod +x scripts/install-local.sh
+./scripts/install-local.sh --start-dev
+```
+
+Le script peut installer `git` / `nodejs` via apt, dnf ou pacman. Sinon :
+
+```bash
+# Debian/Ubuntu exemple — Node 20+
+sudo apt update && sudo apt install -y git curl ca-certificates
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+corepack enable && corepack prepare pnpm@11.9.0 --activate
+pnpm install
+pnpm --filter meshtastic-web dev
+```
+
+Build : `./scripts/install-local.sh --build` → `apps/web/dist/`.
+
+### Après le démarrage
+
+1. Accueil du client OK  
+2. Routes GerMaCrise : `/alerts`, `/settings/bipper`  
+3. Connexion radio USB sous Chrome/Edge (un seul outil sur le port série)
+
+Autres déploiements : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) (Nginx/Apache/IIS) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
 
 ---
 

@@ -6,7 +6,7 @@
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
 | **Firmware cible** | Gaulix Bipper **v1.12+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
-| **Install** | [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
+| **Install** | [install_local.md](install_local.md) (PC Windows/Linux) · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
 | **Écosystème** | Firmware + Android — voir firmware [`docs/ECOSYSTEME-GAULIX.md`](https://github.com/F4EED/Bipper_L1Pro/blob/develop/docs/ECOSYSTEME-GAULIX.md) · install APK Android : [`BIPPER-ANDROID.md`](https://github.com/F4EED/bipper_android/blob/main/docs/BIPPER-ANDROID.md#installation-sur-téléphone) |
 
 > **Règle** : ce client évolue **en même temps** que le firmware et l’app Android (protocole, tags, docs).
@@ -133,6 +133,9 @@ Portail / POC : [germacrise.wordpress.com](https://germacrise.wordpress.com/).
 
 ## Développement local
 
+Guide pas à pas (PC neuf, sans Cursor / Docker) : **[install_local.md](install_local.md)**  
+Scripts : `scripts/install-local.ps1` (Windows) · `scripts/install-local.sh` (Linux).
+
 ```bash
 git clone https://github.com/F4EED/client_web_MT_bipper.git
 cd client_web_MT_bipper
@@ -175,6 +178,7 @@ Web Bluetooth (BLE) : Chromium surtout ; Firefox/Safari limités ou absents selo
 
 | Guide | Usage |
 |:------|:------|
+| [install_local.md](install_local.md) | PC local Windows / Linux (scripts inclus) |
 | [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) | Nginx / Apache / Caddy / IIS |
 | [INSTALL-DOCKER.md](INSTALL-DOCKER.md) | Image Nginx (port 8080) |
 
