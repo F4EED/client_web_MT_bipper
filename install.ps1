@@ -1,13 +1,10 @@
 #Requires -Version 5.1
 <#
-  GerMaCrise — installation simple Windows 10/11
+  GerMaCrise - installation simple Windows 10/11
 
-  Option A (recommandee) — dans PowerShell :
     irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
 
-  Option B — double-clic sur install.bat (dans le depot)
-
-  Puis Chrome/Edge → http://localhost:5173
+  ou double-clic install.bat
 #>
 $ErrorActionPreference = "Stop"
 
@@ -16,13 +13,17 @@ $PnpmVersion = "11.9.0"
 $Port = "5173"
 $InstallDir = Join-Path $env:USERPROFILE "GerMaCrise"
 
-function Say([string]$m) {
+function Say {
+    param([string]$Message)
     Write-Host ""
-    Write-Host ">> $m" -ForegroundColor Cyan
+    Write-Host (">> {0}" -f $Message) -ForegroundColor Cyan
 }
-function Have([string]$n) {
-    return [bool](Get-Command $n -ErrorAction SilentlyContinue)
+
+function Have {
+    param([string]$Name)
+    return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
+
 function Refresh-Path {
     $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
     $user = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -30,6 +31,7 @@ function Refresh-Path {
     elseif ($machine) { $env:Path = $machine }
     elseif ($user) { $env:Path = $user }
 }
+
 function Get-DesktopDir {
     $bureau = Join-Path $env:USERPROFILE "Bureau"
     if (Test-Path $bureau) { return $bureau }
@@ -37,16 +39,15 @@ function Get-DesktopDir {
     if ($desktop -and (Test-Path $desktop)) { return $desktop }
     return (Join-Path $env:USERPROFILE "Desktop")
 }
-function Write-Utf8NoBom([string]$Path, [string]$Content) {
+
+function Write-Utf8NoBom {
+    param([string]$Path, [string]$Content)
     $utf8 = New-Object System.Text.UTF8Encoding $false
     [System.IO.File]::WriteAllText($Path, $Content, $utf8)
 }
+
 function New-GerMaCriseShortcut {
-    param(
-        [string]$TargetBat,
-        [string]$ShortcutPath,
-        [string]$IconPath
-    )
+    param([string]$TargetBat, [string]$ShortcutPath, [string]$IconPath)
     try {
         $w = New-Object -ComObject WScript.Shell
         $s = $w.CreateShortcut($ShortcutPath)
@@ -54,9 +55,7 @@ function New-GerMaCriseShortcut {
         $s.WorkingDirectory = Split-Path $TargetBat -Parent
         $s.WindowStyle = 1
         $s.Description = "Demarrer GerMaCrise"
-        if ($IconPath -and (Test-Path $IconPath)) {
-            $s.IconLocation = "$IconPath,0"
-        }
+        if ($IconPath -and (Test-Path $IconPath)) { $s.IconLocation = "$IconPath,0" }
         $s.Save()
         return $true
     } catch {
@@ -64,7 +63,30 @@ function New-GerMaCriseShortcut {
     }
 }
 
-# Si le script est dans un depot deja present, on l'utilise
+# Call pnpm reliably (avoid PowerShell $Args bug + Python meshtastic.exe conflict)
+function Invoke-GerMaPnpm {
+    param([Parameter(Mandatory = $true)][string[]]$PnpmArgs)
+    $prevPath = $env:Path
+    try {
+        $env:HUSKY = "0"
+        Refresh-Path
+        if (Have "pnpm") {
+            $pnpmCmd = (Get-Command pnpm -ErrorAction Stop).Source
+            if ($pnpmCmd -match "Python|meshtastic") {
+                Write-Host ("pnpm suspect ignore ({0}) - fallback npm exec" -f $pnpmCmd)
+                & npm exec --yes -- ("pnpm@{0}" -f $PnpmVersion) @PnpmArgs
+            } else {
+                & pnpm @PnpmArgs
+            }
+        } else {
+            & npm exec --yes -- ("pnpm@{0}" -f $PnpmVersion) @PnpmArgs
+        }
+        return $LASTEXITCODE
+    } finally {
+        $env:Path = $prevPath
+    }
+}
+
 try {
     if ($PSScriptRoot) {
         $rootCandidate = $PSScriptRoot
@@ -77,111 +99,89 @@ try {
 
 Write-Host ""
 Write-Host "========================================"
-Write-Host "  GerMaCrise — installation Windows"
+Write-Host "  GerMaCrise - installation Windows"
 Write-Host "========================================"
-Write-Host "  Dossier : $InstallDir"
-Write-Host "  (quelques minutes)"
+Write-Host ("  Dossier : {0}" -f $InstallDir)
 Write-Host "========================================"
 
-# --- 1. Git + Node ---
-Say "1/4 — Preparation (Git, Node.js)"
+Say "1/4 - Preparation (Git, Node.js)"
 Refresh-Path
 if (-not (Have "git") -or -not (Have "node")) {
     if (-not (Have "winget")) {
-        Write-Host ""
-        Write-Host "Installez puis relancez :"
-        Write-Host "  Git  : https://git-scm.com/download/win"
-        Write-Host "  Node : https://nodejs.org/  (bouton LTS)"
-        Write-Host ""
-        Read-Host "Appuyez sur Entree pour fermer"
+        Write-Host "Installez Git + Node LTS puis relancez :"
+        Write-Host "  https://git-scm.com/download/win"
+        Write-Host "  https://nodejs.org/"
+        Read-Host "Entree pour fermer"
         exit 1
     }
     if (-not (Have "git")) {
-        Write-Host "Installation de Git…"
         winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
         Refresh-Path
     }
     if (-not (Have "node")) {
-        Write-Host "Installation de Node.js…"
         winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements
         Refresh-Path
     }
 }
 if (-not (Have "git") -or -not (Have "node")) {
-    Write-Host ""
-    Write-Host "Git ou Node pas encore visibles."
-    Write-Host "Fermez cette fenetre, rouvrez PowerShell, puis relancez."
-    Write-Host ""
-    Read-Host "Appuyez sur Entree pour fermer"
+    Write-Host "Fermez cette fenetre, rouvrez Terminal, puis relancez la commande."
+    Read-Host "Entree pour fermer"
     exit 1
 }
-Write-Host ("OK — Node {0} | {1}" -f (node -v), (git --version))
+Write-Host ("OK - Node {0}" -f (node -v))
 
-# --- 2. pnpm (sans corepack) ---
-Say "2/4 — Outils GerMaCrise"
-$pnpmOk = $false
-if (Have "pnpm") {
-    try {
-        $null = & pnpm -v 2>$null
-        if ($LASTEXITCODE -eq 0) { $pnpmOk = $true }
-    } catch {}
-}
-$script:UseNpxPnpm = $false
-if (-not $pnpmOk) {
-    Write-Host "Installation de pnpm…"
-    try {
-        & npm install -g "pnpm@$PnpmVersion" 2>&1 | Out-Host
-        Refresh-Path
-        $null = & pnpm -v 2>$null
-        if ($LASTEXITCODE -eq 0) { $pnpmOk = $true }
-    } catch {}
-}
-if (-not $pnpmOk) {
-    Write-Host "pnpm global indisponible — utilisation de npx (OK)."
-    $script:UseNpxPnpm = $true
-    $pnpmOk = $true
-}
-if ($script:UseNpxPnpm) {
-    Write-Host "OK — npx pnpm@$PnpmVersion"
-    function Invoke-Pnpm { param([string[]]$Args) & npx --yes "pnpm@$PnpmVersion" @Args }
-} else {
-    Write-Host ("OK — pnpm {0}" -f (pnpm -v))
-    function Invoke-Pnpm { param([string[]]$Args) & pnpm @Args }
+Say "2/4 - Outils GerMaCrise (pnpm)"
+$env:HUSKY = "0"
+try {
+    & npm install -g ("pnpm@{0}" -f $PnpmVersion) 2>&1 | Out-Null
+} catch {}
+Refresh-Path
+$code = Invoke-GerMaPnpm @("--version")
+if ($code -ne 0) {
+    Write-Host "Impossible d'executer pnpm. Verifiez Node/npm."
+    Read-Host "Entree pour fermer"
+    exit 1
 }
 
-# --- 3. Code ---
-Say "3/4 — Telechargement"
+Say "3/4 - Telechargement"
 if ((Test-Path (Join-Path $InstallDir "package.json")) -and
     (Test-Path (Join-Path $InstallDir "pnpm-workspace.yaml"))) {
     if (Test-Path (Join-Path $InstallDir ".git")) {
-        Write-Host "Mise a jour…"
-        try { & git -C $InstallDir pull --ff-only } catch {}
-    } else {
-        Write-Host "Depot local deja present."
+        try { & git -C $InstallDir pull --ff-only 2>&1 | Out-Null } catch {}
     }
 } else {
     if (Test-Path $InstallDir) {
-        Write-Host "Le dossier $InstallDir existe deja. Renommez-le puis relancez."
-        Read-Host "Appuyez sur Entree pour fermer"
+        Write-Host ("Le dossier {0} existe deja et n'est pas GerMaCrise." -f $InstallDir)
+        Write-Host "Renommez-le ou supprimez-le, puis relancez."
+        Read-Host "Entree pour fermer"
         exit 1
     }
-    & git clone $RepoUrl $InstallDir
+    & git clone --depth 1 $RepoUrl $InstallDir
+    try { & git -C $InstallDir fetch --tags --depth 1 2>&1 | Out-Null } catch {}
 }
 
-# --- 4. Install + raccourcis ---
-Say "4/4 — Installation des composants (patientez)…"
+Say "4/4 - Installation des composants (2-5 min)..."
 Set-Location $InstallDir
-Invoke-Pnpm @("install")
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "pnpm install a echoue."
-    Read-Host "Appuyez sur Entree pour fermer"
-    exit 1
+$logFile = Join-Path $env:TEMP "germa-pnpm-install.log"
+$env:HUSKY = "0"
+$installOutput = & {
+    Invoke-GerMaPnpm @("install", "--reporter=append-only") 2>&1
 }
-
-$pnpmLaunch = if ($script:UseNpxPnpm) {
-    "npx --yes pnpm@$PnpmVersion --filter meshtastic-web dev -- --host 0.0.0.0 --port $Port"
-} else {
-    "pnpm --filter meshtastic-web dev -- --host 0.0.0.0 --port $Port"
+$installOutput | Tee-Object -FilePath $logFile | Out-Host
+$installCode = $LASTEXITCODE
+if ($installCode -ne 0) {
+    Write-Host ""
+    Write-Host ("ECHEC pnpm install (code {0})." -f $installCode) -ForegroundColor Red
+    Write-Host ("Journal : {0}" -f $logFile)
+    Write-Host ""
+    Write-Host "Si vous voyez une erreur Python 'meshtastic' :"
+    Write-Host "  ce n'est PAS le client web - desinstallez le conflit :"
+    Write-Host "  pip uninstall meshtastic"
+    Write-Host "  puis relancez l'install GerMaCrise."
+    Write-Host ""
+    Write-Host ("Sinon : supprimez le dossier {0} et reessayez." -f $InstallDir)
+    Read-Host "Entree pour fermer"
+    exit 1
 }
 
 $demarrerBat = Join-Path $InstallDir "demarrer.bat"
@@ -189,18 +189,18 @@ $demarrerContent = @"
 @echo off
 chcp 65001 >nul
 cd /d "$InstallDir"
+set HUSKY=0
 echo.
 echo ========================================
-echo   GerMaCrise — serveur local
+echo   GerMaCrise - serveur local
 echo ========================================
 echo   Ouvrez Chrome ou Edge :
 echo     http://localhost:$Port
 echo   Laissez cette fenetre ouverte.
-echo   Ctrl+C pour arreter.
 echo ========================================
 echo.
 start "" "http://localhost:$Port"
-$pnpmLaunch
+call npm exec --yes -- pnpm@$PnpmVersion --filter meshtastic-web exec vite -- --host 0.0.0.0 --port $Port
 echo.
 pause
 "@
@@ -209,17 +209,14 @@ Write-Utf8NoBom -Path $demarrerBat -Content $demarrerContent
 $iconPng = Join-Path $InstallDir "apps\web\public\images\germacrise_icon.png"
 $desktopDir = Get-DesktopDir
 $desktopLnk = Join-Path $desktopDir "GerMaCrise.lnk"
-$homeBat = Join-Path $env:USERPROFILE "demarrer-GerMaCrise.bat"
-Copy-Item $demarrerBat $homeBat -Force
-
+Copy-Item $demarrerBat (Join-Path $env:USERPROFILE "demarrer-GerMaCrise.bat") -Force
 $lnkOk = New-GerMaCriseShortcut -TargetBat $demarrerBat -ShortcutPath $desktopLnk -IconPath $iconPng
 if (-not $lnkOk) {
     Copy-Item $demarrerBat (Join-Path $desktopDir "GerMaCrise.bat") -Force
 }
 
-# Script pour recreer l'icone
 $creerIcone = Join-Path $InstallDir "creer-icone.ps1"
-$creerContent = @"
+Write-Utf8NoBom -Path $creerIcone -Content @"
 `$InstallDir = '$InstallDir'
 `$demarrerBat = Join-Path `$InstallDir 'demarrer.bat'
 `$iconPng = Join-Path `$InstallDir 'apps\web\public\images\germacrise_icon.png'
@@ -236,27 +233,30 @@ if (Test-Path `$iconPng) { `$s.IconLocation = "`$iconPng,0" }
 Copy-Item `$demarrerBat (Join-Path `$env:USERPROFILE 'demarrer-GerMaCrise.bat') -Force
 Write-Host "Raccourci cree : `$lnk"
 "@
-Write-Utf8NoBom -Path $creerIcone -Content $creerContent
 
 Write-Host ""
 Write-Host "========================================"
 Write-Host "  C'est pret."
 Write-Host ""
-Write-Host "  → Ouvrez Chrome / Edge :"
-Write-Host "       http://localhost:$Port"
+Write-Host "  Ouvrez Chrome / Edge :"
+Write-Host ("    http://localhost:{0}" -f $Port)
 Write-Host ""
-Write-Host "  → Relancer plus tard :"
-if ($lnkOk) {
-    Write-Host "       • Raccourci GerMaCrise sur le Bureau"
-} else {
-    Write-Host "       • GerMaCrise.bat sur le Bureau"
-}
-Write-Host "       • ou demarrer-GerMaCrise.bat (dossier Utilisateur)"
+Write-Host "  Relancer : raccourci GerMaCrise sur le Bureau"
 Write-Host "========================================"
 Write-Host ""
-Write-Host "Demarrage… (laissez cette fenetre ouverte)"
+Write-Host "Demarrage du serveur..."
 Write-Host ""
 
 Start-Sleep -Seconds 2
-try { Start-Process "http://localhost:$Port" } catch {}
-Invoke-Pnpm @("--filter", "meshtastic-web", "dev", "--", "--host", "0.0.0.0", "--port", $Port)
+try { Start-Process ("http://localhost:{0}" -f $Port) } catch {}
+$code = Invoke-GerMaPnpm @(
+    "--filter", "meshtastic-web",
+    "exec", "vite", "--",
+    "--host", "0.0.0.0",
+    "--port", $Port
+)
+if ($code -ne 0) {
+    Write-Host ("Le serveur n a pas demarre (code {0})." -f $code)
+    Read-Host "Entree pour fermer"
+    exit $code
+}

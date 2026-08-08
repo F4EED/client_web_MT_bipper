@@ -53,9 +53,27 @@ Laisser la fenêtre noire ouverte pendant l’utilisation. Arrêt : fermer la fe
 ### Si ça ne démarre pas
 
 1. Fermer toutes les fenêtres GerMaCrise  
-2. Rouvrir **Terminal** et relancer la commande `irm … \| iex`  
-3. Vérifier Chrome/Edge (pas Internet Explorer)  
-4. Antivirus : autoriser Node.js / le dossier `GerMaCrise` si bloqué
+2. Supprimer le dossier `%USERPROFILE%\GerMaCrise` s’il est corrompu  
+3. Rouvrir **Terminal** et relancer :
+
+```powershell
+irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
+```
+
+4. Vérifier Chrome/Edge  
+5. Antivirus : autoriser Node.js / le dossier `GerMaCrise`
+
+### Erreur Python `No module named 'meshtastic'`
+
+Le client web **n’utilise pas** le module Python Meshtastic.  
+Si cette erreur apparaît, un autre outil Python (CLI `meshtastic`) gêne souvent l’installation :
+
+```powershell
+pip uninstall meshtastic
+# ou : pip3 uninstall meshtastic
+```
+
+Puis relancer l’install GerMaCrise. Journal détaillé : `%TEMP%\germa-pnpm-install.log`
 
 ---
 

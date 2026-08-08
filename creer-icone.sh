@@ -29,7 +29,7 @@ echo "Laissez cette fenêtre ouverte. Ctrl+C pour arrêter."
 if command -v xdg-open >/dev/null 2>&1; then
   (sleep 3 && xdg-open "http://localhost:${PORT}" >/dev/null 2>&1) &
 fi
-exec pnpm --filter meshtastic-web dev -- --host 0.0.0.0 --port ${PORT}
+exec pnpm --filter meshtastic-web exec vite -- --host 0.0.0.0 --port ${PORT}
 EOF
   chmod +x "${INSTALL_DIR}/demarrer.sh"
 fi

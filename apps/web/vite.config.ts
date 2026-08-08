@@ -8,21 +8,25 @@ import { defineConfig, loadEnv } from "vite";
 import { createHtmlPlugin } from "vite-plugin-html";
 import { VitePWA } from "vite-plugin-pwa";
 
-let hash = "";
+let hash = "DEV";
 let version = "v0.0.0";
 try {
-  hash = execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
-} catch (error) {
-  console.error("Error getting git hash:", error);
+  hash = execSync("git rev-parse --short HEAD", {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+} catch {
   hash = "DEV";
 }
 
 try {
   version = execSync("git describe --tags --abbrev=0", {
     encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
   }).trim();
-} catch (error) {
-  console.error("Error getting git version:", error);
+} catch {
+  // Clone sans tags (install utilisateur) — garder v0.0.0
+  version = "v0.0.0";
 }
 
 const CONTENT_SECURITY_POLICY =
@@ -84,7 +88,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 3000,
+      // Aligné avec install.sh / install.ps1 (PC crise)
+      port: 5173,
+      strictPort: false,
       headers: {
         "Content-Security-Policy": CONTENT_SECURITY_POLICY,
         "Cross-Origin-Opener-Policy": "same-origin",
