@@ -70,17 +70,33 @@ Options utiles :
 
 Double-clic possible : `scripts\install-local.bat` (appelle le `.ps1`).
 
-### Linux (bash)
+### Linux / WSL / Git Bash
+
+> **Sous Windows natif**, utilise plutôt `scripts\install-local.ps1` (ci-dessus).  
+> Le `.sh` est pour **Linux**, **WSL** (Ubuntu, etc.) ou éventuellement **Git Bash**.
 
 ```bash
+cd /chemin/vers/client_web_MT_bipper   # ou : cd ~/client_web_MT_bipper après clone
 chmod +x scripts/install-local.sh
-./scripts/install-local.sh
+./scripts/install-local.sh --start-dev
+```
 
-# Options
+Options :
+
+```bash
 ./scripts/install-local.sh --skip-apt     # ne pas installer via apt/dnf
 ./scripts/install-local.sh --start-dev    # lancer le serveur après install
 ./scripts/install-local.sh --build        # build production
 ./scripts/install-local.sh --dir ~/GerMaCrise/web
+./scripts/install-local.sh --help
+```
+
+Si tu vois `bash\r` ou `$'\r': command not found` (fichier en CRLF) :
+
+```bash
+sed -i 's/\r$//' scripts/install-local.sh
+chmod +x scripts/install-local.sh
+./scripts/install-local.sh --start-dev
 ```
 
 ---
@@ -227,6 +243,10 @@ Puis mêmes étapes `clone` → `corepack` → `pnpm install` → `dev`.
 | Port déjà utilisé | Arrêter l’autre process, ou noter le port alternatif affiché par Vite |
 | `husky` / `prepare` en erreur | Le dépôt doit être un clone Git (pas toujours critique ; réessayer `pnpm install`) |
 | Build très lent / antivirus | Ajouter une exclusion sur le dossier du projet (Windows Defender) |
+| `bash\r` / `$'\r': command not found` | Fins de ligne CRLF — `sed -i 's/\r$//' scripts/install-local.sh` puis `chmod +x` |
+| `Permission denied` | `chmod +x scripts/install-local.sh` puis `./scripts/…` (pas `sh scripts/…` si besoin) |
+| Sous Windows, le `.sh` ne démarre pas | Utiliser **`install-local.ps1`** ; le `.sh` est pour Linux/WSL |
+| WSL : seulement `docker-desktop` | Installer une distro : `wsl --install -d Ubuntu`, puis lancer le script **dans** Ubuntu |
 
 ---
 

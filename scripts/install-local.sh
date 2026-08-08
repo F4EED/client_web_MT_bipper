@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
-# Install local du client web GerMaCrise / Gaulix Bipper (Linux/macOS, sans Docker / Cursor).
+# Install local du client web GerMaCrise / Gaulix Bipper (Linux / macOS / WSL / Git Bash).
+# Sous Windows natif, préfère : scripts/install-local.ps1
 # Doc : docs/install_local.md
+#
+# IMPORTANT : ce fichier doit être en fins de ligne LF (pas CRLF).
+# Si erreur « bash\r » ou « $'\r': command not found » :
+#   sed -i 's/\r$//' scripts/install-local.sh && chmod +x scripts/install-local.sh
 set -euo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/F4EED/client_web_MT_bipper.git}"
@@ -73,7 +78,9 @@ install_packages() {
   elif have_cmd brew; then
     brew install git node@20 || brew install git node
   else
-    echo "Gestionnaire de paquets non détecté. Installez Git et Node.js 20+ manuellement." >&2
+    # Git Bash / environnement sans apt : on s'appuie sur Git/Node déjà dans le PATH Windows
+    echo "Pas d'apt/dnf/pacman (OK sous Git Bash / macOS sans Homebrew)."
+    echo "Assurez-vous que Git et Node.js 20+ sont installés et dans le PATH."
   fi
 }
 
@@ -146,12 +153,21 @@ cd "$REPO_ROOT"
 
 step "Activation pnpm@${PNPM_VERSION}"
 PNPM=(pnpm)
-if have_cmd corepack; then
-  corepack enable || true
-  corepack prepare "pnpm@${PNPM_VERSION}" --activate || true
+if have_cmd pnpm; then
+  echo "pnpm déjà disponible : $(pnpm -v)"
+elif have_cmd corepack; then
+  # Sous Windows, corepack enable peut échouer (EPERM sur Program Files) → repli npx
+  if corepack enable >/dev/null 2>&1 && corepack prepare "pnpm@${PNPM_VERSION}" --activate >/dev/null 2>&1 && have_cmd pnpm; then
+    echo "pnpm via corepack : $(pnpm -v)"
+  else
+    echo "corepack indisponible (souvent EPERM sous Windows) — repli npx pnpm@${PNPM_VERSION}"
+    PNPM=(npx "pnpm@${PNPM_VERSION}")
+  fi
+else
+  echo "pnpm absent — utilisation de npx pnpm@${PNPM_VERSION}"
+  PNPM=(npx "pnpm@${PNPM_VERSION}")
 fi
-if ! have_cmd pnpm; then
-  echo "pnpm absent du PATH — utilisation de npx pnpm@${PNPM_VERSION}"
+if ! have_cmd pnpm && [[ "${PNPM[0]}" == "pnpm" ]]; then
   PNPM=(npx "pnpm@${PNPM_VERSION}")
 fi
 

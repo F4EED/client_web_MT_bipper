@@ -56,7 +56,10 @@ Build production locale :
 # → apps\web\dist\
 ```
 
-### Linux
+### Linux / WSL (pas Windows natif)
+
+Sous **Windows**, préfère le script PowerShell ci-dessus.  
+Le `.sh` cible **Linux**, **WSL Ubuntu**, etc.
 
 ```bash
 git clone https://github.com/F4EED/client_web_MT_bipper.git
@@ -64,6 +67,8 @@ cd client_web_MT_bipper
 chmod +x scripts/install-local.sh
 ./scripts/install-local.sh --start-dev
 ```
+
+Si erreur `bash\r` : `sed -i 's/\r$//' scripts/install-local.sh && chmod +x scripts/install-local.sh`
 
 Le script peut installer `git` / `nodejs` via apt, dnf ou pacman. Sinon :
 
