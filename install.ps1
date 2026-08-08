@@ -30,61 +30,29 @@ function Refresh-Path {
     if ($machine -and $user) { $env:Path = "$machine;$user" }
     elseif ($machine) { $env:Path = $machine }
     elseif ($user) { $env:Path = $user }
-}
-
-function Get-DesktopDir {
-    $bureau = Join-Path $env:USERPROFILE "Bureau"
-    if (Test-Path $bureau) { return $bureau }
-    $desktop = [Environment]::GetFolderPath("Desktop")
-    if ($desktop -and (Test-Path $desktop)) { return $desktop }
-    return (Join-Path $env:USERPROFILE "Desktop")
-}
-
-function Write-Utf8NoBom {
-    param([string]$Path, [string]$Content)
-    $utf8 = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::WriteAllText($Path, $Content, $utf8)
-}
-
-function New-GerMaCriseShortcut {
-    param([string]$TargetBat, [string]$ShortcutPath, [string]$IconPath)
-    try {
-        $w = New-Object -ComObject WScript.Shell
-        $s = $w.CreateShortcut($ShortcutPath)
-        $s.TargetPath = $TargetBat
-        $s.WorkingDirectory = Split-Path $TargetBat -Parent
-        $s.WindowStyle = 1
-        $s.Description = "Demarrer GerMaCrise"
-        if ($IconPath -and (Test-Path $IconPath)) { $s.IconLocation = "$IconPath,0" }
-        $s.Save()
-        return $true
-    } catch {
-        return $false
+    # Eviter que meshtastic.exe (pip) se mette devant npm/pnpm
+    $parts = $env:Path -split ";" | Where-Object {
+        $_ -and ($_ -notmatch '(?i)[\\/]Python[\\/].*[\\/]Scripts') -and ($_ -notmatch '(?i)meshtastic')
     }
+    $env:Path = ($parts -join ";")
 }
 
-# Call pnpm reliably (avoid PowerShell $Args bug + Python meshtastic.exe conflict)
 function Invoke-GerMaPnpm {
     param([Parameter(Mandatory = $true)][string[]]$PnpmArgs)
-    $prevPath = $env:Path
-    try {
-        $env:HUSKY = "0"
-        Refresh-Path
-        if (Have "pnpm") {
-            $pnpmCmd = (Get-Command pnpm -ErrorAction Stop).Source
-            if ($pnpmCmd -match "Python|meshtastic") {
-                Write-Host ("pnpm suspect ignore ({0}) - fallback npm exec" -f $pnpmCmd)
-                & npm exec --yes -- ("pnpm@{0}" -f $PnpmVersion) @PnpmArgs
-            } else {
-                & pnpm @PnpmArgs
-            }
+    $env:HUSKY = "0"
+    Refresh-Path
+    if (Have "pnpm") {
+        $pnpmCmd = (Get-Command pnpm -ErrorAction Stop).Source
+        if ($pnpmCmd -match "(?i)Python|meshtastic") {
+            Write-Host ("pnpm suspect ignore ({0}) - fallback npm.cmd" -f $pnpmCmd)
+            & npm.cmd exec --yes -- ("pnpm@{0}" -f $PnpmVersion) @PnpmArgs
         } else {
-            & npm exec --yes -- ("pnpm@{0}" -f $PnpmVersion) @PnpmArgs
+            & pnpm @PnpmArgs
         }
-        return $LASTEXITCODE
-    } finally {
-        $env:Path = $prevPath
+    } else {
+        & npm.cmd exec --yes -- ("pnpm@{0}" -f $PnpmVersion) @PnpmArgs
     }
+    return $LASTEXITCODE
 }
 
 try {
@@ -133,7 +101,7 @@ Write-Host ("OK - Node {0}" -f (node -v))
 Say "2/4 - Outils GerMaCrise (pnpm)"
 $env:HUSKY = "0"
 try {
-    & npm install -g ("pnpm@{0}" -f $PnpmVersion) 2>&1 | Out-Null
+    & npm.cmd install -g ("pnpm@{0}" -f $PnpmVersion) 2>&1 | Out-Null
 } catch {}
 Refresh-Path
 $code = Invoke-GerMaPnpm @("--version")
@@ -175,7 +143,6 @@ if ($installCode -ne 0) {
     Write-Host ("Journal : {0}" -f $logFile)
     Write-Host ""
     Write-Host "Si vous voyez une erreur Python 'meshtastic' :"
-    Write-Host "  ce n'est PAS le client web - desinstallez le conflit :"
     Write-Host "  pip uninstall meshtastic"
     Write-Host "  puis relancez l'install GerMaCrise."
     Write-Host ""
@@ -184,55 +151,13 @@ if ($installCode -ne 0) {
     exit 1
 }
 
-$demarrerBat = Join-Path $InstallDir "demarrer.bat"
-$demarrerContent = @"
-@echo off
-chcp 65001 >nul
-cd /d "$InstallDir"
-set HUSKY=0
-echo.
-echo ========================================
-echo   GerMaCrise - serveur local
-echo ========================================
-echo   Ouvrez Chrome ou Edge :
-echo     http://localhost:$Port
-echo   Laissez cette fenetre ouverte.
-echo ========================================
-echo.
-start "" "http://localhost:$Port"
-call npm exec --yes -- pnpm@$PnpmVersion --filter meshtastic-web exec vite -- --host 0.0.0.0 --port $Port
-echo.
-pause
-"@
-Write-Utf8NoBom -Path $demarrerBat -Content $demarrerContent
-
-$iconPng = Join-Path $InstallDir "apps\web\public\images\germacrise_icon.png"
-$desktopDir = Get-DesktopDir
-$desktopLnk = Join-Path $desktopDir "GerMaCrise.lnk"
-Copy-Item $demarrerBat (Join-Path $env:USERPROFILE "demarrer-GerMaCrise.bat") -Force
-$lnkOk = New-GerMaCriseShortcut -TargetBat $demarrerBat -ShortcutPath $desktopLnk -IconPath $iconPng
-if (-not $lnkOk) {
-    Copy-Item $demarrerBat (Join-Path $desktopDir "GerMaCrise.bat") -Force
-}
-
+Say "Raccourci Bureau..."
 $creerIcone = Join-Path $InstallDir "creer-icone.ps1"
-Write-Utf8NoBom -Path $creerIcone -Content @"
-`$InstallDir = '$InstallDir'
-`$demarrerBat = Join-Path `$InstallDir 'demarrer.bat'
-`$iconPng = Join-Path `$InstallDir 'apps\web\public\images\germacrise_icon.png'
-`$bureau = Join-Path `$env:USERPROFILE 'Bureau'
-if (-not (Test-Path `$bureau)) { `$bureau = [Environment]::GetFolderPath('Desktop') }
-`$lnk = Join-Path `$bureau 'GerMaCrise.lnk'
-`$w = New-Object -ComObject WScript.Shell
-`$s = `$w.CreateShortcut(`$lnk)
-`$s.TargetPath = `$demarrerBat
-`$s.WorkingDirectory = `$InstallDir
-`$s.Description = 'Demarrer GerMaCrise'
-if (Test-Path `$iconPng) { `$s.IconLocation = "`$iconPng,0" }
-`$s.Save()
-Copy-Item `$demarrerBat (Join-Path `$env:USERPROFILE 'demarrer-GerMaCrise.bat') -Force
-Write-Host "Raccourci cree : `$lnk"
-"@
+if (Test-Path $creerIcone) {
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $creerIcone
+} else {
+    Write-Host "creer-icone.ps1 absent — raccourci non cree."
+}
 
 Write-Host ""
 Write-Host "========================================"
@@ -241,7 +166,9 @@ Write-Host ""
 Write-Host "  Ouvrez Chrome / Edge :"
 Write-Host ("    http://localhost:{0}" -f $Port)
 Write-Host ""
-Write-Host "  Relancer : raccourci GerMaCrise sur le Bureau"
+Write-Host "  Relancer :"
+Write-Host "    - GerMaCrise sur le Bureau (.lnk ou .bat)"
+Write-Host "    - ou %USERPROFILE%\demarrer-GerMaCrise.bat"
 Write-Host "========================================"
 Write-Host ""
 Write-Host "Demarrage du serveur..."

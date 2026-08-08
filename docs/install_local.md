@@ -56,11 +56,17 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 
 | Méthode | Action |
 |:--------|:-------|
-| **Bureau** | Double-clic sur le raccourci **GerMaCrise** |
-| **Dossier utilisateur** | `demarrer-GerMaCrise.bat` |
-| Recréer le raccourci | `powershell -File %USERPROFILE%\GerMaCrise\creer-icone.ps1` |
+| **Bureau** | **GerMaCrise.lnk** ou **GerMaCrise.bat** |
+| **Dossier utilisateur** | `%USERPROFILE%\demarrer-GerMaCrise.bat` |
+| Recréer le raccourci | voir commande ci-dessous |
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\creer-icone.ps1"
+```
 
 Laisser la fenêtre noire ouverte pendant l’utilisation. Arrêt : fermer la fenêtre ou `Ctrl+C`.
+
+> Windows n’affiche souvent pas une icône PNG sur un `.lnk` : le script utilise un `.ico` et place aussi un `.bat` sur le Bureau (comme sous Linux).
 
 ### Si ça ne démarre pas
 
