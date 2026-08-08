@@ -10,15 +10,17 @@
 
 Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).
 
-## Installation locale (Windows / Linux)
+## Installation locale (Windows / Debian)
 
 Sans **Cursor**, sans **Docker** : Git + Node.js 20+ + pnpm suffisent.  
 Guide détaillé : **[docs/install_local.md](docs/install_local.md)**.
 
-| | |
-|:--|:--|
-| Prérequis | **Git**, **Node.js 20 LTS+**, **pnpm 11.9.0**, navigateur **Chrome** ou **Edge** (USB / BLE) |
-| Scripts | [`scripts/install-local.ps1`](scripts/install-local.ps1) · [`install-local.bat`](scripts/install-local.bat) · [`install-local.sh`](scripts/install-local.sh) |
+| OS | Script |
+|:---|:-------|
+| **Windows** | [`scripts/install-local.ps1`](scripts/install-local.ps1) (ou `.bat`) |
+| **Debian** | [`scripts/install-local.sh`](scripts/install-local.sh) — à lancer **sur la machine Debian** |
+
+Prérequis : **Git**, **Node.js 20 LTS+**, **pnpm 11.9.0**, navigateur **Chrome** / Chromium / **Edge** (USB / BLE).
 
 ### Windows (PowerShell)
 
@@ -56,34 +58,28 @@ Build production locale :
 # → apps\web\dist\
 ```
 
-### Linux / WSL (pas Windows natif)
+### Debian (`install-local.sh`)
 
-Sous **Windows**, préfère le script PowerShell ci-dessus.  
-Le `.sh` cible **Linux**, **WSL Ubuntu**, etc.
+À exécuter **sur le PC Debian** (terminal local ou SSH), pas depuis Windows.
 
 ```bash
+sudo apt update && sudo apt install -y git curl ca-certificates
 git clone https://github.com/F4EED/client_web_MT_bipper.git
 cd client_web_MT_bipper
 chmod +x scripts/install-local.sh
 ./scripts/install-local.sh --start-dev
 ```
 
-Si erreur `bash\r` : `sed -i 's/\r$//' scripts/install-local.sh && chmod +x scripts/install-local.sh`
-
-Le script peut installer `git` / `nodejs` via apt, dnf ou pacman. Sinon :
+Le script installe Node 20 via apt/NodeSource si besoin, puis `pnpm install`, puis lance Vite.  
+Ouvrir l’URL affichée (souvent `http://localhost:5173`) dans Chromium/Chrome.
 
 ```bash
-# Debian/Ubuntu exemple — Node 20+
-sudo apt update && sudo apt install -y git curl ca-certificates
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-corepack enable && corepack prepare pnpm@11.9.0 --activate
-pnpm install
-pnpm --filter meshtastic-web dev
+# Build production seulement
+./scripts/install-local.sh --build
+# → apps/web/dist/
 ```
 
-Build : `./scripts/install-local.sh --build` → `apps/web/dist/`.
+Si erreur `bash\r` : `sed -i 's/\r$//' scripts/install-local.sh && chmod +x scripts/install-local.sh`
 
 ### Après le démarrage
 

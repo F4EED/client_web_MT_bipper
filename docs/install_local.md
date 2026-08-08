@@ -1,6 +1,9 @@
 # Installation locale — Client web GerMaCrise / Gaulix Bipper
 
-Procédure pour installer et lancer le client web sur un PC **sans Cursor**, **sans Docker**, avec uniquement Windows (ou Linux) + outils libres.
+Procédure pour installer et lancer le client web sur un PC **sans Cursor**, **sans Docker** :
+
+- **Windows** → `scripts/install-local.ps1`
+- **Debian** (et dérivés) → `scripts/install-local.sh`
 
 > Dépôt : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
 > Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md)  
@@ -70,13 +73,31 @@ Options utiles :
 
 Double-clic possible : `scripts\install-local.bat` (appelle le `.ps1`).
 
-### Linux / WSL / Git Bash
+### Debian (script `install-local.sh`)
 
-> **Sous Windows natif**, utilise plutôt `scripts\install-local.ps1` (ci-dessus).  
-> Le `.sh` est pour **Linux**, **WSL** (Ubuntu, etc.) ou éventuellement **Git Bash**.
+À lancer **sur la machine Debian** (pas depuis Windows). Le script utilise `apt` + NodeSource pour Node 20, puis `pnpm install`.
+
+**Machine Debian neuve — tout en une fois :**
 
 ```bash
-cd /chemin/vers/client_web_MT_bipper   # ou : cd ~/client_web_MT_bipper après clone
+sudo apt update
+sudo apt install -y git curl ca-certificates
+
+git clone https://github.com/F4EED/client_web_MT_bipper.git
+cd client_web_MT_bipper
+
+chmod +x scripts/install-local.sh
+./scripts/install-local.sh --start-dev
+```
+
+Le script demandera le mot de passe `sudo` si Git/Node manquent.  
+Puis ouvrir dans Chromium/Chrome : l’URL affichée (souvent `http://localhost:5173`).
+
+**Déjà cloné :**
+
+```bash
+cd ~/client_web_MT_bipper   # adapter le chemin
+git pull
 chmod +x scripts/install-local.sh
 ./scripts/install-local.sh --start-dev
 ```
@@ -84,14 +105,14 @@ chmod +x scripts/install-local.sh
 Options :
 
 ```bash
-./scripts/install-local.sh --skip-apt     # ne pas installer via apt/dnf
-./scripts/install-local.sh --start-dev    # lancer le serveur après install
-./scripts/install-local.sh --build        # build production
+./scripts/install-local.sh --skip-apt     # ne pas toucher à apt (Git/Node déjà OK)
+./scripts/install-local.sh --start-dev    # lancer Vite après install
+./scripts/install-local.sh --build        # build → apps/web/dist/
 ./scripts/install-local.sh --dir ~/GerMaCrise/web
 ./scripts/install-local.sh --help
 ```
 
-Si tu vois `bash\r` ou `$'\r': command not found` (fichier en CRLF) :
+Si erreur `bash\r` / `$'\r': command not found` (CRLF) :
 
 ```bash
 sed -i 's/\r$//' scripts/install-local.sh
@@ -190,15 +211,13 @@ Les fichiers statiques sont dans `apps\web\dist\` (déployables ensuite via [INS
 
 ---
 
-## Méthode manuelle (Linux)
-
-### Debian / Ubuntu
+## Méthode manuelle (Debian, sans script)
 
 ```bash
 sudo apt update
 sudo apt install -y git curl ca-certificates
 
-# Node 20 LTS (NodeSource) — ou installer depuis nodejs.org / nvm
+# Node 20 LTS (le paquet Debian « nodejs » est souvent trop ancien)
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
@@ -210,15 +229,6 @@ corepack prepare pnpm@11.9.0 --activate
 pnpm install
 pnpm --filter meshtastic-web dev
 ```
-
-### Fedora
-
-```bash
-sudo dnf install -y git nodejs
-# vérifier : node -v ≥ 20
-```
-
-Puis mêmes étapes `clone` → `corepack` → `pnpm install` → `dev`.
 
 ---
 
@@ -244,9 +254,10 @@ Puis mêmes étapes `clone` → `corepack` → `pnpm install` → `dev`.
 | `husky` / `prepare` en erreur | Le dépôt doit être un clone Git (pas toujours critique ; réessayer `pnpm install`) |
 | Build très lent / antivirus | Ajouter une exclusion sur le dossier du projet (Windows Defender) |
 | `bash\r` / `$'\r': command not found` | Fins de ligne CRLF — `sed -i 's/\r$//' scripts/install-local.sh` puis `chmod +x` |
-| `Permission denied` | `chmod +x scripts/install-local.sh` puis `./scripts/…` (pas `sh scripts/…` si besoin) |
-| Sous Windows, le `.sh` ne démarre pas | Utiliser **`install-local.ps1`** ; le `.sh` est pour Linux/WSL |
-| WSL : seulement `docker-desktop` | Installer une distro : `wsl --install -d Ubuntu`, puis lancer le script **dans** Ubuntu |
+| `Permission denied` | `chmod +x scripts/install-local.sh` puis `./scripts/install-local.sh …` |
+| Script lancé sous Windows | Sur Debian uniquement ; sous Windows → **`install-local.ps1`** |
+| `sudo: command not found` / apt refuse | Compte avec sudo, ou `su -` puis relancer |
+| Node trop vieux (`v12` / `v18`) | Le script (ou NodeSource ci-dessus) installe Node **20** |
 
 ---
 

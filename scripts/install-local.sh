@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Install local du client web GerMaCrise / Gaulix Bipper (Linux / macOS / WSL / Git Bash).
-# Sous Windows natif, préfère : scripts/install-local.ps1
+# Install local du client web GerMaCrise / Gaulix Bipper
+# Cible principale : Debian (et dérivés Ubuntu).
+# Sous Windows : utiliser scripts/install-local.ps1 (pas ce fichier).
 # Doc : docs/install_local.md
 #
-# IMPORTANT : ce fichier doit être en fins de ligne LF (pas CRLF).
-# Si erreur « bash\r » ou « $'\r': command not found » :
+# IMPORTANT : fins de ligne LF (pas CRLF). Si erreur « bash\r » :
 #   sed -i 's/\r$//' scripts/install-local.sh && chmod +x scripts/install-local.sh
 set -euo pipefail
 
@@ -20,11 +20,17 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/install-local.sh [options]
 
+Cible : Debian (apt). Sous Windows, utiliser install-local.ps1.
+
+Exemples (Debian) :
+  ./scripts/install-local.sh --start-dev
+  ./scripts/install-local.sh --build
+
 Options:
   --dir DIR       Dossier projet (défaut: clone dans ~/client_web_MT_bipper
                   ou racine du dépôt si le script est déjà dedans)
-  --skip-apt      Ne pas installer git/nodejs via apt/dnf/pacman
-  --start-dev     Lancer pnpm --filter meshtastic-web dev après install
+  --skip-apt      Ne pas installer git/nodejs via apt
+  --start-dev     Lancer le serveur Vite après install
   --build         Build production (apps/web/dist)
   --no-clone      Échouer si le dossier n'est pas déjà le monorepo
   -h, --help      Aide
@@ -60,27 +66,22 @@ install_packages() {
     fi
   fi
 
-  step "Installation dépendances système (git, nodejs)"
-  if have_cmd apt-get; then
-    sudo apt-get update -y
-    sudo apt-get install -y git curl ca-certificates
-    if ! have_cmd node || [[ "$(node -v | sed 's/^v//' | cut -d. -f1)" -lt 20 ]]; then
-      if [[ -f /etc/os-release ]]; then
-        # Node 20 via NodeSource quand le paquet distro est trop vieux
-        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-        sudo apt-get install -y nodejs
-      fi
-    fi
-  elif have_cmd dnf; then
-    sudo dnf install -y git nodejs
-  elif have_cmd pacman; then
-    sudo pacman -Sy --noconfirm git nodejs npm
-  elif have_cmd brew; then
-    brew install git node@20 || brew install git node
-  else
-    # Git Bash / environnement sans apt : on s'appuie sur Git/Node déjà dans le PATH Windows
-    echo "Pas d'apt/dnf/pacman (OK sous Git Bash / macOS sans Homebrew)."
-    echo "Assurez-vous que Git et Node.js 20+ sont installés et dans le PATH."
+  step "Installation dépendances système (git, curl, Node.js 20) — Debian/apt"
+  if ! have_cmd apt-get; then
+    echo "apt-get introuvable. Ce script cible Debian (ou Ubuntu)." >&2
+    echo "Installez Git + Node.js 20+ manuellement, puis relancez avec --skip-apt." >&2
+    return 0
+  fi
+  if ! have_cmd sudo; then
+    echo "sudo est requis pour apt-get (ou lancez en root)." >&2
+    exit 1
+  fi
+  sudo apt-get update -y
+  sudo apt-get install -y git curl ca-certificates gnupg
+  if ! have_cmd node || [[ "$(node -v | sed 's/^v//' | cut -d. -f1)" -lt 20 ]]; then
+    # Paquet Debian « nodejs » est souvent trop vieux → NodeSource 20.x
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    sudo apt-get install -y nodejs
   fi
 }
 
@@ -104,7 +105,7 @@ resolve_repo_root() {
   echo "${HOME}/client_web_MT_bipper"
 }
 
-echo "GerMaCrise / Gaulix Bipper — installation locale"
+echo "GerMaCrise / Gaulix Bipper — installation locale (Debian)"
 echo "Doc : docs/install_local.md"
 
 install_packages
