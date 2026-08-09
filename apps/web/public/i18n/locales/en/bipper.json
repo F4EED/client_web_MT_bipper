@@ -127,6 +127,7 @@
       "routes": "Roads",
       "status": "Status",
       "sdis": "SDIS",
+      "meteo": "Weather",
       "secourisme": "First aid",
       "crise": "Crisis",
       "adrasec": "ADRASEC"

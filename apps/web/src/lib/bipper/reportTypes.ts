@@ -6,7 +6,8 @@ export type ReportCategoryId =
   | "sdis"
   | "secourisme"
   | "crise"
-  | "adrasec";
+  | "adrasec"
+  | "meteo";
 
 export type ReportKind = "waypoint" | "status";
 
@@ -27,6 +28,7 @@ export const REPORT_CATEGORIES: readonly ReportCategoryId[] = [
   "routes",
   "status",
   "sdis",
+  "meteo",
   "secourisme",
   "crise",
   "adrasec",
@@ -38,6 +40,7 @@ const S: ReportCategoryId = "secourisme";
 const T: ReportCategoryId = "status";
 const A: ReportCategoryId = "adrasec";
 const D: ReportCategoryId = "sdis";
+const M: ReportCategoryId = "meteo";
 
 function wp(
   id: string,
@@ -123,6 +126,19 @@ export const REPORT_TYPES: readonly ReportType[] = [
   wp("blesse_grave", [S], 0x1fa78, "🩸", "Blessé grave"),
   wp("demande_renfort", [S, C], 0x1f4e2, "📢", "Demande renfort"),
   wp("fin_intervention", [S], 0x2705, "✅", "Fin d'intervention"),
+
+  // Météo — conditions du moment
+  wp("pluie", [M], 0x1f327, "🌧️", "Pluie"),
+  wp("pluie_forte", [M], 0x1f4a7, "💧", "Pluie forte"),
+  wp("orage", [M], 0x26c8, "⛈️", "Orage"),
+  wp("fort_orage", [M], 0x26a1, "⚡", "Fort orage"),
+  wp("brouillard", [M], 0x1f32b, "🌫️", "Brouillard"),
+  wp("neige", [M], 0x2744, "❄️", "Neige"),
+  wp("grele", [M], 0x1f9ca, "🧊", "Grêle"),
+  wp("vent_fort", [M], 0x1f4a8, "💨", "Vent fort"),
+  wp("canicule", [M], 0x1f975, "🥵", "Canicule"),
+  wp("gel", [M], 0x1f976, "🥶", "Gel"),
+  wp("verglas", [M], 0x26a0, "⚠️", "Verglas"),
 ];
 
 export function reportTypesForCategory(

@@ -29,7 +29,7 @@ Aucun backend Node n’est requis en production : build → fichiers statiques d
 
 | Route | Écran | Contenu |
 |:------|:------|:--------|
-| `/alerts` | **GerMaCrise** | 4 onglets : **Signalement** (Routes / Status / SDIS / Secourisme / Crise / ADRASEC — matrice `Signalement GerMaCrise_v1.xlsx`), **Message**, **Alertes**, **ACK lecture** |
+| `/alerts` | **GerMaCrise** | 4 onglets : **Signalement** (Routes / Status / SDIS / Météo / Secourisme / Crise / ADRASEC — matrice Excel + Météo), **Message**, **Alertes**, **ACK lecture** |
 | `/settings/bipper` | **Paramétrer le Bipper** | Status, tags **T1–T10**, code, bips |
 | (prévu) | **Signaler POI** | Envoi waypoint / objet POI |
 | `/map` | Carte | Waypoints mesh (dont SOS à styliser) |
@@ -43,7 +43,10 @@ Tous les boutons → **waypoint** `WAYPOINT_APP` (PortNum 8), GPS obligatoire, p
 1. **Fr_Balise** (canal 0)  
 2. **Alerte** (canal 7)
 
-Code : `ReportTab.tsx`. Ami hors LoRa = MQTT uniquement ; si seul Alerte arrive, vérifier l’uplink **Primary** de la passerelle.
+Code : `ReportTab.tsx` + `lib/bipper/reportTypes.ts`. Ami hors LoRa = MQTT uniquement ; si seul Alerte arrive, vérifier l’uplink **Primary** de la passerelle.
+
+Catégories : **Routes / Status / SDIS / Météo / Secourisme / Crise / ADRASEC**.  
+Onglet **Météo** : Pluie, Pluie forte, Orage, Fort orage, Brouillard, Neige, Grêle, Vent fort, Canicule, Gel, Verglas (même dual TX waypoint).
 
 **MQTT** : ce n’est pas un bug UI si un objet n’apparaît pas sur le broker — le **PC crise** ne publie pas MQTT en usine ; l’uplink passe par une **passerelle MQTT dédiée** (MQTT activé + uplink canal + portée LoRa). Checklist : firmware `docs/ECOSYSTEME-GAULIX.md` § Checklist diagnostic MQTT.
 

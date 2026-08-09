@@ -202,7 +202,7 @@ export function ReportTab() {
       <div
         role="tablist"
         aria-label={t("manager.tabs.report")}
-        className="grid grid-cols-3 gap-1 rounded-lg bg-slate-200 p-1 sm:grid-cols-6 dark:bg-slate-700"
+        className="grid grid-cols-4 gap-1 rounded-lg bg-slate-200 p-1 sm:grid-cols-7 dark:bg-slate-700"
       >
         {REPORT_CATEGORIES.map((cat) => {
           const selected = category === cat;
