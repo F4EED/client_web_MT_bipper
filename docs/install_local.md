@@ -94,14 +94,29 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 ### Erreur Python `No module named 'meshtastic'`
 
 Le client web **n’utilise pas** le module Python Meshtastic.  
-Si cette erreur apparaît, un autre outil Python (CLI `meshtastic`) gêne souvent l’installation :
+Si l’erreur apparaît **au clic sur l’icône** (alors que l’install avait réussi) : le PATH Windows contient souvent `meshtastic.exe` (pip), qui pollue le lanceur.
+
+1. Recréer le raccourci (lanceur sans Python) :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\creer-icone.ps1"
+```
+
+Ou, si le dossier n’a pas le script à jour :
+
+```powershell
+cd $env:USERPROFILE\GerMaCrise
+git pull
+powershell -NoProfile -ExecutionPolicy Bypass -File .\creer-icone.ps1
+```
+
+2. Optionnel, retirer le conflit Python :
 
 ```powershell
 pip uninstall meshtastic
-# ou : pip3 uninstall meshtastic
 ```
 
-Puis relancer l’install GerMaCrise. Journal détaillé : `%TEMP%\germa-pnpm-install.log`
+Journal install : `%TEMP%\germa-pnpm-install.log`
 
 ---
 

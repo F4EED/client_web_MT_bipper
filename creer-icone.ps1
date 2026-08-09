@@ -62,12 +62,41 @@ function Ensure-Ico {
     }
 }
 
+# Chemins Node (evite le PATH pollue par Python\Scripts\meshtastic.exe)
+$nodeDir = "C:\Program Files\nodejs"
+$nodeExe = Join-Path $nodeDir "node.exe"
+$npmCmd = Join-Path $nodeDir "npm.cmd"
+if (-not (Test-Path $nodeExe)) {
+    $n = Get-Command node -ErrorAction SilentlyContinue
+    if ($n) {
+        $nodeExe = $n.Source
+        $nodeDir = Split-Path $nodeExe -Parent
+        $npmCmd = Join-Path $nodeDir "npm.cmd"
+    }
+}
+$npmGlobal = Join-Path $env:APPDATA "npm"
+$pnpmCmd = Join-Path $npmGlobal "pnpm.cmd"
+$pnpmMjsApp = Join-Path $npmGlobal "node_modules\pnpm\bin\pnpm.mjs"
+$pnpmMjsLocal = Join-Path $InstallDir "node_modules\pnpm\bin\pnpm.mjs"
+$pnpmMjsRoot = Join-Path $InstallDir "node_modules\.pnpm\pnpm@$PnpmVersion*\node_modules\pnpm\bin\pnpm.mjs"
+
 $demarrerBat = Join-Path $InstallDir "demarrer.bat"
+# PATH minimal : Node + npm global + system32. PAS de Python\Scripts (meshtastic.exe).
 $demarrerContent = @"
 @echo off
+setlocal EnableExtensions
 chcp 65001 >nul
 cd /d "$InstallDir"
 set HUSKY=0
+set "GERMA_NODE=$nodeExe"
+set "GERMA_NPM=$npmCmd"
+set "GERMA_PNPM_CMD=$pnpmCmd"
+set "GERMA_PNPM_MJS=$pnpmMjsApp"
+if exist "$pnpmMjsLocal" set "GERMA_PNPM_MJS=$pnpmMjsLocal"
+
+REM PATH propre : jamais Python\Scripts (sinon meshtastic.exe pollue npm/pnpm)
+set "PATH=$nodeDir;$npmGlobal;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem"
+
 echo.
 echo ========================================
 echo   GerMaCrise - serveur local
@@ -78,15 +107,37 @@ echo   Laissez cette fenetre ouverte.
 echo ========================================
 echo.
 start "" "http://localhost:$Port"
-where npm.cmd >nul 2>&1
-if errorlevel 1 (
-  echo npm introuvable. Reinstallez Node.js LTS puis relancez.
+
+if not exist "%GERMA_NODE%" (
+  echo Node.js introuvable. Reinstallez Node LTS depuis https://nodejs.org/
   pause
   exit /b 1
 )
-call npm.cmd exec --yes -- pnpm@$PnpmVersion --filter meshtastic-web exec vite -- --host 0.0.0.0 --port $Port
+
+if exist "%GERMA_PNPM_MJS%" (
+  "%GERMA_NODE%" "%GERMA_PNPM_MJS%" --filter meshtastic-web exec vite -- --host 0.0.0.0 --port $Port
+  goto :fin
+)
+
+if exist "%GERMA_PNPM_CMD%" (
+  call "%GERMA_PNPM_CMD%" --filter meshtastic-web exec vite -- --host 0.0.0.0 --port $Port
+  goto :fin
+)
+
+if exist "%GERMA_NPM%" (
+  call "%GERMA_NPM%" exec --yes -- pnpm@$PnpmVersion --filter meshtastic-web exec vite -- --host 0.0.0.0 --port $Port
+  goto :fin
+)
+
+echo Impossible de lancer pnpm/vite. Relancez l'install :
+echo   irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 ^| iex
+pause
+exit /b 1
+
+:fin
 echo.
 pause
+endlocal
 "@
 Write-Utf8NoBom -Path $demarrerBat -Content $demarrerContent
 
@@ -110,6 +161,7 @@ $lnkOk = $false
 try {
     $w = New-Object -ComObject WScript.Shell
     $s = $w.CreateShortcut($desktopLnk)
+    # /k garde la fenetre si erreur ; on utilise /c + pause dans le bat
     $s.TargetPath = "$env:ComSpec"
     $s.Arguments = "/c `"$demarrerBat`""
     $s.WorkingDirectory = $InstallDir
@@ -131,4 +183,7 @@ if ($lnkOk) {
 }
 Write-Host ("Bat       : {0}" -f $desktopBat)
 Write-Host ("Aussi     : {0}" -f (Join-Path $env:USERPROFILE "demarrer-GerMaCrise.bat"))
+Write-Host ""
+Write-Host "Si erreur Python 'meshtastic' : le lanceur ignore desormais Python\Scripts."
+Write-Host "Optionnel : pip uninstall meshtastic"
 Write-Host ""
