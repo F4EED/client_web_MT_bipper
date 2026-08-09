@@ -38,12 +38,12 @@ Persistance locale (session coordinateur) : clé `localStorage` `gaulix.alertMan
 
 ### Signalement — objets Alerte + Fr_Balise
 
-Tous les boutons → **waypoint** `WAYPOINT_APP` (PortNum 8), GPS obligatoire, priorité **`ALERT`**, double envoi :
+Tous les boutons → **waypoint** `WAYPOINT_APP` (PortNum 8), GPS obligatoire, priorité **`ALERT`**, double envoi (`wantAck=false`, pause 500 ms) :
 
-1. **Alerte** (canal 7)  
-2. **Fr_Balise** (canal 0)
+1. **Fr_Balise** (canal 0)  
+2. **Alerte** (canal 7)
 
-Code : `ReportTab.tsx` (deux `sendPacket` WAYPOINT_APP).
+Code : `ReportTab.tsx`. Ami hors LoRa = MQTT uniquement ; si seul Alerte arrive, vérifier l’uplink **Primary** de la passerelle.
 
 **MQTT** : ce n’est pas un bug UI si un objet n’apparaît pas sur le broker — le **PC crise** ne publie pas MQTT en usine ; l’uplink passe par une **passerelle MQTT dédiée** (MQTT activé + uplink canal + portée LoRa). Checklist : firmware `docs/ECOSYSTEME-GAULIX.md` § Checklist diagnostic MQTT.
 

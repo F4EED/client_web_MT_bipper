@@ -143,12 +143,12 @@ export function ReportTab() {
         });
         return;
       }
-      // Dual TX: Alerte (7) + Fr_Balise (0) — PortNum WAYPOINT_APP (8).
+      // Dual TX WAYPOINT_APP: Fr_Balise d'abord, puis Alerte.
+      // wantAck=false + pause : évite de perdre le 2e TX (file radio / ReliableRouter).
+      const baliseCh =
+        baliseChannel !== null ? baliseChannel : Types.ChannelNumber.Primary;
       const channelsToSend = Array.from(
-        new Set([
-          alerteChannel,
-          baliseChannel !== null ? baliseChannel : Types.ChannelNumber.Primary,
-        ]),
+        new Set([baliseCh, alerteChannel]),
       ) as Types.ChannelNumber[];
 
       const waypointId = Math.floor(Math.random() * 0x7fffffff) || 1;
@@ -164,13 +164,14 @@ export function ReportTab() {
       });
       const payload = toBinary(Protobuf.Mesh.WaypointSchema, waypoint);
 
-      for (const channel of channelsToSend) {
+      for (let i = 0; i < channelsToSend.length; i++) {
+        const channel = channelsToSend[i];
         await meshClient.sendPacket(
           payload,
           Protobuf.Portnums.PortNum.WAYPOINT_APP,
           "broadcast",
           channel,
-          true,
+          false, // wantAck — broadcast ACK peut bloquer le 2e canal
           false,
           false,
           undefined,
@@ -178,10 +179,13 @@ export function ReportTab() {
           undefined,
           Protobuf.Mesh.MeshPacket_Priority.ALERT,
         );
+        if (i < channelsToSend.length - 1) {
+          await new Promise((r) => setTimeout(r, 500));
+        }
       }
       toast({
         title: t("report.sent.title"),
-        description: `${type.emoji} ${type.label}`,
+        description: `${type.emoji} ${type.label} · ch${baliseCh}+ch${alerteChannel}`,
       });
     } catch (e) {
       toast({
