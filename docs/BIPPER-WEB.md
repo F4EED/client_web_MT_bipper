@@ -136,13 +136,20 @@ Portail / POC : [germacrise.wordpress.com](https://germacrise.wordpress.com/).
 
 ## Développement local
 
-Installation utilisateur : **[install_local.md](install_local.md)** (`install.sh` / `install.bat`).
+Installation utilisateur : **[install_local.md](install_local.md)** (`install.sh` / `install.ps1` / `install.bat`).
 
 ```bash
 # Debian (tout-en-un)
 wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 bash install.sh
 ```
+
+```powershell
+# Windows 10/11 (tout-en-un)
+irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
+```
+
+Si sous Windows l’icône Bureau échoue avec `No module named 'meshtastic'` : recreer le lanceur (`creer-icone.ps1`) — détail dans [install_local.md](install_local.md).
 
 Développeur (déjà cloné) :
 

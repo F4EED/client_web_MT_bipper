@@ -33,9 +33,17 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 ```
 
 Puis **Chrome / Edge** → **http://localhost:5173**  
-Relancer : raccourci **GerMaCrise** sur le Bureau.
+Relancer : raccourci **GerMaCrise** sur le Bureau (`.lnk` ou `.bat`).
 
 Variante : double-clic sur **`install.bat`** (ZIP du dépôt).
+
+Si l’icône affiche `No module named 'meshtastic'` : ce n’est **pas** le client web — un outil Python gêne le PATH. Voir [install_local.md](docs/install_local.md) § Erreur Python, ou :
+
+```powershell
+cd $env:USERPROFILE\GerMaCrise
+git pull
+powershell -NoProfile -ExecutionPolicy Bypass -File .\creer-icone.ps1
+```
 
 Serveur / Docker : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
 

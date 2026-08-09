@@ -78,16 +78,18 @@ Laisser la fenêtre noire ouverte pendant l’utilisation. Arrêt : fermer la fe
 
 > Windows n’affiche souvent pas une icône PNG sur un `.lnk` : le script utilise un `.ico` et place aussi un `.bat` sur le Bureau (comme sous Linux).
 
+### Réinstallation propre (recommandé après une erreur d’icône)
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\GerMaCrise" -ErrorAction SilentlyContinue
+irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
+```
+
 ### Si ça ne démarre pas
 
 1. Fermer toutes les fenêtres GerMaCrise  
 2. Supprimer le dossier `%USERPROFILE%\GerMaCrise` s’il est corrompu  
-3. Rouvrir **Terminal** et relancer :
-
-```powershell
-irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
-```
-
+3. Rouvrir **Terminal** et relancer la commande `irm … | iex` ci-dessus  
 4. Vérifier Chrome/Edge  
 5. Antivirus : autoriser Node.js / le dossier `GerMaCrise`
 
