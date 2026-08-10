@@ -18,6 +18,7 @@
 SPA Vite/React pour **connecter** un nœud Meshtastic (USB Serial / Web Bluetooth) et :
 
 1. **Gérer les alertes** Gaulix (composer `#alerte` / `#secours` / `#vigilance` / `#info` / `#fin`, suivi local, ACK lecture) ;
+   - côté **Android** : réception type FR-Alerte (son / overlay rouge / ACK « J'ai pris connaissance ») — voir `BIPPER-ANDROID.md` ;
 2. **Paramétrer un Bipper** (tags T1–T10, code, `#status`, bips) ;
 3. (prévu) afficher waypoints **SOS** et page **Signaler POI**.
 
