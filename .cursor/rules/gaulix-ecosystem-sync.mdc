@@ -9,15 +9,18 @@ Chemins : `C:\firmware_meshtastic` · `C:\client web mesthastic_bipper` · `C:\b
 
 **Toute évolution protocole / tags / alertes / SOS-POI / docs doit être faite sur les trois dépôts dans la même session**, sauf périmètre explicitement limité.
 
-Protocole v1.12+ :
+Protocole v1.12.5+ :
 
 ```text
 #alerte|#secours|#vigilance|#info [N] <texte> [#entité…]
 #fin [N] [#entité]
 Pager ACK alerte [#N] JJ/MM HH:MM[ — texte][ | lat lon]
+#ack
 ```
 
-T1–T10 · multi-entités OU · nº alerte · ACK / waypoints signalement sur Fr_Balise.
+T1–T10 · multi-entités OU · nº alerte · ACK lecture (Alerte + DM émetteur) · `#ack` local (= bouton bip) · waypoints signalement sur Fr_Balise.
+
+Android RX : Morse **SOS SOS** anxiogène ; ACK app → `#ack` si bipper (≥ v1.12.5).
 
 ## Matériels firmware
 

@@ -5,7 +5,7 @@ ou Podman. L’image sert les fichiers statiques via **Nginx** (port **8080**).
 
 > Dépôt : [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper)  
 > Infra existante : `apps/web/infra/Containerfile` + `apps/web/infra/default.conf`  
-> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md) · Firmware cible **v1.11.0+**
+> Doc produit : [BIPPER-WEB.md](./BIPPER-WEB.md) · Firmware cible **v1.12.5+**
 
 ---
 

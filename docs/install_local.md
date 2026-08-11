@@ -40,6 +40,30 @@ echo "${XDG_CURRENT_DESKTOP:-?} / ${DESKTOP_SESSION:-?}"
 ls -la ~/.local/share/applications/germa-crise.desktop
 ```
 
+### AppImage native (alternative au serveur web)
+
+Si une release GitHub Android fournit `GerMaCrise.AppImage` :
+
+```bash
+wget -O GerMaCrise.AppImage \
+  "https://github.com/F4EED/bipper_android/releases/latest/download/GerMaCrise.AppImage"
+chmod +x GerMaCrise.AppImage
+./GerMaCrise.AppImage
+```
+
+Sinon build local (Docker) depuis le dépôt `bipper_android` : `scripts/build-germacrise-appimage.ps1` / Dockerfile `scripts/Dockerfile.appimage`.
+
+### APK téléphone (Crosscall / Android)
+
+```bash
+# Depuis un PC avec adb
+wget -O GerMaCrise.apk \
+  "https://github.com/F4EED/bipper_android/releases/latest/download/GerMaCrise-fdroid-universal-release.apk"
+adb install -r -t GerMaCrise.apk
+```
+
+Tags : `germacrise-v*` sur [F4EED/bipper_android/releases](https://github.com/F4EED/bipper_android/releases).
+
 ---
 
 ## Windows 10 / 11
@@ -92,6 +116,18 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 3. Rouvrir **Terminal** et relancer la commande `irm … | iex` ci-dessus  
 4. Vérifier Chrome/Edge  
 5. Antivirus : autoriser Node.js / le dossier `GerMaCrise`
+
+### APK téléphone (depuis Windows)
+
+1. Brancher le téléphone (débogage USB)  
+2. Télécharger l’APK depuis [releases bipper_android](https://github.com/F4EED/bipper_android/releases) (`GerMaCrise-fdroid-universal-release.apk`)  
+3. Installer :
+
+```bat
+adb install -r -t GerMaCrise-fdroid-universal-release.apk
+```
+
+(Voir aussi Android `docs/BIPPER-ANDROID.md` — Crosscall Core-X4.)
 
 ### Erreur Python `No module named 'meshtastic'`
 

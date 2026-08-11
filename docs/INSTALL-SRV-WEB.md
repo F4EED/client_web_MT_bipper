@@ -248,7 +248,7 @@ Après déploiement :
 2. Naviguer vers `/alerts` — page **Envoi alerte**.
 3. Naviguer vers `/settings/bipper` — page **Paramétrer le Bipper**.
 4. Connecter un Bipper (USB Serial ou Bluetooth) sous **contexte sécurisé**.
-5. Firmware recommandé : Gaulix **v1.11.0+** (`#alerte [N] texte #E1 #E2`).
+5. Firmware recommandé : Gaulix **v1.12.5+** (`#alerte [N] texte #E1 #E2`, `#ack`).
 
 ---
 

@@ -4,7 +4,7 @@
 |:--|:--|
 | **Dépôt** | [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper) |
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
-| **Firmware cible** | Gaulix Bipper **v1.12+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
+| **Firmware cible** | Gaulix Bipper **v1.12.5+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
 | **Install** | [install_local.md](install_local.md) — Debian : `wget` + `bash install.sh` · Windows : `install.bat` · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
 | **Écosystème** | Firmware + Android — voir firmware [`docs/ECOSYSTEME-GAULIX.md`](https://github.com/F4EED/Bipper_L1Pro/blob/develop/docs/ECOSYSTEME-GAULIX.md) · install APK Android : [`BIPPER-ANDROID.md`](https://github.com/F4EED/bipper_android/blob/main/docs/BIPPER-ANDROID.md#installation-sur-téléphone) |
@@ -18,8 +18,8 @@
 SPA Vite/React pour **connecter** un nœud Meshtastic (USB Serial / Web Bluetooth) et :
 
 1. **Gérer les alertes** Gaulix (composer `#alerte` / `#secours` / `#vigilance` / `#info` / `#fin`, suivi local, ACK lecture) ;
-   - côté **Android** : réception type FR-Alerte (son / overlay rouge / ACK « J'ai pris connaissance ») — voir `BIPPER-ANDROID.md` ;
-2. **Paramétrer un Bipper** (tags T1–T10, code, `#status`, bips) ;
+   - côté **Android** : Morse **SOS SOS** anxiogène + overlay rouge + ACK « J'ai pris connaissance » (`#ack` / DM émetteur) — voir `BIPPER-ANDROID.md` ;
+2. **Paramétrer un Bipper** (tags T1–T10, code, `#status`, `#ack`, bips) ;
 3. (prévu) afficher waypoints **SOS** et page **Signaler POI**.
 
 Aucun backend Node n’est requis en production : build → fichiers statiques dans `apps/web/dist/`.
@@ -53,20 +53,27 @@ Onglet **Météo** : Pluie, Pluie forte, Orage, Fort orage, Brouillard, Neige, G
 
 ---
 
-## Protocole (partagé Android / firmware) — v1.11
+## Protocole (partagé Android / firmware) — v1.12.5
 
 Implémentation cible : `apps/web/src/lib/bipper/alertCommands.ts` (+ `serviceTags.ts`, `pagerStatus.ts`, `parsePagerAck.ts`).
 
 ```text
 #alerte|#secours|#vigilance|#info [N] <texte> [#entité…]
 #fin [N] [#entité]
+Pager ACK alerte [#N] JJ/MM HH:MM[ — text][ | latN/S lonE/W]
+#ack
 ```
 
-ACK lecture bipper (firmware **v1.12**) :
+ACK lecture bipper (firmware **≥ v1.12.5**) :
+
+- Bouton bip **ou** commande locale `#ack` (client téléphone) → `acknowledgeAlert()` : broadcast canal **Alerte** + DM émetteur + GPS Fr_Balise.
+- Filaire reçu / affiché dans l’onglet ACK :
 
 ```text
 Pager ACK alerte [#N] JJ/MM HH:MM[ — text][ | latN/S lonE/W]
 ```
+
+Côté **Android** (réception alerte) : Morse **SOS SOS** anxiogène + sirène pim-pom ; bouton « J'ai pris connaissance » → `#ack` local sur bipper connecté (même procédure que l’appui bouton) sinon `Pager ACK` broadcast Alerte + DM émetteur.
 
 Exemples :
 
@@ -74,6 +81,7 @@ Exemples :
 #alerte 42 incendie hall #SDIS42 #test
 #fin 42
 #tagset T1=SDIS42,T2=test,T10=UDIOM42
+#ack
 Pager ACK alerte #42 31/07 10:30 — incendie hall | 45.12345N 4.56789E
 ```
 
@@ -84,12 +92,12 @@ Pager ACK alerte #42 31/07 10:30 — incendie hall | 45.12345N 4.56789E
 | Sans `#entité` | Tous les bippers |
 | `#fin N` | Clôture l’alerte N uniquement |
 | Appartenance locale | Slots **T1–T10** |
+| `#ack` | DM local → bip : simule bouton (firmware ≥ v1.12.5) |
 | ACK | Corrélé au nº `#N` si présent, sinon alerte ouverte récente + extrait texte |
 
 Source de vérité détaillée : firmware `docs/ECOSYSTEME-GAULIX.md`.
 
-> **État code web** : aligné protocole **v1.11** (nº d’alerte, multi-entités, T1–T10, `#tagset`, `#fin N`) + parsing ACK **v1.12**.
-
+> **État code web** : aligné protocole **v1.12** (nº d’alerte, multi-entités, T1–T10, `#tagset`, `#fin N`, parsing ACK) — pas d’alarme RX téléphone (rôle coordinateur). Android / firmware : **v1.12.5** (`#ack`, Morse SOS).
 ## Matériels firmware (connexion USB / BLE / Wi‑Fi)
 
 ### Pagers (`GAULIX_PAGER=1`) — paramétrage tags + alertes
@@ -181,9 +189,10 @@ La connexion USB passe par l’API **Web Serial** (`navigator.serial`). Sans ell
 
 **Pièges USB / ESP32 (CH340, ThinkNode M2, XIAO…)** :
 
-- Ouvrir le port série **reboote** souvent le MCU (pulse DTR/RTS) — le client attend ~5 s puis envoie un wake `0x94×4` avant `wantConfigId`.
+- Ouvrir le port série **reboote** souvent le MCU (pulse DTR/RTS Windows). L’ouverture suit le client Meshtastic officiel (`port.open` + retries) — pas de manip DTR/RTS ni wake `0x94×4` avant le handshake (ça cassait la config sur plusieurs cartes).
 - Un seul onglet / une seule app sur le COM (pas Chrome + Edge + CLI Meshtastic en même temps).
-- Symptôme « Connexion échouée / Chargement… / Noeuds (0) » : handshake incomplet — débrancher/rebrancer, fermer les autres apps série, reconnecter sous Chrome ou Edge.
+- Symptôme « Connexion échouée / Chargement… / Noeuds (0) » : handshake incomplet — débrancher/rebrancer, fermer les autres apps série, reconnecter sous Chrome ou Edge sur `http://localhost:5173` (pas une IP LAN).
+- Après config OK : `set_time_only` force l’horloge radio sur l’heure du PC (retries 0 / 2 / 8 s). Firmware Gaulix applique avec `forceUpdate` (ignore le throttle NTP/GPS).
 
 Web Bluetooth (BLE) : Chromium surtout ; Firefox/Safari limités ou absents selon version.
 
@@ -202,7 +211,7 @@ Après déploiement, vérifier :
 1. `/` charge le client ;
 2. `/alerts` et `/settings/bipper` (fallback SPA `index.html`) ;
 3. Connexion USB/BLE sous HTTPS ou localhost ;
-4. Firmware Bipper **v1.11.0+**.
+4. Firmware Bipper **v1.12.5+**.
 
 ---
 
