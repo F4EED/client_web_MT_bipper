@@ -127,8 +127,9 @@ export class ChatClient {
       const key = this.keyFor(conv);
 
       // Outbound is optimistic-appended in `send()`. If the firmware later
-      // echoes the same packet via `fromradio`, skip the duplicate.
-      if (this.store.hasMessage(key, message.id)) return;
+      // echoes the same packet via `fromradio` (possibly with a different
+      // channel index), skip the duplicate across ALL conversation buckets.
+      if (this.store.hasMessage(message.id)) return;
 
       this.store.append(key, message);
       void this.persistAppend(message);
@@ -169,8 +170,11 @@ export class ChatClient {
   ): Promise<Message[]> {
     const older = await this.repository.loadBefore(conv, before, limit);
     const key = this.keyFor(conv);
-    for (let i = older.length - 1; i >= 0; i--)
-      this.store.prepend(key, older[i]!);
+    for (let i = older.length - 1; i >= 0; i--) {
+      const m = older[i]!;
+      if (this.store.hasMessage(m.id)) continue;
+      this.store.prepend(key, m);
+    }
     return older;
   }
 
@@ -237,7 +241,7 @@ export class ChatClient {
       text: input.text,
       state: MessageState.Pending,
     };
-    if (!this.store.hasMessage(key, packetId)) {
+    if (!this.store.hasMessage(packetId)) {
       this.store.append(key, message);
       void this.persistAppend(message);
     }
@@ -267,7 +271,12 @@ export class ChatClient {
           conv,
           this.initialLoadLimit,
         );
-        for (const m of recent) this.store.append(key, m);
+        for (const m of recent) {
+          // Skip rows already present (live packet won the race, or the
+          // same packet id was incorrectly persisted under this key).
+          if (this.store.hasMessage(m.id)) continue;
+          this.store.append(key, m);
+        }
       } catch {
         // adapter may not have history yet; safe to ignore
       }

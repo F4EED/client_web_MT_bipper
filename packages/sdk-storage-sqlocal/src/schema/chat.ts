@@ -1,13 +1,19 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
 export const messages = sqliteTable(
   "messages",
   {
     /**
-     * Composite primary key would be ideal, but Meshtastic packet IDs are
-     * already 32-bit random values; collisions across devices are rare. We
-     * scope reads by (device_id, conversation_key) so collisions only
-     * matter within a single device's history.
+     * Packet IDs are unique per device. A single mesh packet must live in
+     * exactly one conversation — PRIMARY KEY (device_id, id) enforces that
+     * so `onConflictDoNothing` actually dedupes instead of silently
+     * inserting the same id under multiple conversation_key values.
      */
     id: integer("id").notNull(),
     deviceId: integer("device_id").notNull(),
@@ -21,7 +27,7 @@ export const messages = sqliteTable(
     state: text("state", { enum: ["pending", "ack", "failed"] }).notNull(),
   },
   (t) => ({
-    pk: index("messages_pk").on(t.deviceId, t.id),
+    pk: primaryKey({ columns: [t.deviceId, t.id] }),
     convRxTime: index("idx_messages_conv_rxtime").on(
       t.deviceId,
       t.conversationKey,

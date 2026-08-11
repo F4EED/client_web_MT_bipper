@@ -188,9 +188,8 @@ async function openSerial(
     writable: !!(port as SerialPort).writable,
   });
 
-  // Port-state hygiene (force-close + retry open + busy detection) lives
-  // inside the transport package — see SerialConnectError. We just unwrap
-  // the Result and surface the user-facing message on failure.
+  // Port open + stream wiring live in the transport package (upstream-style
+  // pipeTo). Unwrap SerialConnectError for the Connections UI.
   const result = await TransportWebSerial.createFromPort(port);
   if (Result.isError(result)) {
     log.error("openSerial: createFromPort returned Err", {

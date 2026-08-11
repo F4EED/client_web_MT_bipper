@@ -190,6 +190,7 @@ export function useConnections() {
       // Either path may fire first; `markConfigured` is idempotent.
       let configuredHandled = false;
       let handshakeTimer: ReturnType<typeof setTimeout> | undefined;
+      const timeSyncTimers: ReturnType<typeof setTimeout>[] = [];
       const markConfigured = (source: string): void => {
         if (configuredHandled) return;
         configuredHandled = true;
@@ -198,16 +199,28 @@ export function useConnections() {
         device.setConnectionPhase("configured");
         updateStatus(id, "configured");
         startMaintenanceHeartbeat(id, meshDevice);
-        // Force radio RTC from PC clock once the config handshake is done
-        // (same timing as Android MeshConnectionManager.onNodeDbReady).
-        void meshDevice.setTimeOnly().then(
-          () => log.info("setTimeOnly ok — radio clock synced from PC", { id }),
-          (error) =>
-            log.warn("setTimeOnly failed", {
-              id,
-              message: error instanceof Error ? error.message : String(error),
-            }),
-        );
+        // Force radio RTC from PC clock (firmware set_time_only uses forceUpdate).
+        // Retry: first admin after configure can race USB/BLE; later attempts catch it.
+        const syncRadioClock = (attempt: number): void => {
+          const epoch = Math.floor(Date.now() / 1000);
+          void meshDevice.setTimeOnly(epoch).then(
+            () =>
+              log.info("setTimeOnly ok — radio clock synced from PC", {
+                id,
+                attempt,
+                epoch,
+              }),
+            (error) =>
+              log.warn("setTimeOnly failed", {
+                id,
+                attempt,
+                message: error instanceof Error ? error.message : String(error),
+              }),
+          );
+        };
+        syncRadioClock(1);
+        timeSyncTimers.push(window.setTimeout(() => syncRadioClock(2), 2_000));
+        timeSyncTimers.push(window.setTimeout(() => syncRadioClock(3), 8_000));
       };
 
       const unsubConfigComplete = meshDevice.events.onConfigComplete.subscribe(
@@ -252,21 +265,37 @@ export function useConnections() {
       // Do not wait for configure() to resolve before starting retries:
       // wantConfigId sits in the SDK queue for up to 60s without a radio ACK,
       // and ESP32 often reboots on serial open so the first packet is lost.
-      log.debug("setupMeshDevice: calling configure() + handshake retries", {
-        id,
-      });
-      meshDevice.configure().catch((error) => {
-        const e = error as Error;
-        log.error("setupMeshDevice: configure() rejected", {
+      // Brief settle after USB open (DTR pulse) before the first wantConfigId —
+      // reader is already running so boot garbage is drained by the framer.
+      const SERIAL_BOOT_SETTLE_MS = 2000;
+      let bootSettleTimer: ReturnType<typeof setTimeout> | undefined;
+      const kickConfigure = (): void => {
+        if (configuredHandled) return;
+        log.debug("setupMeshDevice: calling configure() + handshake retries", {
           id,
-          name: e?.name,
-          message: e?.message,
         });
-        if (!configuredHandled) {
-          updateStatus(id, "error", error?.message ?? String(error));
-        }
-      });
-      startConfigHeartbeat(id, meshDevice);
+        meshDevice.configure().catch((error) => {
+          const e = error as Error;
+          log.error("setupMeshDevice: configure() rejected", {
+            id,
+            name: e?.name,
+            message: e?.message,
+          });
+          if (!configuredHandled) {
+            updateStatus(id, "error", error?.message ?? String(error));
+          }
+        });
+        startConfigHeartbeat(id, meshDevice);
+      };
+      if (serialPort) {
+        log.debug("setupMeshDevice: serial boot settle", {
+          id,
+          ms: SERIAL_BOOT_SETTLE_MS,
+        });
+        bootSettleTimer = setTimeout(kickConfigure, SERIAL_BOOT_SETTLE_MS);
+      } else {
+        kickConfigure();
+      }
 
       const HANDSHAKE_TIMEOUT_MS = 45_000;
       handshakeTimer = setTimeout(() => {
@@ -282,14 +311,17 @@ export function useConnections() {
           updateStatus(
             id,
             "error",
-            "Configuration handshake timed out. Unplug the radio, close other serial apps, then reconnect.",
+            "Handshake config timeout. Débranchez la radio, fermez les autres apps USB, puis reconnectez.",
           );
         });
       }, HANDSHAKE_TIMEOUT_MS);
 
       const prevUnsub = configSubscriptions.get(id);
       configSubscriptions.set(id, () => {
+        if (bootSettleTimer !== undefined) clearTimeout(bootSettleTimer);
         if (handshakeTimer !== undefined) clearTimeout(handshakeTimer);
+        for (const t of timeSyncTimers) clearTimeout(t);
+        timeSyncTimers.length = 0;
         prevUnsub?.();
       });
 

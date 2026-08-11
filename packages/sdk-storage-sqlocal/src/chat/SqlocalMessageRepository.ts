@@ -59,7 +59,10 @@ export class SqlocalMessageRepository implements MessageRepository {
   async appendBatch(input: ReadonlyArray<Message>): Promise<void> {
     if (input.length === 0) return;
     const rows = input.map((m) => messageToRow(this.deviceId, m));
-    await this.db.insert(messages).values(rows).onConflictDoNothing();
+    await this.db
+      .insert(messages)
+      .values(rows)
+      .onConflictDoNothing({ target: [messages.deviceId, messages.id] });
     this.notify(input);
   }
 

@@ -35,11 +35,23 @@ export class ChatStore {
   }
 
   /**
-   * Whether a message with `id` is already present in the bucket. Used by
-   * the inbound-packet subscriber to skip duplicates of an outbound message
-   * that was optimistically appended on send.
+   * Whether a message with `id` is already present in any conversation
+   * bucket. Packet IDs are globally unique per device — once a packet has
+   * been accepted into one bucket it must not be appended again under a
+   * different conversation key (e.g. optimistic send on ch1 + firmware
+   * echo tagged as ch0).
    */
-  hasMessage(key: string, id: number): boolean {
+  hasMessage(id: number): boolean {
+    for (const bucket of this.buckets.values()) {
+      if (bucket.value.some((m) => m.id === id)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Whether a message with `id` is already present in a specific bucket.
+   */
+  hasMessageIn(key: string, id: number): boolean {
     const bucket = this.buckets.get(key);
     if (!bucket) return false;
     return bucket.value.some((m) => m.id === id);

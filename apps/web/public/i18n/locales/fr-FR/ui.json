@@ -33,7 +33,7 @@
       "notConnected": "Non connecté",
       "notConnectedHint": "Ouvrez Connexions et connectez la radio (USB Série).",
       "handshakeFailed": "Connexion échouée",
-      "handshakeFailedHint": "Allez dans Connexions → Connecter à nouveau. Attendez ~5 s après le reboot du boîtier."
+      "handshakeFailedHint": "Débranchez la radio, fermez les autres clients USB, rechargez http://localhost:5173, puis reconnectez."
     }
   },
   "batteryStatus": {

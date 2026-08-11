@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import type { ReadonlySignal } from "../core/index.ts";
 
 /**
@@ -8,9 +8,11 @@ import type { ReadonlySignal } from "../core/index.ts";
  * snapshot. Mirrors `@meshtastic/sdk-react`'s `useSignal` (PR #1050).
  */
 export function useSignal<T>(sig: ReadonlySignal<T>): T {
-  return useSyncExternalStore(
-    sig.subscribe,
-    () => sig.value,
-    () => sig.peek(),
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => sig.subscribe(onStoreChange),
+    [sig],
   );
+  const getSnapshot = useCallback(() => sig.value, [sig]);
+  const getServerSnapshot = useCallback(() => sig.peek(), [sig]);
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

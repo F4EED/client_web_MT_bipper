@@ -12,11 +12,8 @@ export function useBrowserFeatureDetection(): BrowserSupport {
     const features: [BrowserFeature, boolean][] = [
       ["Web Bluetooth", !!navigator.bluetooth],
       ["Web Serial", !!navigator.serial],
-      [
-        "Secure Context",
-        globalThis.location.protocol === "https:" ||
-          globalThis.location.hostname === "localhost",
-      ],
+      // Prefer the browser flag — covers localhost, 127.0.0.1, ::1, and https.
+      ["Secure Context", globalThis.isSecureContext === true],
     ];
 
     return features.reduce<BrowserSupport>(

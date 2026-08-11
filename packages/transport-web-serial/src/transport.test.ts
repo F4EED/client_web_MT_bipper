@@ -288,7 +288,7 @@ describe("TransportWebSerial.createFromPort port hygiene", () => {
     vi.restoreAllMocks();
   });
 
-  it("force-closes then reopens an already-open port (clears zombie locks)", async () => {
+  it("closes then reopens an already-open port (clears zombie locks)", async () => {
     const fake = new FakeSerialPort();
     expect(fake.readable).not.toBeNull();
     const closeSpy = vi.spyOn(fake, "close");
@@ -297,8 +297,8 @@ describe("TransportWebSerial.createFromPort port hygiene", () => {
     expect(Result.isOk(result)).toBe(true);
     expect(closeSpy).toHaveBeenCalled();
     expect(openSpy).toHaveBeenCalled();
-    // Wake bytes (4× START1) are written after settle.
-    expect(fake.lastWritten).toEqual(new Uint8Array([0x94, 0x94, 0x94, 0x94]));
+    // Upstream-style open: nothing written until MeshDevice.configure().
+    expect(fake.lastWritten).toBeUndefined();
     if (Result.isOk(result)) await result.value.disconnect();
   });
 

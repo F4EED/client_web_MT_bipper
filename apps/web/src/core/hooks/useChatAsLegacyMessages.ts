@@ -30,34 +30,37 @@ export type UseChatAsLegacyMessagesParams =
   | UseChatAsLegacyMessagesBroadcast
   | UseChatAsLegacyMessagesDirect;
 
+/**
+ * Subscribe to exactly one conversation. Callers must not invoke this hook
+ * twice with different discriminants on the same render — that previously
+ * forced a permanent `useChat(0)` subscription whenever a DM tab was open,
+ * hydrating Primary into memory as a side effect of every Messages visit.
+ */
 export function useChatAsLegacyMessages(
   params: UseChatAsLegacyMessagesParams,
 ): LegacyMessage[] {
+  const isBroadcast = params.type === MessageType.Broadcast;
   const broadcast = useChat(
-    params.type === MessageType.Broadcast
-      ? params.channelId
-      : (0 as Types.ChannelNumber),
+    isBroadcast ? params.channelId : (0 as Types.ChannelNumber),
   );
-  const direct = useDirectChat(
-    params.type === MessageType.Direct ? params.peer : 0,
-  );
-  const sdkMessages =
-    params.type === MessageType.Broadcast
-      ? broadcast.messages
-      : direct.messages;
+  const direct = useDirectChat(isBroadcast ? 0 : params.peer);
+  const sdkMessages = isBroadcast ? broadcast.messages : direct.messages;
+  const channelId = isBroadcast ? params.channelId : 0;
+  const peer = isBroadcast ? 0 : params.peer;
 
-  return useMemo(
-    () => sdkMessages.map((m) => toLegacy(m, params)),
-    [sdkMessages, params],
-  );
+  return useMemo(() => {
+    // Defense in depth: never show a broadcast bubble under the wrong tab
+    // even if a stale/dup row leaked into the bucket (pre-v3 OPFS).
+    const filtered = isBroadcast
+      ? sdkMessages.filter((m) => m.channel === channelId)
+      : sdkMessages;
+    return filtered.map((m) => toLegacy(m, params.type));
+  }, [sdkMessages, params.type, channelId, peer, isBroadcast]);
 }
 
-function toLegacy(
-  message: SdkMessage,
-  params: UseChatAsLegacyMessagesParams,
-): LegacyMessage {
+function toLegacy(message: SdkMessage, type: MessageType): LegacyMessage {
   return {
-    type: params.type,
+    type,
     channel: message.channel,
     to: message.to,
     from: message.from,

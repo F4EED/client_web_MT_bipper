@@ -117,6 +117,17 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 4. Vérifier Chrome/Edge  
 5. Antivirus : autoriser Node.js / le dossier `GerMaCrise`
 
+### Messages identiques sur plusieurs canaux (Fr_*)
+
+Si le **même** message apparaît sur Fr_Balise, Fr_EMCOM et Fr_BlaBla, mais pas dans GerMaCrise Android sur le même nœud :
+
+```powershell
+cd $env:USERPROFILE\GerMaCrise   # ou le clone local
+git pull
+```
+
+Puis **Ctrl+F5** dans Chrome/Edge. Si besoin : Paramètres site → effacer les données pour `localhost`. Détail : `docs/BIPPER-WEB.md` § Messages / canaux.
+
 ### APK téléphone (depuis Windows)
 
 1. Brancher le téléphone (débogage USB)  

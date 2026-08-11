@@ -245,7 +245,8 @@ export const Sidebar = ({ children }: SidebarProps) => {
                   )}
                 >
                   {activeConnection?.status === "error"
-                    ? t("sidebar.deviceInfo.handshakeFailedHint")
+                    ? (activeConnection.error ??
+                      t("sidebar.deviceInfo.handshakeFailedHint"))
                     : t("sidebar.deviceInfo.notConnectedHint")}
                 </Subtle>
                 <button

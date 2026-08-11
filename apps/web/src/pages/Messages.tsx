@@ -166,21 +166,31 @@ export const MessagesPage = () => {
     [meshClient, numericChatId, isDirect],
   );
 
-  const broadcastMessages = useChatAsLegacyMessages({
-    type: MessageType.Broadcast,
-    channelId: numericChatId,
-  });
-  const directMessages = useChatAsLegacyMessages({
-    type: MessageType.Direct,
-    peer: numericChatId,
-  });
+  const chatMessages = useChatAsLegacyMessages(
+    isDirect
+      ? { type: MessageType.Direct, peer: numericChatId }
+      : {
+          type: MessageType.Broadcast,
+          channelId: numericChatId as Types.ChannelNumber,
+        },
+  );
 
   const renderChatContent = () => {
     switch (chatType) {
       case MessageType.Broadcast:
-        return <ChannelChat messages={[...broadcastMessages].reverse()} />;
+        return (
+          <ChannelChat
+            key={`broadcast-${numericChatId}`}
+            messages={[...chatMessages].reverse()}
+          />
+        );
       case MessageType.Direct:
-        return <ChannelChat messages={[...directMessages].reverse()} />;
+        return (
+          <ChannelChat
+            key={`direct-${numericChatId}`}
+            messages={[...chatMessages].reverse()}
+          />
+        );
       default:
         return <SelectMessageChat />;
     }

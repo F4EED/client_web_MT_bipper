@@ -65,4 +65,46 @@ export const MIGRATIONS: ReadonlyArray<{ version: number; sql: string[] }> = [
       )`,
     ],
   },
+  {
+    // v1 named the (device_id, id) index "messages_pk" but never created a
+    // real PRIMARY KEY / UNIQUE constraint, so onConflictDoNothing was a
+    // no-op and the same packet id could be stored under multiple
+    // conversation_key values — then hydrating each channel tab surfaced
+    // the identical message everywhere.
+    version: 3,
+    sql: [
+      `CREATE TABLE IF NOT EXISTS messages_v3 (
+        id INTEGER NOT NULL,
+        device_id INTEGER NOT NULL,
+        conversation_key TEXT NOT NULL,
+        from_node INTEGER NOT NULL,
+        to_node INTEGER NOT NULL,
+        channel INTEGER NOT NULL,
+        rx_time INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        text TEXT NOT NULL,
+        state TEXT NOT NULL,
+        PRIMARY KEY (device_id, id)
+      )`,
+      // Prefer a row whose conversation_key matches its channel field, then
+      // the newest rx_time. INSERT OR IGNORE keeps the first row per PK.
+      `INSERT OR IGNORE INTO messages_v3
+        (id, device_id, conversation_key, from_node, to_node, channel, rx_time, type, text, state)
+       SELECT id, device_id, conversation_key, from_node, to_node, channel, rx_time, type, text, state
+       FROM messages
+       ORDER BY
+         CASE
+           WHEN type = 'broadcast'
+            AND conversation_key = ('channel:' || channel) THEN 0
+           WHEN type = 'direct' AND conversation_key LIKE 'direct:%' THEN 0
+           ELSE 1
+         END ASC,
+         rx_time DESC,
+         rowid DESC`,
+      `DROP TABLE messages`,
+      `ALTER TABLE messages_v3 RENAME TO messages`,
+      `CREATE INDEX IF NOT EXISTS idx_messages_conv_rxtime ON messages(device_id, conversation_key, rx_time)`,
+      `CREATE INDEX IF NOT EXISTS idx_messages_pending ON messages(device_id, state)`,
+    ],
+  },
 ];

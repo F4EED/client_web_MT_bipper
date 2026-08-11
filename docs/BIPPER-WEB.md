@@ -196,6 +196,20 @@ La connexion USB passe par l’API **Web Serial** (`navigator.serial`). Sans ell
 
 Web Bluetooth (BLE) : Chromium surtout ; Firefox/Safari limités ou absents selon version.
 
+**Pièges BLE (ThinkNode M1 / L1 / pagers nRF)** :
+
+- PIN usine Gaulix : **`123456`** (FIXED_PIN). Sans appairage Windows correct → *Device does not advertise the Meshtastic GATT service*.
+- Un seul client à la fois (fermer GerMaCrise Android / autre PC avant de connecter le navigateur).
+- Contexte sécurisé : `http://localhost` / `127.0.0.1` ou **HTTPS** — pas `http://IP-LAN`.
+
+### Messages / canaux (historique local)
+
+Les fils **Fr_Balise** (0), **Fr_EMCOM** (1), **Fr_BlaBla** (2), etc. sont isolés par **index de canal** (hash LoRa nom+PSK). Un même paquet ne doit apparaître que dans **un** onglet.
+
+Si le **même** texte (auteur + heure) se répète sur plusieurs canaux alors que GerMaCrise Android (USB) est correct sur le même nœud : bug d’historique local web (OPFS/SQLite) — corrigé (migration schéma messages v3, dédup par `id` paquet). Après `git pull` : **Ctrl+F5** ; en cas de résidu, effacer les données du site pour `localhost`.
+
+Référence Android (pas de rebuild APK pour ce fix) : `BIPPER-ANDROID.md`.
+
 ---
 
 ## Déploiement
@@ -222,6 +236,8 @@ Après déploiement, vérifier :
 | `apps/web/src/pages/BipperSend/` | UI Gestion des alertes (Signalement / Message / Alertes / ACK) |
 | `apps/web/src/lib/bipper/reportTypes.ts` | Types POI + emoji / codepoints Unicode (aligné Android) |
 | `apps/web/src/core/stores/alertManagerStore/` | Suivi local + `localStorage` |
+| `packages/sdk-storage-sqlocal/` | Historique chat OPFS (PK `device_id`+`id`, migration v3) |
+| `packages/sdk/src/features/chat/` | Buckets `channel:<n>` + dédup paquet |
 | `apps/web/src/pages/Settings/BipperConfig.tsx` | Config pager |
 | `apps/web/src/components/PageComponents/Settings/Bipper/` | Panneaux Gaulix |
 | `apps/web/src/lib/bipper/alertCommands.ts` | Format filaire |

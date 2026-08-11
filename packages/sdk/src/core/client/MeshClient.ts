@@ -311,18 +311,26 @@ export class MeshClient {
     return await this.sendRaw(
       toBinary(Protobuf.Mesh.ToRadioSchema, toRadioMessage),
       meshPacket.id,
+      { waitForAck: wantAck },
     );
   }
 
   public async sendRaw(
     toRadio: Uint8Array,
     id: number = generatePacketId(),
+    opts: { waitForAck?: boolean } = {},
   ): Promise<number> {
     if (toRadio.length > 512) {
       throw new PacketTooLargeError(toRadio.length);
     }
+    const waitForAck = opts.waitForAck !== false;
     this.queue.push({ id, data: toRadio });
     await this.queue.processQueue(this.transport.toDevice);
+    if (!waitForAck) {
+      // Resolve as soon as bytes are on the wire (local admin / heartbeat-style).
+      this.queue.processAck(id);
+      return id;
+    }
     return this.queue.wait(id);
   }
 

@@ -243,14 +243,7 @@ export class MeshDevice {
   public setTimeOnly(
     epochSeconds = Math.floor(Date.now() / 1000),
   ): Promise<number> {
-    return sendAdminMessage(
-      this.client,
-      { case: "setTimeOnly", value: epochSeconds >>> 0 },
-      "self",
-      ChannelNumber.Primary,
-      true,
-      false,
-    );
+    return this.client.device.setTimeOnly(epochSeconds);
   }
 
   public removeFixedPosition(): Promise<number> {
