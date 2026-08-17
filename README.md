@@ -21,8 +21,10 @@ wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/
 bash install.sh
 ```
 
-Puis **Chrome / Chromium** → **http://localhost:5173**  
+Puis **Chrome / Chromium / Firefox** → **http://localhost:5173**  
 Relancer : icône **GerMaCrise** sur le Bureau.
+
+Bluetooth Linux : flag Web Bluetooth (pas le Chromium Snap) ou Firefox + extension WebBLE — voir [install_local.md](docs/install_local.md).
 
 ### Windows 11 — 1 commande PowerShell
 
@@ -32,8 +34,10 @@ Ouvrir **Terminal**, coller :
 irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
 ```
 
-Puis **Chrome / Edge** → **http://localhost:5173**  
+Puis **Chrome / Edge / Firefox** → **http://localhost:5173**  
 Relancer : raccourci **GerMaCrise** sur le Bureau (`.lnk` ou `.bat`).
+
+Bluetooth : Chrome/Edge natif ; Firefox + extension WebBLE — PIN **123456**, ne pas appairer dans Paramètres Windows d’abord.
 
 Variante : double-clic sur **`install.bat`** (ZIP du dépôt).
 

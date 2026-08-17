@@ -39,6 +39,16 @@ export default defineConfig(({ mode }) => {
   const isTest = env.VITE_IS_TEST;
   const useHTTPS = env.VITE_USE_HTTPS === "true";
 
+  const securityHeaders = {
+    "Permissions-Policy": "bluetooth=(self), serial=(self), usb=(self)",
+    "Content-Security-Policy": CONTENT_SECURITY_POLICY,
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "credentialless",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+  };
+
   return {
     plugins: [
       react(),
@@ -91,15 +101,10 @@ export default defineConfig(({ mode }) => {
       // Aligné avec install.sh / install.ps1 (PC crise)
       port: 5173,
       strictPort: false,
-      headers: {
-        "Content-Security-Policy": CONTENT_SECURITY_POLICY,
-        "Cross-Origin-Opener-Policy": "same-origin",
-        "Cross-Origin-Embedder-Policy": "credentialless",
-        "X-Content-Type-Options": "nosniff",
-        "Strict-Transport-Security":
-          "max-age=63072000; includeSubDomains; preload",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-      },
+      headers: securityHeaders,
+    },
+    preview: {
+      headers: securityHeaders,
     },
   };
 });

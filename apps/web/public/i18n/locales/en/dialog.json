@@ -33,7 +33,7 @@
     "title": "Add connection",
     "description": "Choose a connection type and fill in the details",
     "validation": {
-      "requiresWebBluetooth": "This connection type requires <0>Web Bluetooth</0>. Please use a supported browser, like Chrome or Edge.",
+      "requiresWebBluetooth": "This connection type requires <0>Web Bluetooth</0>. Use Chrome/Chromium (on Linux: not the Snap package) or Firefox with the WebBLE add-on.",
       "requiresWebSerial": "This connection type requires <0>Web Serial</0>. Please use a supported browser, like Chrome or Edge.",
       "requiresSecureContext": "This application requires a <0>secure context</0>. Please connect using HTTPS or localhost.",
       "additionallyRequiresSecureContext": "Additionally, it requires a <0>secure context</0>. Please connect using HTTPS or localhost."
@@ -45,7 +45,7 @@
       },
       "notSupported": {
         "title": "Web Bluetooth not supported",
-        "description": "Your browser or device does not support Web Bluetooth"
+        "description": "Your browser or device does not support Web Bluetooth. On Linux use Chrome/Chromium (not Snap) or Firefox with the WebBLE add-on."
       },
       "short": "BT: {{deviceName}}",
       "long": "Bluetooth Device",
@@ -53,7 +53,11 @@
       "selectDevice": "Select device",
       "selected": "Bluetooth device selected",
       "notSelected": "No device selected",
-      "helperText": "Uses the Meshtastic Bluetooth service for discovery."
+      "acceptAllDevices": "Show all Bluetooth devices",
+      "helperText": "Uses the Meshtastic Bluetooth service for discovery.",
+      "linuxHelperText": "Linux/Firefox: the picker lists every nearby BLE device. Choose the pager or PC crise, then pair with PIN 123456 if asked. Do not pair the device in the OS Bluetooth settings first.",
+      "firefoxWebBle": "Firefox has no built-in Web Bluetooth. Install the <0>WebBLE</0> add-on, reload this page, then try again.",
+      "chromiumLinuxHelp": "On Linux, Chrome/Chromium need Web Bluetooth enabled (chrome://flags/#enable-web-bluetooth) and BlueZ. Snap Chromium is often blocked — use Google Chrome or Chromium from apt. After being added to the bluetooth group, log out and back in."
     },
     "serialConnection": {
       "namePlaceholder": "My Serial Node",

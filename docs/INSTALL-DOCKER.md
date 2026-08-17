@@ -148,7 +148,9 @@ docker compose logs -f bipper-web
 
 Web Serial / Web Bluetooth **exigent HTTPS** hors `localhost`.
 
-**Navigateurs USB** : préférer **Chrome** ou **Edge**. Firefox ≥ 151 peut marcher ; Safari et Firefox plus anciens n’ont pas Web Serial (*Web Serial not supported*). Voir [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
+**Navigateurs USB** : préférer **Chrome** ou **Edge**. Firefox ≥ 151 peut marcher ; Safari et Firefox plus anciens n’ont pas Web Serial (*Web Serial not supported*).
+
+**Bluetooth Linux** : Chrome/Chromium (flag Web Bluetooth, pas le Snap) ou Firefox + [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). Voir [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
 
 Exemple derrière un reverse proxy (Caddy / Traefik / Nginx) :
 

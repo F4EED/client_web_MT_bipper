@@ -33,7 +33,7 @@
     "title": "Add connection",
     "description": "Choose a connection type and fill in the details",
     "validation": {
-      "requiresWebBluetooth": "Ce type de connexion nécessite <0>Web Bluetooth</0>. Veuillez utiliser un navigateur compatible, comme Chrome ou Edge.<0>",
+      "requiresWebBluetooth": "Ce type de connexion nécessite <0>Web Bluetooth</0>. Utilisez Chrome/Chromium (sous Linux : pas le paquet Snap) ou Firefox avec l’extension WebBLE.",
       "requiresWebSerial": "Ce type de connexion nécessite <0>Web Serial</0>. Veuillez utiliser un navigateur compatible, comme Chrome ou Edge.",
       "requiresSecureContext": "Cette application nécessite un <0>contexte sécurisé</0>. Veuillez vous connecter via HTTPS ou localhost.",
       "additionallyRequiresSecureContext": "Elle nécessite également un <0>contexte sécurisé</0>. Veuillez vous connecter via HTTPS ou localhost."
@@ -44,16 +44,20 @@
         "title": "Web Bluetooth supported"
       },
       "notSupported": {
-        "title": "Web Bluetooth not supported",
-        "description": "Your browser or device does not support Web Bluetooth"
+        "title": "Web Bluetooth non pris en charge",
+        "description": "Votre navigateur ou appareil ne prend pas en charge Web Bluetooth. Sous Linux : Chrome/Chromium (pas le Snap) ou Firefox avec l’extension WebBLE."
       },
       "short": "BT: {{deviceName}}",
-      "long": "Bluetooth Device",
+      "long": "Appareil Bluetooth",
       "device": "Appareil",
-      "selectDevice": "Select device",
-      "selected": "Bluetooth device selected",
-      "notSelected": "No device selected",
-      "helperText": "Uses the Meshtastic Bluetooth service for discovery."
+      "selectDevice": "Choisir l’appareil",
+      "selected": "Appareil Bluetooth sélectionné",
+      "notSelected": "Aucun appareil sélectionné",
+      "acceptAllDevices": "Afficher tous les appareils Bluetooth",
+      "helperText": "Découverte via le service Bluetooth Meshtastic.",
+      "linuxHelperText": "Linux/Firefox : le sélecteur liste tous les appareils BLE proches. Choisissez le pager ou le PC crise, puis appairer avec le PIN 123456 si demandé. N’appairez pas l’appareil dans les réglages Bluetooth du système au préalable.",
+      "firefoxWebBle": "Firefox n’a pas Web Bluetooth intégré. Installez l’extension <0>WebBLE</0>, rechargez cette page, puis réessayez.",
+      "chromiumLinuxHelp": "Sous Linux, Chrome/Chromium doivent avoir Web Bluetooth activé (chrome://flags/#enable-web-bluetooth) et BlueZ. Le Chromium Snap est souvent bloqué — utilisez Google Chrome ou Chromium (apt). Après ajout au groupe bluetooth, déconnectez puis reconnectez la session."
     },
     "serialConnection": {
       "namePlaceholder": "My Serial Node",

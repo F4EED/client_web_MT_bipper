@@ -20,7 +20,13 @@ import {
   useBrowserFeatureDetection,
 } from "@core/hooks/useBrowserFeatureDetection.ts";
 import { useToast } from "@core/hooks/useToast.ts";
-import { TransportWebBluetooth } from "@meshtastic/transport-web-bluetooth";
+import {
+  TransportWebBluetooth,
+  isFirefoxBrowser,
+  isLinuxDesktop,
+  needsAcceptAllBluetoothDevices,
+  requestMeshtasticBluetoothDevice,
+} from "@meshtastic/transport-web-bluetooth";
 import {
   AlertCircle,
   Bluetooth,
@@ -48,6 +54,7 @@ type DialogState = {
   btSelected:
     | { id: string; name?: string; device?: BluetoothDevice }
     | undefined;
+  btAcceptAllDevices: boolean;
   serialSelected: { vendorId?: number; productId?: number } | undefined;
 };
 
@@ -64,6 +71,7 @@ type DialogAction =
         | { id: string; name?: string; device?: BluetoothDevice }
         | undefined;
     }
+  | { type: "SET_BT_ACCEPT_ALL"; payload: boolean }
   | {
       type: "SET_SERIAL_SELECTED";
       payload: { vendorId?: number; productId?: number } | undefined;
@@ -169,6 +177,7 @@ const initialState: DialogState = {
   url: "",
   testStatus: "idle",
   btSelected: undefined,
+  btAcceptAllDevices: needsAcceptAllBluetoothDevices(),
   serialSelected: undefined,
 };
 export const createInitialDialogState = (
@@ -199,6 +208,8 @@ function dialogReducer(state: DialogState, action: DialogAction): DialogState {
       return { ...state, testStatus: action.payload };
     case "SET_BT_SELECTED":
       return { ...state, btSelected: action.payload };
+    case "SET_BT_ACCEPT_ALL":
+      return { ...state, btAcceptAllDevices: action.payload };
     case "SET_SERIAL_SELECTED":
       return { ...state, serialSelected: action.payload };
     case "SET_URL_AND_RESET_TEST":
@@ -310,9 +321,10 @@ export default function AddConnectionDialog({
       return;
     }
     try {
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ services: [TransportWebBluetooth.ServiceUuid] }],
-      });
+      const device = await requestMeshtasticBluetoothDevice(
+        TransportWebBluetooth.ServiceUuid,
+        { acceptAllDevices: state.btAcceptAllDevices },
+      );
       dispatch({
         type: "SET_BT_SELECTED",
         payload: { id: device.id, name: device.name ?? undefined, device },
@@ -334,7 +346,14 @@ export default function AddConnectionDialog({
     } catch (err) {
       makeToastErrorHandler("Bluetooth")(err);
     }
-  }, [bluetoothSupported, state.name, toast, makeToastErrorHandler, t]);
+  }, [
+    bluetoothSupported,
+    state.name,
+    state.btAcceptAllDevices,
+    toast,
+    makeToastErrorHandler,
+    t,
+  ]);
 
   const handlePickSerial = useCallback(async () => {
     if (!serialSupported) {
@@ -514,6 +533,39 @@ export default function AddConnectionDialog({
                 "addConnection.bluetoothConnection.notSupported.title",
               )}
             />
+            {!bluetoothSupported && isFirefoxBrowser() ? (
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                <Trans
+                  i18nKey="addConnection.bluetoothConnection.firefoxWebBle"
+                  components={[
+                    <Link
+                      key="0"
+                      href="https://addons.mozilla.org/firefox/addon/webble/"
+                      className="underline hover:text-slate-800 dark:hover:text-slate-100"
+                    />,
+                  ]}
+                />
+              </p>
+            ) : null}
+            {!bluetoothSupported && isLinuxDesktop() && !isFirefoxBrowser() ? (
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                {t("addConnection.bluetoothConnection.chromiumLinuxHelp")}
+              </p>
+            ) : null}
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={state.btAcceptAllDevices}
+                onCheckedChange={(value) => {
+                  dispatch({
+                    type: "SET_BT_ACCEPT_ALL",
+                    payload: value,
+                  });
+                }}
+              />
+              <Label>
+                {t("addConnection.bluetoothConnection.acceptAllDevices")}
+              </Label>
+            </div>
             <PickerRow
               label={t("addConnection.bluetoothConnection.device")}
               buttonText={t("addConnection.bluetoothConnection.selectDevice")}
@@ -524,7 +576,11 @@ export default function AddConnectionDialog({
                   ? state.btSelected.name || state.btSelected.id
                   : t("addConnection.bluetoothConnection.notSelected")
               }
-              helper={t("addConnection.bluetoothConnection.helperText")}
+              helper={
+                state.btAcceptAllDevices
+                  ? t("addConnection.bluetoothConnection.linuxHelperText")
+                  : t("addConnection.bluetoothConnection.helperText")
+              }
             />
             <FeatureErrorMessage
               missingFeatures={unsupported}

@@ -190,7 +190,8 @@ if ($UseNpxPnpm) {
 } else {
     Write-Host "  pnpm --filter meshtastic-web dev"
 }
-Write-Host "Puis ouvrir Chrome/Edge sur l'URL affichee (souvent http://localhost:5173)."
+Write-Host "Puis ouvrir Chrome / Edge / Firefox sur l'URL affichee (souvent http://localhost:5173)."
+Write-Host "Bluetooth : Chrome/Edge natif ; Firefox = extension WebBLE. PIN 123456. Ne pas appairer dans Parametres Windows d'abord."
 Write-Host "Doc : docs\install_local.md"
 
 if ($StartDev) {

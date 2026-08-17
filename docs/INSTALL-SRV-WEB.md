@@ -133,10 +133,12 @@ server {
 
   location = /index.html {
     add_header Cache-Control "no-cache";
+    add_header Permissions-Policy "bluetooth=(self), serial=(self), usb=(self)" always;
   }
 
   # SPA : toutes les routes → index.html
   location / {
+    add_header Permissions-Policy "bluetooth=(self), serial=(self), usb=(self)" always;
     try_files $uri $uri/ /index.html;
   }
 
@@ -235,6 +237,8 @@ Pour un usage Bipper en USB depuis le LAN, prévoyez un certificat
 | Chrome / Edge | Oui | **Oui** — usage nominal GerMaCrise USB |
 | Firefox ≥ 151 | Oui | Possible ; sinon basculer Chrome/Edge |
 | Firefox < 151 / Safari | Non | Impossible en USB navigateur |
+
+**Bluetooth (Linux)** : Chrome/Chromium avec `chrome://flags/#enable-web-bluetooth`, BlueZ, groupe `bluetooth` (pas le Snap). Firefox : extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). En-tête Nginx `Permissions-Policy: bluetooth=(self)` (déjà dans l’exemple ci-dessus). Détail : [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
 
 Sans Web Serial, le client coupe avec *Web Serial not supported*. Ce n’est pas un bug firmware : c’est l’API navigateur.
 

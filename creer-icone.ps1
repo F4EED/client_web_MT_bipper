@@ -101,7 +101,7 @@ echo.
 echo ========================================
 echo   GerMaCrise - serveur local
 echo ========================================
-echo   Ouvrez Chrome ou Edge :
+echo   Ouvrez Chrome / Edge / Firefox :
 echo     http://localhost:$Port
 echo   Laissez cette fenetre ouverte.
 echo ========================================

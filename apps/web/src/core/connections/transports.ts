@@ -5,6 +5,7 @@ import { TransportHTTP } from "@meshtastic/transport-http";
 import {
   BluetoothConnectError,
   TransportWebBluetooth,
+  requestMeshtasticBluetoothDevice,
 } from "@meshtastic/transport-web-bluetooth";
 import {
   SerialConnectError,
@@ -103,15 +104,9 @@ async function openBluetooth(
     }
   }
   if (!device && opts.allowPrompt) {
-    device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: !conn.gattServiceUUID,
-      optionalServices: conn.gattServiceUUID
-        ? [conn.gattServiceUUID]
-        : undefined,
-      filters: conn.gattServiceUUID
-        ? [{ services: [conn.gattServiceUUID] }]
-        : undefined,
-    });
+    device = await requestMeshtasticBluetoothDevice(
+      conn.gattServiceUUID ?? TransportWebBluetooth.ServiceUuid,
+    );
   }
   if (!device) {
     throw new Error("Bluetooth device not available. Re-select the device.");

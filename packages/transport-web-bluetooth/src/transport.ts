@@ -3,6 +3,10 @@ import {
   type DeviceOutput,
   type Transport,
 } from "@meshtastic/sdk";
+import {
+  MESHTASTIC_GATT_SERVICE_UUID,
+  requestMeshtasticBluetoothDevice,
+} from "./requestDevice.ts";
 
 /**
  * Typed error thrown when establishing the GATT connection fails. `kind`
@@ -75,7 +79,7 @@ export class TransportWebBluetooth implements Transport {
   /** UUID for the "fromNum" notification characteristic. */
   static FromNumUuid = "ed9da18c-a800-4f66-a670-aa7547e34453";
   /** UUID for the Meshtastic GATT service. */
-  static ServiceUuid = "6ba1b218-15a8-461f-9fa8-5dcae273eafd";
+  static ServiceUuid = MESHTASTIC_GATT_SERVICE_UUID;
 
   private onGattDisconnected = () => {
     if (this.closingByUser) {
@@ -89,11 +93,18 @@ export class TransportWebBluetooth implements Transport {
 
   /**
    * Prompts the user to select a Bluetooth device, connects it, and returns a transport.
+   *
+   * On Linux (BlueZ) and Firefox the picker lists every nearby BLE device
+   * (`acceptAllDevices`) because a GATT-service filter is typically empty.
+   * Pass `{ acceptAllDevices: true | false }` to override.
    */
-  public static async create(): Promise<TransportWebBluetooth> {
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [TransportWebBluetooth.ServiceUuid] }],
-    });
+  public static async create(options?: {
+    acceptAllDevices?: boolean;
+  }): Promise<TransportWebBluetooth> {
+    const device = await requestMeshtasticBluetoothDevice(
+      TransportWebBluetooth.ServiceUuid,
+      options,
+    );
     return await TransportWebBluetooth.prepareConnection(device);
   }
 

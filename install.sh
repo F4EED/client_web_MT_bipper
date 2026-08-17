@@ -5,7 +5,7 @@
 #   wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 #   bash install.sh
 #
-# Puis ouvrir Chrome sur http://localhost:5173
+# Puis ouvrir Chrome / Chromium / Firefox sur http://localhost:5173
 # Relancer plus tard :  ~/demarrer-GerMaCrise.sh
 # =============================================================================
 set -euo pipefail
@@ -42,7 +42,20 @@ if ! have sudo; then
   exit 1
 fi
 sudo apt-get update -y >/dev/null
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git curl ca-certificates gnupg wget >/dev/null
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git curl ca-certificates gnupg wget bluez >/dev/null
+
+# Web Bluetooth (Chrome/Chromium/Firefox) : groupe bluetooth + USB série
+CURRENT_USER="$(id -un)"
+if getent group bluetooth >/dev/null 2>&1; then
+  sudo usermod -aG bluetooth "${CURRENT_USER}" || true
+fi
+if getent group dialout >/dev/null 2>&1; then
+  sudo usermod -aG dialout "${CURRENT_USER}" || true
+fi
+if command -v snap >/dev/null 2>&1 && snap list chromium >/dev/null 2>&1; then
+  sudo snap connect chromium:bluez >/dev/null 2>&1 || true
+  echo "Note : Chromium Snap bride souvent le Bluetooth. Préférez Google Chrome, Chromium (apt), ou Firefox + extension WebBLE."
+fi
 
 if ! have node || [[ "$(node -v | sed 's/^v//' | cut -d. -f1)" -lt 22 ]]; then
   say "Installation du moteur (Node.js)…"
@@ -89,7 +102,7 @@ echo ""
 echo "========================================"
 echo "  GerMaCrise — serveur local"
 echo "========================================"
-echo "  Ouvrez Chrome / Chromium :"
+echo "  Ouvrez Chrome / Chromium / Firefox :"
 echo "    http://localhost:${PORT}"
 echo "  Laissez cette fenêtre ouverte."
 echo "  Ctrl+C pour arrêter."
@@ -115,8 +128,15 @@ echo ""
 echo "========================================"
 echo "  C'est prêt."
 echo ""
-echo "  → Ouvrez Chrome / Chromium :"
+echo "  → Ouvrez Chrome / Chromium / Firefox :"
 echo "       http://localhost:${PORT}"
+echo ""
+echo "  Bluetooth Linux :"
+echo "       • Chrome/Chromium : chrome://flags → enable-web-bluetooth = Enabled"
+echo "         (évitez Chromium Snap ; Google Chrome ou chromium apt)"
+echo "       • Firefox : extension WebBLE, puis recharger la page"
+echo "       • PIN usine Gaulix : 123456 — ne pas appairer dans les réglages OS"
+echo "       • Si vous venez d'être ajouté au groupe bluetooth : déconnexion / reconnexion"
 echo ""
 echo "  → Relancer plus tard :"
 echo "       • Icône « GerMaCrise » sur le Bureau"

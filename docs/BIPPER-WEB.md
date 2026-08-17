@@ -18,7 +18,7 @@
 SPA Vite/React pour **connecter** un nœud Meshtastic (USB Serial / Web Bluetooth) et :
 
 1. **Gérer les alertes** Gaulix (composer `#alerte` / `#secours` / `#vigilance` / `#info` / `#fin`, suivi local, ACK lecture) ;
-   - côté **Android** : Morse **SOS SOS** anxiogène + overlay rouge + ACK « J'ai pris connaissance » (`#ack` / DM émetteur) — voir `BIPPER-ANDROID.md` ;
+   - côté **Android** : Morse **SOS SOS** anxiogène + sirène US/SAMU + vibreur + overlay rouge + ACK « J'ai pris connaissance » (`#ack` / DM émetteur) — voir `BIPPER-ANDROID.md` ;
 2. **Paramétrer un Bipper** (tags T1–T10, code, `#status`, `#ack`, bips) ;
 3. (prévu) afficher waypoints **SOS** et page **Signaler POI**.
 
@@ -73,7 +73,7 @@ ACK lecture bipper (firmware **≥ v1.12.5**) :
 Pager ACK alerte [#N] JJ/MM HH:MM[ — text][ | latN/S lonE/W]
 ```
 
-Côté **Android** (réception alerte) : Morse **SOS SOS** anxiogène + sirène pim-pom ; bouton « J'ai pris connaissance » → `#ack` local sur bipper connecté (même procédure que l’appui bouton) sinon `Pager ACK` broadcast Alerte + DM émetteur.
+Côté **Android** (réception alerte) : Morse **SOS SOS** anxiogène + sirène américaine type SAMU (wail/yelp) + vibreur ; bouton « J'ai pris connaissance » → `#ack` local sur bipper connecté (même procédure que l’appui bouton) sinon `Pager ACK` broadcast Alerte + DM émetteur.
 
 Exemples :
 
@@ -194,13 +194,23 @@ La connexion USB passe par l’API **Web Serial** (`navigator.serial`). Sans ell
 - Symptôme « Connexion échouée / Chargement… / Noeuds (0) » : handshake incomplet — débrancher/rebrancer, fermer les autres apps série, reconnecter sous Chrome ou Edge sur `http://localhost:5173` (pas une IP LAN).
 - Après config OK : `set_time_only` force l’horloge radio sur l’heure du PC (retries 0 / 2 / 8 s). Firmware Gaulix applique avec `forceUpdate` (ignore le throttle NTP/GPS).
 
-Web Bluetooth (BLE) : Chromium surtout ; Firefox/Safari limités ou absents selon version.
+Web Bluetooth (BLE) : **Chrome / Chromium / Edge**, et **Firefox** avec l’extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). Safari : non.
+
+| Navigateur | BLE (Web Bluetooth) | Notes Linux |
+|:-----------|:--------------------|:------------|
+| **Chrome** / **Edge** | ✅ | Sous Linux : `chrome://flags/#enable-web-bluetooth` = Enabled ; **pas** le Chromium Snap (bridé). BlueZ + groupe `bluetooth` |
+| **Chromium** (apt) | ✅ si flag + BlueZ | Même flags ; `snap connect chromium:bluez` ne suffit souvent pas — préférer le paquet apt ou Google Chrome |
+| **Firefox** | ✅ via **WebBLE** | Pas d’API native. Installer l’extension, recharger `localhost`. Cocher « Afficher tous les appareils Bluetooth » |
+| Safari | ❌ | Pas de Web Bluetooth |
+
+Sous **Linux**, BlueZ n’expose souvent pas l’UUID GATT Meshtastic dans les publicités BLE : le sélecteur filtré est **vide**. Le client bascule alors sur `acceptAllDevices` (tous les appareils BLE proches) + `optionalServices`. Ne **pas** appairer le nœud dans les réglages Bluetooth GNOME/KDE avant le navigateur.
 
 **Pièges BLE (ThinkNode M1 / L1 / pagers nRF)** :
 
-- PIN usine Gaulix : **`123456`** (FIXED_PIN). Sans appairage Windows correct → *Device does not advertise the Meshtastic GATT service*.
+- PIN usine Gaulix : **`123456`** (FIXED_PIN). Sans appairage navigateur correct → *Device does not advertise the Meshtastic GATT service*.
 - Un seul client à la fois (fermer GerMaCrise Android / autre PC avant de connecter le navigateur).
 - Contexte sécurisé : `http://localhost` / `127.0.0.1` ou **HTTPS** — pas `http://IP-LAN`.
+- Linux : après `usermod -aG bluetooth`, **déconnexion / reconnexion** de session. Adapter allumé (`bluetoothctl power on`).
 
 ### Messages / canaux (historique local)
 

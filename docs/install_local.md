@@ -11,7 +11,19 @@ wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/
 bash install.sh
 ```
 
-Puis **Chrome / Chromium** → **http://localhost:5173**
+Puis **Chrome / Chromium / Firefox** → **http://localhost:5173**
+
+### Bluetooth sous Linux (Firefox, Chromium, Chrome)
+
+Le script installe **BlueZ** et ajoute l’utilisateur aux groupes `bluetooth` et `dialout`. **Déconnectez puis reconnectez** la session (ou redémarrez) pour que le groupe `bluetooth` soit pris en compte.
+
+| Navigateur | Action |
+|:-----------|:-------|
+| **Google Chrome** ou **Chromium (apt)** | `chrome://flags/#enable-web-bluetooth` → **Enabled**, relancer le navigateur |
+| **Chromium Snap** | Souvent bloqué. `sudo snap connect chromium:bluez` puis, si ça échoue encore, installer Chrome ou Chromium apt |
+| **Firefox** | Installer l’extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/), recharger la page. Dans Connexions, laisser **Afficher tous les appareils Bluetooth** |
+
+Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans les réglages Bluetooth du bureau (GNOME/KDE).
 
 Relancer : icône **GerMaCrise** sur le Bureau (ou `~/demarrer-GerMaCrise.sh`).
 
@@ -78,13 +90,22 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 ```
 
 3. Valider avec Entrée, saisir si Windows demande une autorisation  
-4. Attendre la fin, puis ouvrir **Chrome** ou **Edge** → **http://localhost:5173**
+4. Attendre la fin, puis ouvrir **Chrome**, **Edge** ou **Firefox** → **http://localhost:5173**
+
+### Bluetooth sous Windows (Chrome, Edge, Firefox)
+
+| Navigateur | Action |
+|:-----------|:-------|
+| **Chrome** / **Edge** | Web Bluetooth natif — recommandé |
+| **Firefox** | Installer l’extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/), recharger la page. Dans Connexions, laisser **Afficher tous les appareils Bluetooth** |
+
+Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans Paramètres Windows → Bluetooth.
 
 ### Variante double-clic
 
 1. Télécharger le ZIP du dépôt GitHub (Code → Download ZIP) et décompresser  
 2. Double-cliquer sur **`install.bat`**  
-3. Chrome / Edge → **http://localhost:5173**
+3. Chrome / Edge / Firefox → **http://localhost:5173**
 
 ### Relancer plus tard
 
@@ -114,7 +135,7 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 1. Fermer toutes les fenêtres GerMaCrise  
 2. Supprimer le dossier `%USERPROFILE%\GerMaCrise` s’il est corrompu  
 3. Rouvrir **Terminal** et relancer la commande `irm … | iex` ci-dessus  
-4. Vérifier Chrome/Edge  
+4. Vérifier Chrome / Edge / Firefox  
 5. Antivirus : autoriser Node.js / le dossier `GerMaCrise`
 
 ### Messages identiques sur plusieurs canaux (Fr_*)
@@ -173,7 +194,7 @@ Journal install : `%TEMP%\germa-pnpm-install.log`
 
 | | |
 |:--|:--|
-| Navigateur | **Chrome / Chromium / Edge** (USB radio) |
+| Navigateur | **Chrome / Edge** (USB + BLE) · **Firefox** (USB ≥ 151, BLE via WebBLE) |
 | Fenêtre serveur | **À laisser ouverte** |
 | Arrêt | Fermer la fenêtre ou `Ctrl+C` |
 

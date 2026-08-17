@@ -29,7 +29,14 @@ const device = new MeshDevice(transport);
 
 ### Compatibility
 
-The Web Bluetooth API's have limited support in browsers, compatibility is
-represented in the matrix below.
+Web Bluetooth works in **Chrome / Chromium / Edge**. On **Linux**, Chromium
+must have `chrome://flags/#enable-web-bluetooth` enabled (avoid Snap
+Chromium). **Firefox** needs the
+[WebBLE](https://addons.mozilla.org/firefox/addon/webble/) add-on.
+
+Linux/BlueZ and Firefox often omit the Meshtastic GATT UUID from BLE
+advertisements. `TransportWebBluetooth.create()` therefore uses
+`acceptAllDevices` + `optionalServices` on those platforms (see
+`buildBluetoothRequestOptions`).
 
 ![Web Bluetooth compatability matrix](https://caniuse.bitsofco.de/image/web-bluetooth.png)
