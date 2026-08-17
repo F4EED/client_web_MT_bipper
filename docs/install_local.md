@@ -4,7 +4,7 @@ Sans Cursor, sans Docker.
 
 ---
 
-## Debian (PC crise)
+## Debian / Ubuntu (PC crise)
 
 ```bash
 wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
@@ -116,7 +116,7 @@ Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN *
 | Recréer le raccourci | voir commande ci-dessous |
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\creer-icone.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\install.ps1" -Icone
 ```
 
 Laisser la fenêtre noire ouverte pendant l’utilisation. Arrêt : fermer la fenêtre ou `Ctrl+C`.
@@ -169,7 +169,7 @@ Si l’erreur apparaît **au clic sur l’icône** (alors que l’install avait 
 1. Recréer le raccourci (lanceur sans Python) :
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\creer-icone.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\install.ps1" -Icone
 ```
 
 Ou, si le dossier n’a pas le script à jour :
@@ -177,7 +177,7 @@ Ou, si le dossier n’a pas le script à jour :
 ```powershell
 cd $env:USERPROFILE\GerMaCrise
 git pull
-powershell -NoProfile -ExecutionPolicy Bypass -File .\creer-icone.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Icone
 ```
 
 2. Optionnel, retirer le conflit Python :
@@ -204,9 +204,12 @@ Journal install : `%TEMP%\germa-pnpm-install.log`
 
 | Fichier | Rôle |
 |:--------|:-----|
-| [`install.sh`](../install.sh) | Install Debian |
-| [`install.ps1`](../install.ps1) / [`install.bat`](../install.bat) | Install Windows |
-| `creer-icone.sh` / `creer-icone.ps1` | Recréer le raccourci |
-| `demarrer.sh` / `demarrer.bat` | Lancer le serveur |
+| [`install.sh`](../install.sh) | Install Debian / Ubuntu |
+| [`install.ps1`](../install.ps1) / [`install.bat`](../install.bat) | Install Windows 10 / 11 (raccourci : `install.ps1 -Icone`) |
+| `creer-icone.sh` | Recréer l’icône Bureau / menu (Linux) |
+| `creer-icone.ps1` | Ancien nom → `install.ps1 -Icone` |
+| `demarrer.sh` / `demarrer.bat` | Lancer le serveur (créés par l’install) |
+| `scripts/install-local.sh` | Ancien nom → `install.sh` |
+| `scripts/install-simple.ps1` · `scripts/install-local.ps1` / `install-local.bat` | Anciens noms → `install.ps1` |
 
 Admin / serveur / Docker : [BIPPER-WEB.md](./BIPPER-WEB.md) · [INSTALL-SRV-WEB.md](./INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](./INSTALL-DOCKER.md)

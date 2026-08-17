@@ -10,46 +10,69 @@
 
 Pages ajoutées : `/alerts` (envoi alerte), `/settings/bipper` (paramétrage pager).
 
-## Installation (utilisateur)
+## Installation (PC crise)
 
-Guide : **[docs/install_local.md](docs/install_local.md)**.
+Sans Cursor, sans Docker. Guide pas à pas : **[docs/install_local.md](docs/install_local.md)**.  
+Serveur Nginx/Apache ou image Docker : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
 
-### Debian — 2 commandes
+Après install : **http://localhost:5173** — laisser la fenêtre du serveur ouverte (`Ctrl+C` pour arrêter).
+
+### Scripts
+
+| Fichier | OS | Rôle |
+|:--------|:---|:-----|
+| [`install.sh`](install.sh) | **Debian**, **Ubuntu** (et dérivés apt) | Install recommandée : Git, Node, BlueZ, clone, lanceur Bureau |
+| [`install.ps1`](install.ps1) | **Windows 10 / 11** | **Seul script** : install (`irm … \| iex` ou `install.bat`) et raccourci (`-Icone`) |
+| [`install.bat`](install.bat) | **Windows 10 / 11** | Double-clic : appelle `install.ps1` |
+| [`creer-icone.sh`](creer-icone.sh) | Debian / Ubuntu | Recréer l’icône Bureau + entrée menu **GerMaCrise** |
+| `~/demarrer-GerMaCrise.sh` | Debian / Ubuntu | Relancer le serveur (créé par l’install) |
+| `%USERPROFILE%\demarrer-GerMaCrise.bat` | Windows 10 / 11 | Relancer le serveur (créé par `install.ps1`) |
+| [`scripts/install-local.sh`](scripts/install-local.sh) | Linux | Ancien nom → `install.sh` |
+| [`scripts/install-simple.ps1`](scripts/install-simple.ps1) · [`scripts/install-local.ps1`](scripts/install-local.ps1) / [`install-local.bat`](scripts/install-local.bat) | Windows | Anciens noms → `install.ps1` |
+| [`creer-icone.ps1`](creer-icone.ps1) | Windows | Ancien nom → `install.ps1 -Icone` |
+
+### Debian / Ubuntu
 
 ```bash
 wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 bash install.sh
 ```
 
-Puis **Chrome / Chromium / Firefox** → **http://localhost:5173**  
-Relancer : icône **GerMaCrise** sur le Bureau.
+Depuis un clone du dépôt : `bash install.sh` (ou `bash scripts/install-local.sh`).
 
-Bluetooth Linux : flag Web Bluetooth (pas le Chromium Snap) ou Firefox + extension WebBLE — voir [install_local.md](docs/install_local.md).
+Puis **Chrome / Chromium (apt, pas le Snap) / Firefox** → **http://localhost:5173**.  
+Relancer : icône **GerMaCrise** sur le Bureau, menu Applications, ou `~/demarrer-GerMaCrise.sh`.
 
-### Windows 11 — 1 commande PowerShell
+Recréer l’icône / le menu :
 
-Ouvrir **Terminal**, coller :
+```bash
+cd ~/GerMaCrise && git pull && bash creer-icone.sh
+```
+
+**Bluetooth Linux** : le script installe BlueZ et ajoute l’utilisateur aux groupes `bluetooth` et `dialout` — **déconnexion / reconnexion** ensuite. Chrome/Chromium : `chrome://flags/#enable-web-bluetooth` = Enabled. Firefox : extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). PIN Gaulix **123456**. Ne pas appairer le nœud dans les réglages Bluetooth du bureau avant le navigateur.
+
+### Windows 10 / 11
+
+**Recommandé** — Terminal (PowerShell) :
 
 ```powershell
 irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
 ```
 
-Puis **Chrome / Edge / Firefox** → **http://localhost:5173**  
-Relancer : raccourci **GerMaCrise** sur le Bureau (`.lnk` ou `.bat`).
+**Variante double-clic** : ZIP GitHub → `install.bat`.
 
-Bluetooth : Chrome/Edge natif ; Firefox + extension WebBLE — PIN **123456**, ne pas appairer dans Paramètres Windows d’abord.
+Puis **Chrome / Edge / Firefox** → **http://localhost:5173**.  
+Relancer : **GerMaCrise.lnk** ou **GerMaCrise.bat** sur le Bureau, ou `%USERPROFILE%\demarrer-GerMaCrise.bat`.
 
-Variante : double-clic sur **`install.bat`** (ZIP du dépôt).
-
-Si l’icône affiche `No module named 'meshtastic'` : ce n’est **pas** le client web — un outil Python gêne le PATH. Voir [install_local.md](docs/install_local.md) § Erreur Python, ou :
+Recréer le raccourci :
 
 ```powershell
-cd $env:USERPROFILE\GerMaCrise
-git pull
-powershell -NoProfile -ExecutionPolicy Bypass -File .\creer-icone.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\install.ps1" -Icone
 ```
 
-Serveur / Docker : [INSTALL-SRV-WEB.md](docs/INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](docs/INSTALL-DOCKER.md).
+**Bluetooth Windows** : Chrome / Edge natif ; Firefox + [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). PIN **123456**. Ne pas appairer dans Paramètres → Bluetooth avant le navigateur.
+
+Si l’icône affiche `No module named 'meshtastic'` : un `meshtastic.exe` Python pollue le PATH — ce n’est **pas** le client web. Recréer le lanceur (`install.ps1 -Icone`) ou voir [install_local.md](docs/install_local.md) § Erreur Python.
 
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# GerMaCrise — installation simple (Debian)
+# GerMaCrise — installation simple (Debian / Ubuntu)
 #
 #   wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 #   bash install.sh

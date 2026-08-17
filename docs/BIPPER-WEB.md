@@ -6,7 +6,7 @@
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
 | **Firmware cible** | Gaulix Bipper **v1.12.5+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
-| **Install** | [install_local.md](install_local.md) — Debian : `wget` + `bash install.sh` · Windows : `install.bat` · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
+| **Install** | [install_local.md](install_local.md) — **Debian / Ubuntu** : `install.sh` · **Windows 10 / 11** : `install.ps1` (ou `install.bat`) · raccourci : `install.ps1 -Icone` · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
 | **Écosystème** | Firmware + Android — voir firmware [`docs/ECOSYSTEME-GAULIX.md`](https://github.com/F4EED/Bipper_L1Pro/blob/develop/docs/ECOSYSTEME-GAULIX.md) · install APK Android : [`BIPPER-ANDROID.md`](https://github.com/F4EED/bipper_android/blob/main/docs/BIPPER-ANDROID.md#installation-sur-téléphone) |
 
 > **Règle** : ce client évolue **en même temps** que le firmware et l’app Android (protocole, tags, docs).
@@ -145,20 +145,20 @@ Portail / POC : [germacrise.wordpress.com](https://germacrise.wordpress.com/).
 
 ## Développement local
 
-Installation utilisateur : **[install_local.md](install_local.md)** (`install.sh` / `install.ps1` / `install.bat`).
+Installation utilisateur : **[install_local.md](install_local.md)** — un script par OS : `install.sh` (Debian / Ubuntu), `install.ps1` (Windows 10 / 11, aussi `install.bat`). Raccourci Bureau Windows : `install.ps1 -Icone`.
 
 ```bash
-# Debian (tout-en-un)
+# Debian / Ubuntu (tout-en-un)
 wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 bash install.sh
 ```
 
 ```powershell
-# Windows 10/11 (tout-en-un)
+# Windows 10 / 11 (tout-en-un)
 irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps1 | iex
 ```
 
-Si sous Windows l’icône Bureau échoue avec `No module named 'meshtastic'` : recreer le lanceur (`creer-icone.ps1`) — détail dans [install_local.md](install_local.md).
+Si sous Windows l’icône Bureau échoue avec `No module named 'meshtastic'` : recreer le lanceur (`install.ps1 -Icone`) — détail dans [install_local.md](install_local.md).
 
 Développeur (déjà cloné) :
 
