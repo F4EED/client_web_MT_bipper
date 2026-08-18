@@ -243,7 +243,7 @@ Pour un usage Bipper en USB depuis le LAN, prévoyez un certificat
 | OS / navigateur | Web Bluetooth | Action |
 | --- | --- | --- |
 | **Windows** — Chrome / Edge | Oui, **natif** | Aucun flag. `http://localhost` ou HTTPS. PIN **123456**. |
-| **Linux** — Chromium via GerMaCrise | Oui | Lanceur `--enable-blink-features=WebBluetooth` (profil dédié). Pas le Snap. |
+| **Linux** — Chromium via GerMaCrise | Oui | `install.sh` / lanceur installent Chromium s’il manque, puis `--enable-blink-features=WebBluetooth` (profil dédié). Pas le Snap. |
 | **Firefox** (Windows et Linux) | Non | USB = onglet Serial ; ou Chrome/Edge / lanceur Linux pour le BLE |
 | Safari | Non | — |
 
@@ -301,7 +301,7 @@ dans `/var/www/…/bipper/`. Sans cela, les assets et le routeur casseront.
 | i18n / textes manquants | Dossier `i18n/` non recopié depuis `dist/` |
 | USB / BLE gris | Site en HTTP hors localhost |
 | *Web Serial not supported* | Navigateur sans API (Firefox < 151, Safari) — utiliser **Chrome** ou **Edge** |
-| *Web Bluetooth non pris en charge* | Firefox (tous OS) ; Chromium Linux ouvert à la main — Windows : **Chrome/Edge** ; Linux : relancer GerMaCrise |
+| *Web Bluetooth non pris en charge* | Firefox (tous OS) ; Chromium Linux ouvert à la main — Windows : **Chrome/Edge** ; Linux : relancer GerMaCrise (`install.sh` installe Chromium s’il manque) |
 | Connexion USB qui tourne puis échoue | Autre app sur le COM, ou reboot ESP32 — un seul client série ; attendre ~5–10 s après Connecter |
 | Ancienne UI après update | Cache navigateur / CDN — `index.html` en `no-cache` |
 

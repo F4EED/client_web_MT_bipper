@@ -25,7 +25,7 @@ Après install : **http://localhost:5173** — laisser la fenêtre du serveur ou
 | [`install.ps1`](install.ps1) | **Windows 10 / 11** | **Seul script** : install (`irm … \| iex` ou `install.bat`) et raccourci (`-Icone`) |
 | [`install.bat`](install.bat) | **Windows 10 / 11** | Double-clic : appelle `install.ps1` |
 | [`creer-icone.sh`](creer-icone.sh) | Debian / Ubuntu | Recréer l’icône Bureau + entrée menu **GerMaCrise** |
-| [`scripts/lancer-navigateur-bluetooth.sh`](scripts/lancer-navigateur-bluetooth.sh) | Debian / Ubuntu | Ouvre Chromium avec Web Bluetooth (profil GerMaCrise) |
+| [`scripts/lancer-navigateur-bluetooth.sh`](scripts/lancer-navigateur-bluetooth.sh) | Debian / Ubuntu | Installe Chromium s’il manque, ouvre Web Bluetooth (profil GerMaCrise) |
 | `~/demarrer-GerMaCrise.sh` | Debian / Ubuntu | Relancer le serveur (créé par l’install) |
 | `%USERPROFILE%\demarrer-GerMaCrise.bat` | Windows 10 / 11 | Relancer le serveur (créé par `install.ps1`) |
 | [`scripts/install-local.sh`](scripts/install-local.sh) | Linux | Ancien nom → `install.sh` |
@@ -50,7 +50,7 @@ Recréer l’icône / le menu :
 cd ~/GerMaCrise && git pull && bash creer-icone.sh
 ```
 
-**Bluetooth Linux** : le script installe BlueZ (experimental), ajoute l’utilisateur aux groupes `bluetooth` et `dialout`, et ouvre **Chromium/Chrome avec Web Bluetooth** (profil GerMaCrise). **Déconnexion / reconnexion** ensuite. Firefox n’a pas Web Bluetooth (USB = onglet Serial). PIN Gaulix **123456**. Ne pas appairer le nœud dans les réglages Bluetooth du bureau. URL : **http://localhost:5173** (pas l’IP du PC).
+**Bluetooth Linux** : le script installe BlueZ (experimental), **Chromium/Chrome s’il manque** (apt, sinon `.deb`, pas le Snap), ajoute l’utilisateur aux groupes `bluetooth` et `dialout`, et ouvre **Chromium/Chrome avec Web Bluetooth** (profil GerMaCrise). Chaque relance GerMaCrise refait le contrôle Chromium. **Déconnexion / reconnexion** ensuite. Firefox n’a pas Web Bluetooth (USB = onglet Serial). PIN Gaulix **123456**. Ne pas appairer le nœud dans les réglages Bluetooth du bureau. URL : **http://localhost:5173** (pas l’IP du PC).
 
 ### Windows 10 / 11
 

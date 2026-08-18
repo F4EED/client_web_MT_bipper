@@ -63,32 +63,49 @@ browser_bluetooth_ok() {
 }
 
 ensure_chromium() {
+  hash -r 2>/dev/null || true
   if browser_bluetooth_ok; then
+    echo "Chromium / Chrome déjà installé (Bluetooth OK)."
     return 0
   fi
-  say "Navigateur pour le Bluetooth (Chrome / Chromium apt, pas Firefox)…"
-  local arch
-  arch="$(dpkg --print-architecture 2>/dev/null || echo amd64)"
-  if [[ "$arch" == "amd64" ]]; then
-    local deb
-    deb="$(mktemp --suffix=.deb)"
-    if wget -qO "$deb" "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"; then
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$deb" >/dev/null 2>&1 || {
-        sudo dpkg -i "$deb" >/dev/null 2>&1 || true
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y >/dev/null 2>&1 || true
-      }
+
+  say "Chromium n'est pas installé — installation durant le processus…"
+
+  # 1. Paquet Chromium apt (Debian ; parfois Ubuntu)
+  echo "  apt install chromium…"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y chromium || true
+  hash -r 2>/dev/null || true
+
+  # 2. Si absent ou Snap (Ubuntu) : Google Chrome .deb
+  if ! browser_bluetooth_ok; then
+    local arch
+    arch="$(dpkg --print-architecture 2>/dev/null || echo amd64)"
+    if [[ "$arch" == "amd64" ]]; then
+      echo "  Chromium apt indisponible ou Snap — installation de Google Chrome…"
+      local deb
+      deb="$(mktemp --suffix=.deb)"
+      if wget -qO "$deb" "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"; then
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$deb" || {
+          sudo dpkg -i "$deb" || true
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y || true
+        }
+      else
+        echo "  Téléchargement de Google Chrome impossible (réseau ?)."
+      fi
+      rm -f "$deb"
+      hash -r 2>/dev/null || true
     fi
-    rm -f "$deb"
   fi
-  if ! browser_bluetooth_ok; then
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y chromium >/dev/null 2>&1 || true
+
+  if browser_bluetooth_ok; then
+    echo "  Chromium / Chrome installé."
+    return 0
   fi
-  if ! browser_bluetooth_ok; then
-    echo "Aucun Chrome/Chromium (apt) installé — le Bluetooth du navigateur ne marchera pas."
-    echo "  Debian : sudo apt install chromium"
-    echo "  Ubuntu : installez Google Chrome (.deb), pas le paquet Snap chromium-browser"
-    echo "  Firefox n'a pas Web Bluetooth (USB = onglet Serial uniquement)."
-  fi
+
+  echo "Aucun Chrome/Chromium (apt) installé — le Bluetooth du navigateur ne marchera pas."
+  echo "  Debian : sudo apt install chromium"
+  echo "  Ubuntu : installez Google Chrome (.deb), pas le paquet Snap chromium-browser"
+  echo "  Firefox n'a pas Web Bluetooth (USB = onglet Serial uniquement)."
 }
 
 # Web Bluetooth : groupe bluetooth (Linux Chromium) + USB série (dialout)
@@ -202,6 +219,7 @@ echo "========================================"
 echo ""
 if [[ -f "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" ]]; then
   chmod +x "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" || true
+  bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" --ensure || true
   (sleep 2 && bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" "http://localhost:${PORT}" >>"${INSTALL_DIR}/_lancer-navigateur.log" 2>&1) &
 fi
 exec pnpm --filter meshtastic-web exec vite -- --host 0.0.0.0 --port ${PORT}
@@ -252,6 +270,7 @@ echo ""
 
 if [[ -f "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" ]]; then
   chmod +x "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" || true
+  bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" --ensure || true
   (sleep 3 && bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" "http://localhost:${PORT}" >>"${INSTALL_DIR}/_lancer-navigateur.log" 2>&1) &
 fi
 

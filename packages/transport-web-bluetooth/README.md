@@ -31,9 +31,10 @@ const device = new MeshDevice(transport);
 
 Web Bluetooth works in **Chrome / Edge on Windows** (enabled by default) and
 in **Chrome / Chromium on Linux** when GerMaCrise launches the browser with
-`--enable-blink-features=WebBluetooth` (dedicated profile). Opening Chromium
-by hand on Linux, or using **Firefox** on any OS, leaves `navigator.bluetooth`
-undefined. Firefox: use USB Serial instead.
+`--enable-blink-features=WebBluetooth` (dedicated profile). `install.sh` and
+the launcher install Chromium (apt) or Google Chrome if none is present.
+Opening Chromium by hand on Linux, or using **Firefox** on any OS, leaves
+`navigator.bluetooth` undefined. Firefox: use USB Serial instead.
 
 Linux/BlueZ and Firefox often omit the Meshtastic GATT UUID from BLE
 advertisements. `TransportWebBluetooth.create()` therefore uses

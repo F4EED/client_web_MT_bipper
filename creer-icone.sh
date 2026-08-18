@@ -73,6 +73,7 @@ echo "========================================"
 echo ""
 if [[ -f "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" ]]; then
   chmod +x "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" || true
+  bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" --ensure || true
   (sleep 2 && bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" "http://localhost:${PORT}" >>"${INSTALL_DIR}/_lancer-navigateur.log" 2>&1) &
 fi
 if command -v pnpm >/dev/null 2>&1; then

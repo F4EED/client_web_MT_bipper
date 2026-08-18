@@ -15,12 +15,12 @@ Puis l’icône **GerMaCrise** ouvre **Chromium** avec Bluetooth sur **http://lo
 
 ### Bluetooth sous Linux (Chromium, pas Firefox)
 
-Le script installe **BlueZ** (mode experimental), ajoute l’utilisateur aux groupes `bluetooth` et `dialout`, et ouvre Chromium avec Web Bluetooth **activé** (profil `~/.config/germa-crise-chromium`). **Déconnectez puis reconnectez** la session (ou redémarrez) pour que le groupe `bluetooth` soit pris en compte.
+Le script installe **BlueZ** (mode experimental), ajoute l’utilisateur aux groupes `bluetooth` et `dialout`, et **teste Chromium** : s’il n’est pas déjà installé (paquet apt, pas Snap), il l’installe pendant le processus (`apt install chromium`, sinon Google Chrome `.deb` sous Ubuntu). Chaque relance GerMaCrise refait ce contrôle. Chromium s’ouvre ensuite avec Web Bluetooth **activé** (profil `~/.config/germa-crise-chromium`). **Déconnectez puis reconnectez** la session (ou redémarrez) pour que le groupe `bluetooth` soit pris en compte.
 
 | Navigateur | Action |
 |:-----------|:-------|
 | **Google Chrome** ou **Chromium (apt)** | Relancer **GerMaCrise** (icône Bureau). Fermer d’abord **toutes** les fenêtres Chromium/Chrome. Message *Web Bluetooth non pris en charge* = le navigateur a été ouvert sans le flag — ne pas rester sur Firefox ni sur un Chromium déjà lancé. |
-| **Chromium Snap** | Souvent bloqué. Installer Google Chrome (.deb) ou Chromium Debian (`apt install chromium`), pas le Snap. |
+| **Chromium Snap** | Souvent bloqué. Le script l’ignore et installe Google Chrome (`.deb`) ou Chromium Debian. Ne pas utiliser le Snap. |
 | **Firefox** | Pas de Web Bluetooth. BLE : utiliser Chromium via GerMaCrise. USB : onglet **Serial** (Firefox ≥ 151). |
 
 Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans les réglages Bluetooth du bureau (GNOME/KDE). URL : **http://localhost:5173** (pas l’IP du PC).
@@ -194,7 +194,7 @@ Journal install : `%TEMP%\germa-pnpm-install.log`
 
 | | |
 |:--|:--|
-| Navigateur | **Windows** : Chrome / Edge (USB + BLE natif) · **Linux** : Chromium via lanceur GerMaCrise (BLE) · **Firefox** (tous OS) : USB ≥ 151, pas de BLE |
+| Navigateur | **Windows** : Chrome / Edge (USB + BLE natif) · **Linux** : Chromium via lanceur GerMaCrise (installé auto s’il manque) · **Firefox** (tous OS) : USB ≥ 151, pas de BLE |
 | Fenêtre serveur | **À laisser ouverte** |
 | Arrêt | Fermer la fenêtre ou `Ctrl+C` |
 
@@ -207,7 +207,7 @@ Journal install : `%TEMP%\germa-pnpm-install.log`
 | [`install.sh`](../install.sh) | Install Debian / Ubuntu |
 | [`install.ps1`](../install.ps1) / [`install.bat`](../install.bat) | Install Windows 10 / 11 (raccourci : `install.ps1 -Icone`) |
 | `creer-icone.sh` | Recréer l’icône Bureau / menu (Linux) |
-| `scripts/lancer-navigateur-bluetooth.sh` | Ouvre Chromium avec Web Bluetooth (Linux) |
+| `scripts/lancer-navigateur-bluetooth.sh` | Vérifie / installe Chromium, puis ouvre Web Bluetooth (Linux) |
 | `creer-icone.ps1` | Ancien nom → `install.ps1 -Icone` |
 | `demarrer.sh` / `demarrer.bat` | Lancer le serveur (créés par l’install) |
 | `scripts/install-local.sh` | Ancien nom → `install.sh` |

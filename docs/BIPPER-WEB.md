@@ -4,6 +4,7 @@
 |:--|:--|
 | **Dépôt** | [F4EED/client_web_MT_bipper](https://github.com/F4EED/client_web_MT_bipper) |
 | **Base** | Fork [meshtastic/web](https://github.com/meshtastic/web) |
+| **Version** | **germacrise-web-v1.0.5** |
 | **Firmware cible** | Gaulix Bipper **v1.12.5+** (pagers L1/M1/M2 · PC crise XIAO S3+SX1262 · PC crise ThinkNode M2) |
 | **Chemin local** | `C:\client web mesthastic_bipper` |
 | **Install** | [install_local.md](install_local.md) — **Debian / Ubuntu** : `install.sh` · **Windows 10 / 11** : `install.ps1` (ou `install.bat`) · raccourci : `install.ps1 -Icone` · [INSTALL-SRV-WEB.md](INSTALL-SRV-WEB.md) · [INSTALL-DOCKER.md](INSTALL-DOCKER.md) |
@@ -199,7 +200,7 @@ Web Bluetooth (BLE) : **Firefox n’a pas cette API** (aucun OS). En USB, onglet
 | Navigateur / OS | BLE (Web Bluetooth) | Notes |
 |:----------------|:--------------------|:------|
 | **Chrome / Edge sous Windows** | ✅ natif | Aucun flag. Ouvrir `http://localhost:5173` (pas l’IP du PC). PIN **123456**. Ne pas appairer dans Paramètres Windows → Bluetooth avant le navigateur. |
-| **Chrome / Chromium (apt) sous Linux** via icône GerMaCrise | ✅ | Le lanceur passe `--enable-blink-features=WebBluetooth` et un profil `~/.config/germa-crise-chromium`. Fermer **toutes** les fenêtres Chromium/Chrome avant, sinon le flag est ignoré. Pas le Snap. BlueZ + groupe `bluetooth`. |
+| **Chrome / Chromium (apt) sous Linux** via icône GerMaCrise | ✅ | `install.sh` et chaque lancement **testent Chromium** ; s’il manque, installation apt (sinon Google Chrome .deb, pas le Snap). Le lanceur passe `--enable-blink-features=WebBluetooth` et un profil `~/.config/germa-crise-chromium`. Fermer **toutes** les fenêtres Chromium/Chrome avant, sinon le flag est ignoré. BlueZ + groupe `bluetooth`. |
 | **Chromium / Chrome Linux ouverts à la main** | ❌ tant que le flag n’est pas là | `navigator.bluetooth` reste absent → *Web Bluetooth non pris en charge*. Relancer GerMaCrise, ou `bash scripts/lancer-navigateur-bluetooth.sh`. |
 | **Firefox** (Windows et Linux) | ❌ BLE | Pas d’API native. USB : onglet **Serial** (Firefox ≥ 151). HTTP si le nœud a le Wi‑Fi. |
 | Safari | ❌ | Pas de Web Bluetooth |
@@ -214,7 +215,7 @@ Ouvrez **`http://localhost:5173`** (pas l’IP LAN, pas `http://0.0.0.0`) : hors
 - Un seul client à la fois (fermer GerMaCrise Android / autre PC avant de connecter le navigateur).
 - Contexte sécurisé : `http://localhost` / `127.0.0.1` ou **HTTPS** — pas `http://IP-LAN`.
 - **Windows** : Chrome ou Edge (natif). Firefox = *Web Bluetooth non pris en charge*. Ne pas appairer dans Paramètres → Bluetooth avant.
-- **Linux** : après `usermod -aG bluetooth`, **déconnexion / reconnexion** de session. Adapter allumé (`bluetoothctl power on`). Relancer GerMaCrise (pas un Chromium déjà ouvert).
+- **Linux** : après `usermod -aG bluetooth`, **déconnexion / reconnexion** de session. Adapter allumé (`bluetoothctl power on`). Relancer GerMaCrise (pas un Chromium déjà ouvert). Chromium/Chrome est installé automatiquement s’il manque (`install.sh` et `demarrer.sh`).
 
 ### Messages / canaux (historique local)
 
@@ -262,5 +263,14 @@ Après déploiement, vérifier :
 | `public/i18n/locales/*/bipper.json` | i18n |
 | `public/images/germacrise_icon.png` | Icône GerMaCrise (favicons / sidebar / PWA) — orange / mesh |
 | `public/site.webmanifest` | PWA : `short_name` = **🔴** |
-| `scripts/lancer-navigateur-bluetooth.sh` | Linux : Chromium + Web Bluetooth (profil GerMaCrise) |
+| `scripts/lancer-navigateur-bluetooth.sh` | Linux : installe Chromium s’il manque, puis ouvre le profil GerMaCrise + Web Bluetooth |
 | `.cursor/rules/gaulix-ecosystem-sync.mdc` | Sync 3 projets |
+
+---
+
+## Historique
+
+| Version | Date | Notes |
+|:--------|:-----|:------|
+| **v1.0.5** | 18/08/2026 | Linux : `install.sh` / lanceur **installent Chromium** (apt, sinon Chrome .deb) s’il n’est pas déjà présent |
+| v1.0.4 | 18/08/2026 | Web Bluetooth Linux via Chromium dédié (flag Blink, profil GerMaCrise, plus de repli Firefox) |
