@@ -5,7 +5,7 @@
 #   wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.sh
 #   bash install.sh
 #
-# Puis ouvrir Chrome / Chromium / Firefox sur http://localhost:5173
+# Puis Chromium s'ouvre avec Bluetooth sur http://localhost:5173
 # Relancer plus tard :  ~/demarrer-GerMaCrise.sh
 # =============================================================================
 set -euo pipefail
@@ -44,7 +44,54 @@ fi
 sudo apt-get update -y >/dev/null
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git curl ca-certificates gnupg wget bluez >/dev/null
 
-# Web Bluetooth (Chrome/Chromium/Firefox) : groupe bluetooth + USB série
+is_snap_bin() {
+  local bin="$1"
+  local resolved
+  resolved="$(readlink -f "$bin" 2>/dev/null || echo "$bin")"
+  [[ "$bin" == /snap/* || "$resolved" == /snap/* ]]
+}
+
+browser_bluetooth_ok() {
+  local name bin
+  for name in google-chrome-stable google-chrome chromium chromium-browser brave-browser microsoft-edge-stable microsoft-edge; do
+    bin="$(command -v "$name" 2>/dev/null || true)"
+    if [[ -n "$bin" ]] && ! is_snap_bin "$bin"; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+ensure_chromium() {
+  if browser_bluetooth_ok; then
+    return 0
+  fi
+  say "Navigateur pour le Bluetooth (Chrome / Chromium apt, pas Firefox)…"
+  local arch
+  arch="$(dpkg --print-architecture 2>/dev/null || echo amd64)"
+  if [[ "$arch" == "amd64" ]]; then
+    local deb
+    deb="$(mktemp --suffix=.deb)"
+    if wget -qO "$deb" "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"; then
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$deb" >/dev/null 2>&1 || {
+        sudo dpkg -i "$deb" >/dev/null 2>&1 || true
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y >/dev/null 2>&1 || true
+      }
+    fi
+    rm -f "$deb"
+  fi
+  if ! browser_bluetooth_ok; then
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y chromium >/dev/null 2>&1 || true
+  fi
+  if ! browser_bluetooth_ok; then
+    echo "Aucun Chrome/Chromium (apt) installé — le Bluetooth du navigateur ne marchera pas."
+    echo "  Debian : sudo apt install chromium"
+    echo "  Ubuntu : installez Google Chrome (.deb), pas le paquet Snap chromium-browser"
+    echo "  Firefox n'a pas Web Bluetooth (USB = onglet Serial uniquement)."
+  fi
+}
+
+# Web Bluetooth : groupe bluetooth (Linux Chromium) + USB série (dialout)
 CURRENT_USER="$(id -un)"
 if getent group bluetooth >/dev/null 2>&1; then
   sudo usermod -aG bluetooth "${CURRENT_USER}" || true
@@ -54,8 +101,53 @@ if getent group dialout >/dev/null 2>&1; then
 fi
 if command -v snap >/dev/null 2>&1 && snap list chromium >/dev/null 2>&1; then
   sudo snap connect chromium:bluez >/dev/null 2>&1 || true
-  echo "Note : Chromium Snap bride souvent le Bluetooth. Préférez Google Chrome, Chromium (apt), ou Firefox + extension WebBLE."
+  echo "Note : Chromium Snap bride souvent le Bluetooth. Préférez Google Chrome ou Chromium (apt)."
 fi
+
+# BlueZ : APIs expérimentales (D-Bus) dont Chromium Web Bluetooth a besoin
+if [[ -f /etc/bluetooth/main.conf ]]; then
+  if grep -qE '^#?Experimental' /etc/bluetooth/main.conf; then
+    sudo sed -i -E 's/^#?Experimental.*/Experimental = true/' /etc/bluetooth/main.conf
+  else
+    printf '\n[General]\nExperimental = true\n' | sudo tee -a /etc/bluetooth/main.conf >/dev/null
+  fi
+fi
+BT_DAEMON=""
+for p in /usr/libexec/bluetooth/bluetoothd /usr/lib/bluetooth/bluetoothd; do
+  if [[ -x "$p" ]]; then
+    BT_DAEMON="$p"
+    break
+  fi
+done
+if [[ -n "${BT_DAEMON}" ]]; then
+  sudo mkdir -p /etc/systemd/system/bluetooth.service.d
+  sudo tee /etc/systemd/system/bluetooth.service.d/germa-crise-experimental.conf >/dev/null <<UNIT
+[Service]
+ExecStart=
+ExecStart=${BT_DAEMON} --experimental
+UNIT
+  sudo systemctl daemon-reload >/dev/null 2>&1 || true
+  sudo systemctl restart bluetooth >/dev/null 2>&1 || true
+fi
+bluetoothctl power on >/dev/null 2>&1 || true
+
+ensure_chromium
+
+# Chromium Debian : flags persistants (tous les lancements, pas seulement le nôtre)
+if [[ -d /etc/chromium.d ]] || sudo mkdir -p /etc/chromium.d 2>/dev/null; then
+  sudo tee /etc/chromium.d/germa-crise-bluetooth >/dev/null <<'FLAGS' || true
+# GerMaCrise — expose navigator.bluetooth sous Linux
+export CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --enable-blink-features=WebBluetooth --enable-features=WebBluetooth,WebBluetoothNewPermissionsBackend --enable-experimental-web-platform-features"
+FLAGS
+fi
+# Paquet apt chromium (wrapper) lit aussi ce fichier
+mkdir -p "${HOME}/.config"
+printf '%s\n' \
+  '--enable-blink-features=WebBluetooth' \
+  '--enable-features=WebBluetooth,WebBluetoothNewPermissionsBackend' \
+  '--enable-experimental-web-platform-features' \
+  > "${HOME}/.config/chromium-flags.conf"
+
 
 if ! have node || [[ "$(node -v | sed 's/^v//' | cut -d. -f1)" -lt 22 ]]; then
   say "Installation du moteur (Node.js)…"
@@ -102,14 +194,15 @@ echo ""
 echo "========================================"
 echo "  GerMaCrise — serveur local"
 echo "========================================"
-echo "  Ouvrez Chrome / Chromium / Firefox :"
+echo "  Chromium s'ouvre avec Bluetooth activé :"
 echo "    http://localhost:${PORT}"
 echo "  Laissez cette fenêtre ouverte."
 echo "  Ctrl+C pour arrêter."
 echo "========================================"
 echo ""
-if command -v xdg-open >/dev/null 2>&1; then
-  (sleep 3 && xdg-open "http://localhost:${PORT}" >/dev/null 2>&1) &
+if [[ -f "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" ]]; then
+  chmod +x "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" || true
+  (sleep 2 && bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" "http://localhost:${PORT}" >>"${INSTALL_DIR}/_lancer-navigateur.log" 2>&1) &
 fi
 exec pnpm --filter meshtastic-web exec vite -- --host 0.0.0.0 --port ${PORT}
 EOF
@@ -128,15 +221,17 @@ echo ""
 echo "========================================"
 echo "  C'est prêt."
 echo ""
-echo "  → Ouvrez Chrome / Chromium / Firefox :"
-echo "       http://localhost:${PORT}"
+echo "  → Chromium s'ouvre avec Bluetooth (profil GerMaCrise)."
+echo "       URL : http://localhost:${PORT}"
 echo ""
 echo "  Bluetooth Linux :"
-echo "       • Chrome/Chromium : chrome://flags → enable-web-bluetooth = Enabled"
-echo "         (évitez Chromium Snap ; Google Chrome ou chromium apt)"
-echo "       • Firefox : extension WebBLE, puis recharger la page"
+echo "       • Utilisez l'icône GerMaCrise (ouvre Chromium avec Web Bluetooth)"
+echo "       • Firefox n'a PAS Web Bluetooth — pour le BLE, utilisez Chromium"
+echo "       • USB (câble) : Firefox ≥ 151 ou Chromium, onglet Serial"
 echo "       • PIN usine Gaulix : 123456 — ne pas appairer dans les réglages OS"
 echo "       • Si vous venez d'être ajouté au groupe bluetooth : déconnexion / reconnexion"
+echo "       • Ouvrez toujours http://localhost:${PORT} (pas l'IP du PC)"
+echo "       • Journal du navigateur : ${INSTALL_DIR}/_lancer-navigateur.log"
 echo ""
 echo "  → Relancer plus tard :"
 echo "       • Icône « GerMaCrise » sur le Bureau"
@@ -155,8 +250,9 @@ echo ""
 echo "Démarrage… (fenêtre à laisser ouverte)"
 echo ""
 
-if have xdg-open; then
-  (sleep 4 && xdg-open "http://localhost:${PORT}" >/dev/null 2>&1) &
+if [[ -f "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" ]]; then
+  chmod +x "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" || true
+  (sleep 3 && bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" "http://localhost:${PORT}" >>"${INSTALL_DIR}/_lancer-navigateur.log" 2>&1) &
 fi
 
 exec pnpm --filter meshtastic-web exec vite -- --host 0.0.0.0 --port "${PORT}"

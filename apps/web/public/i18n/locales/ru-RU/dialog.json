@@ -33,7 +33,7 @@
     "title": "Добавить подключение",
     "description": "Выберите тип подключения и заполните параметры",
     "validation": {
-      "requiresWebBluetooth": "Для этого типа подключения требуется <0>Web Bluetooth</0>. Используйте поддерживаемый браузер, например Chrome или Edge.",
+      "requiresWebBluetooth": "Для этого типа подключения требуется <0>Web Bluetooth</0>. Windows: Chrome или Edge (встроено). Linux: перезапустите GerMaCrise (Chromium). Firefox: нет BLE (USB — вкладка Serial).",
       "requiresWebSerial": "Для этого типа подключения требуется <0>Web Serial</0>. Используйте поддерживаемый браузер, например Chrome или Edge.",
       "requiresSecureContext": "Этому приложению требуется <0>безопасный контекст</0>. Подключайтесь через HTTPS или localhost.",
       "additionallyRequiresSecureContext": "Кроме того, требуется <0>безопасный контекст</0>. Подключайтесь через HTTPS или localhost."
@@ -45,7 +45,7 @@
       },
       "notSupported": {
         "title": "Web Bluetooth не поддерживается",
-        "description": "Ваш браузер или устройство не поддерживает Web Bluetooth"
+        "description": "Браузер не предоставляет Web Bluetooth. Windows: Chrome или Edge. Linux: перезапустите GerMaCrise (Chromium). Firefox: вкладка Serial по USB."
       },
       "short": "BT: {{deviceName}}",
       "long": "Bluetooth-устройство",

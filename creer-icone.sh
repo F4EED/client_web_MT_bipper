@@ -65,14 +65,15 @@ echo ""
 echo "========================================"
 echo "  GerMaCrise - serveur local"
 echo "========================================"
-echo "  Ouvrez Chrome / Chromium / Firefox :"
+echo "  Chromium s'ouvre avec Bluetooth active :"
 echo "    http://localhost:${PORT}"
 echo "  Laissez cette fenetre ouverte."
 echo "  Ctrl+C pour arreter."
 echo "========================================"
 echo ""
-if command -v xdg-open >/dev/null 2>&1; then
-  (sleep 3 && xdg-open "http://localhost:${PORT}" >/dev/null 2>&1) &
+if [[ -f "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" ]]; then
+  chmod +x "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" || true
+  (sleep 2 && bash "${INSTALL_DIR}/scripts/lancer-navigateur-bluetooth.sh" "http://localhost:${PORT}" >>"${INSTALL_DIR}/_lancer-navigateur.log" 2>&1) &
 fi
 if command -v pnpm >/dev/null 2>&1; then
   exec pnpm --filter meshtastic-web exec vite -- --host 0.0.0.0 --port ${PORT}
@@ -101,8 +102,8 @@ Name=GerMaCrise
 Name[fr]=GerMaCrise
 GenericName=Serveur web mesh
 GenericName[fr]=Serveur web mesh
-Comment=Demarrer le serveur web GerMaCrise
-Comment[fr]=Demarrer le serveur web GerMaCrise
+Comment=Demarrer GerMaCrise (Chromium + Bluetooth)
+Comment[fr]=Démarrer GerMaCrise (Chromium + Bluetooth)
 Keywords=GerMaCrise;Gaulix;mesh;crise;bipper;meshtastic;
 Exec=${INSTALL_DIR}/demarrer.sh
 TryExec=${INSTALL_DIR}/demarrer.sh

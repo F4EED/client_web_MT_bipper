@@ -19,11 +19,11 @@ import {
   type BrowserFeature,
   useBrowserFeatureDetection,
 } from "@core/hooks/useBrowserFeatureDetection.ts";
+import { useCopyToClipboard } from "@core/hooks/useCopyToClipboard.ts";
 import { useToast } from "@core/hooks/useToast.ts";
 import {
   TransportWebBluetooth,
-  isFirefoxBrowser,
-  isLinuxDesktop,
+  getBluetoothUnavailableReason,
   needsAcceptAllBluetoothDevices,
   requestMeshtasticBluetoothDevice,
 } from "@meshtastic/transport-web-bluetooth";
@@ -170,6 +170,81 @@ const FeatureErrorMessage = ({ missingFeatures, tabId }: FeatureErrorProps) => {
   );
 };
 
+function localhostAppUrl(): string {
+  if (typeof window === "undefined") {
+    return "http://localhost:5173/";
+  }
+  const { protocol, port, pathname, search, hash } = window.location;
+  const host = port ? `localhost:${port}` : "localhost";
+  return `${protocol}//${host}${pathname}${search}${hash}`;
+}
+
+function chromiumBluetoothCommand(url: string): string {
+  return `chromium --user-data-dir="$HOME/.config/germa-crise-chromium" --enable-blink-features=WebBluetooth ${url}`;
+}
+
+function BluetoothUnavailableHelp() {
+  const { t } = useTranslation();
+  const { copy, isCopied } = useCopyToClipboard();
+  const reason = getBluetoothUnavailableReason();
+  const url = localhostAppUrl();
+  const command = chromiumBluetoothCommand(url);
+
+  if (reason === null) {
+    return null;
+  }
+
+  const i18nKey =
+    reason === "secure-context"
+      ? "addConnection.bluetoothConnection.insecureContext"
+      : reason === "firefox"
+        ? "addConnection.bluetoothConnection.firefoxNoApi"
+        : reason === "chromium-linux"
+          ? "addConnection.bluetoothConnection.chromiumLinuxNoApi"
+          : "addConnection.validation.requiresWebBluetooth";
+
+  return (
+    <div className="flex flex-col gap-2 bg-red-500 p-4 rounded-md text-sm mt-2 text-white">
+      <div className="flex items-start gap-2">
+        <AlertCircle size={28} className="shrink-0 mt-0.5" />
+        <p>
+          <Trans
+            i18nKey={i18nKey}
+            values={{ url }}
+            components={[
+              <Link
+                key="0"
+                href={url}
+                className="underline hover:text-slate-200 text-white"
+              />,
+            ]}
+          />
+        </p>
+      </div>
+      {(reason === "chromium-linux" || reason === "firefox") && (
+        <div className="flex flex-col gap-2 pl-9">
+          <p className="text-xs opacity-90">
+            {t("addConnection.bluetoothConnection.chromiumLinuxCommand")}
+          </p>
+          <code className="text-xs break-all bg-black/20 rounded px-2 py-1">
+            {command}
+          </code>
+          <Button
+            variant="subtle"
+            size="sm"
+            className="w-fit"
+            onClick={() => void copy(command)}
+          >
+            {isCopied
+              ? t("addConnection.bluetoothConnection.commandCopied")
+              : t("addConnection.bluetoothConnection.copyCommand")}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const initialState: DialogState = {
   tab: "http",
   name: "",
@@ -279,13 +354,11 @@ export default function AddConnectionDialog({
   const [state, dispatch] = useReducer(dialogReducer, initialState, () =>
     dialogStateInitializer(isHTTPS ? { protocol: "https" } : {}),
   );
-  const { unsupported } = useBrowserFeatureDetection();
+  const { supported, unsupported } = useBrowserFeatureDetection();
   const { t } = useTranslation();
 
-  const bluetoothSupported =
-    typeof navigator !== "undefined" && "bluetooth" in navigator;
-  const serialSupported =
-    typeof navigator !== "undefined" && "serial" in navigator;
+  const bluetoothSupported = supported.includes("Web Bluetooth");
+  const serialSupported = supported.includes("Web Serial");
   const isURLHTTPS = isHTTPS;
 
   const reset = useCallback(() => {
@@ -312,11 +385,18 @@ export default function AddConnectionDialog({
 
   const handlePickBluetooth = useCallback(async () => {
     if (!bluetoothSupported) {
+      const reason = getBluetoothUnavailableReason();
+      const descriptionKey =
+        reason === "secure-context"
+          ? "addConnection.bluetoothConnection.insecureContext"
+          : reason === "firefox"
+            ? "addConnection.bluetoothConnection.firefoxNoApi"
+            : reason === "chromium-linux"
+              ? "addConnection.bluetoothConnection.chromiumLinuxNoApi"
+              : "addConnection.bluetoothConnection.notSupported.description";
       toast({
         title: t("addConnection.bluetoothConnection.notSupported.title"),
-        description: t(
-          "addConnection.bluetoothConnection.notSupported.description",
-        ),
+        description: t(descriptionKey, { url: localhostAppUrl() }),
       });
       return;
     }
@@ -533,25 +613,7 @@ export default function AddConnectionDialog({
                 "addConnection.bluetoothConnection.notSupported.title",
               )}
             />
-            {!bluetoothSupported && isFirefoxBrowser() ? (
-              <p className="text-xs text-slate-600 dark:text-slate-300">
-                <Trans
-                  i18nKey="addConnection.bluetoothConnection.firefoxWebBle"
-                  components={[
-                    <Link
-                      key="0"
-                      href="https://addons.mozilla.org/firefox/addon/webble/"
-                      className="underline hover:text-slate-800 dark:hover:text-slate-100"
-                    />,
-                  ]}
-                />
-              </p>
-            ) : null}
-            {!bluetoothSupported && isLinuxDesktop() && !isFirefoxBrowser() ? (
-              <p className="text-xs text-slate-600 dark:text-slate-300">
-                {t("addConnection.bluetoothConnection.chromiumLinuxHelp")}
-              </p>
-            ) : null}
+            {!bluetoothSupported ? <BluetoothUnavailableHelp /> : null}
             <div className="flex items-center gap-2">
               <Switch
                 checked={state.btAcceptAllDevices}
@@ -582,10 +644,12 @@ export default function AddConnectionDialog({
                   : t("addConnection.bluetoothConnection.helperText")
               }
             />
-            <FeatureErrorMessage
-              missingFeatures={unsupported}
-              tabId="bluetooth"
-            />
+            {bluetoothSupported ? (
+              <FeatureErrorMessage
+                missingFeatures={unsupported}
+                tabId="bluetooth"
+              />
+            ) : null}
           </>
         ),
         validate: () => state.name.trim().length > 0 && !!state.btSelected,

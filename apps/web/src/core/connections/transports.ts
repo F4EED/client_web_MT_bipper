@@ -5,6 +5,7 @@ import { TransportHTTP } from "@meshtastic/transport-http";
 import {
   BluetoothConnectError,
   TransportWebBluetooth,
+  isWebBluetoothAvailable,
   requestMeshtasticBluetoothDevice,
 } from "@meshtastic/transport-web-bluetooth";
 import {
@@ -87,7 +88,7 @@ async function openBluetooth(
   },
   opts: OpenTransportOptions,
 ): Promise<OpenTransportResult> {
-  if (!("bluetooth" in navigator)) {
+  if (!isWebBluetoothAvailable()) {
     throw new Error("Web Bluetooth not supported");
   }
 
@@ -210,7 +211,7 @@ export async function probeConnection(
       return ok ? "online" : "error";
     }
     case "bluetooth": {
-      if (!("bluetooth" in navigator)) return "disconnected";
+      if (!isWebBluetoothAvailable()) return "disconnected";
       try {
         const known = await (
           navigator.bluetooth as Navigator["bluetooth"] & {

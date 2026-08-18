@@ -33,7 +33,7 @@
     "title": "Verbindung hinzufügen",
     "description": "Wählen Sie einen Verbindungstyp aus und geben Sie die Details ein",
     "validation": {
-      "requiresWebBluetooth": "Dieser Verbindungstyp erfordert <0>Bluetooth</0> im Browser. Bitte verwenden Sie einen unterstützten Browser, wie Chrome oder Edge.",
+      "requiresWebBluetooth": "Dieser Verbindungstyp erfordert <0>Bluetooth</0> im Browser. Windows: Chrome oder Edge (nativ). Linux: GerMaCrise neu starten (Chromium). Firefox: kein BLE (USB über Serial).",
       "requiresWebSerial": "Dieser Verbindungstyp erfordert <0>Serielle Schnittstelle</0> im Browser. Bitte verwenden Sie einen unterstützten Browser, wie Chrome oder Edge.",
       "requiresSecureContext": "Diese Anwendung erfordert einen <0>sicheren Kontext</0>. Bitte verbinden Sie sich über HTTPS oder localhost.",
       "additionallyRequiresSecureContext": "Zusätzlich erfordert es einen <0>sicheren Kontext</0>. Bitte verbinden Sie sich über HTTPS oder localhost."
@@ -45,7 +45,7 @@
       },
       "notSupported": {
         "title": "Web Bluetooth wird nicht unterstützt",
-        "description": "Ihr Browser oder Ihr Gerät unterstützt kein Bluetooth im Web"
+        "description": "Ihr Browser stellt Web Bluetooth nicht bereit. Windows: Chrome oder Edge. Linux: GerMaCrise neu starten (Chromium). Firefox: Serial-Tab über USB."
       },
       "short": "BT: {{deviceName}}",
       "long": "Bluetooth Gerät",

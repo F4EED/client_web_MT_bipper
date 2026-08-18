@@ -33,7 +33,7 @@
     "title": "Lägg till anslutning",
     "description": "Välj en anslutningstyp och fyll i uppgifterna",
     "validation": {
-      "requiresWebBluetooth": "Den här anslutningstypen kräver <0>Web Bluetooth</0>. Använd en webbläsare som stöds, till exempel Chrome eller Edge.",
+      "requiresWebBluetooth": "Den här anslutningstypen kräver <0>Web Bluetooth</0>. Windows: Chrome eller Edge (inbyggt). Linux: starta om GerMaCrise (Chromium). Firefox: ingen BLE (USB via Serial).",
       "requiresWebSerial": "Den här anslutningstypen kräver <0>Web Serial</0>. Använd en webbläsare som stöds, till exempel Chrome eller Edge.",
       "requiresSecureContext": "Denna applikation kräver en <0>säker kontext</0>. Anslut med HTTPS eller localhost.",
       "additionallyRequiresSecureContext": "Dessutom kräver den ett <0>säker kontext</0>. Vänligen anslut med HTTPS eller localhost."
@@ -45,7 +45,7 @@
       },
       "notSupported": {
         "title": "Web Bluetooth stöds inte",
-        "description": "Din webbläsare eller enhet har inte stöd för Web Bluetooth"
+        "description": "Webbläsaren exponerar inte Web Bluetooth. Windows: Chrome eller Edge. Linux: starta om GerMaCrise (Chromium). Firefox: Serial-fliken via USB."
       },
       "short": "BT: {{deviceName}}",
       "long": "Bluetooth-enhet",

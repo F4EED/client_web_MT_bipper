@@ -238,7 +238,16 @@ Pour un usage Bipper en USB depuis le LAN, prévoyez un certificat
 | Firefox ≥ 151 | Oui | Possible ; sinon basculer Chrome/Edge |
 | Firefox < 151 / Safari | Non | Impossible en USB navigateur |
 
-**Bluetooth (Linux)** : Chrome/Chromium avec `chrome://flags/#enable-web-bluetooth`, BlueZ, groupe `bluetooth` (pas le Snap). Firefox : extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). En-tête Nginx `Permissions-Policy: bluetooth=(self)` (déjà dans l’exemple ci-dessus). Détail : [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
+### Navigateurs supportés (Bluetooth / BLE)
+
+| OS / navigateur | Web Bluetooth | Action |
+| --- | --- | --- |
+| **Windows** — Chrome / Edge | Oui, **natif** | Aucun flag. `http://localhost` ou HTTPS. PIN **123456**. |
+| **Linux** — Chromium via GerMaCrise | Oui | Lanceur `--enable-blink-features=WebBluetooth` (profil dédié). Pas le Snap. |
+| **Firefox** (Windows et Linux) | Non | USB = onglet Serial ; ou Chrome/Edge / lanceur Linux pour le BLE |
+| Safari | Non | — |
+
+En-tête Nginx `Permissions-Policy: bluetooth=(self)` (déjà dans l’exemple ci-dessus). HTTPS ou `localhost` obligatoire. Détail : [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
 
 Sans Web Serial, le client coupe avec *Web Serial not supported*. Ce n’est pas un bug firmware : c’est l’API navigateur.
 
@@ -292,6 +301,7 @@ dans `/var/www/…/bipper/`. Sans cela, les assets et le routeur casseront.
 | i18n / textes manquants | Dossier `i18n/` non recopié depuis `dist/` |
 | USB / BLE gris | Site en HTTP hors localhost |
 | *Web Serial not supported* | Navigateur sans API (Firefox < 151, Safari) — utiliser **Chrome** ou **Edge** |
+| *Web Bluetooth non pris en charge* | Firefox (tous OS) ; Chromium Linux ouvert à la main — Windows : **Chrome/Edge** ; Linux : relancer GerMaCrise |
 | Connexion USB qui tourne puis échoue | Autre app sur le COM, ou reboot ESP32 — un seul client série ; attendre ~5–10 s après Connecter |
 | Ancienne UI après update | Cache navigateur / CDN — `index.html` en `no-cache` |
 

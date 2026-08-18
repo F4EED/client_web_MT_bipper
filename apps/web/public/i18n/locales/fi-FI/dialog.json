@@ -33,7 +33,7 @@
     "title": "Lisää yhteys",
     "description": "Valitse yhteystyyppi ja täytä tiedot",
     "validation": {
-      "requiresWebBluetooth": "Tämä yhteystyyppi vaatii <0>Web-sarjaportti bluetooth</0> -tuen. Käytä tuettua selainta, kuten Chromea tai Edgeä.",
+      "requiresWebBluetooth": "Tämä yhteystyyppi vaatii <0>Web Bluetooth</0> -tuen. Windows: Chrome tai Edge (natiivi). Linux: käynnistä GerMaCrise uudelleen (Chromium). Firefox: ei BLE:tä (USB Serial-välilehti).",
       "requiresWebSerial": "Tämä yhteystyyppi vaatii <0>Web-sarjaportti</0> -tuen. Käytä tuettua selainta, kuten Chromea tai Edgeä.",
       "requiresSecureContext": "Tämä sovellus vaatii <0>suojatun yhteyden</0>. Yhdistä käyttämällä HTTPS:ää tai localhostia.",
       "additionallyRequiresSecureContext": "Lisäksi se vaatii <0>suojatun yhteyden</0>. Yhdistä käyttämällä HTTPS:ää tai localhostia."
@@ -45,7 +45,7 @@
       },
       "notSupported": {
         "title": "Verkkoselaimen Bluetooth ei ole tuettu",
-        "description": "Selaimesi tai laitteesi ei tue Web Bluetooth -toimintoa"
+        "description": "Selain ei tarjoa Web Bluetoothia. Windows: Chrome tai Edge. Linux: käynnistä GerMaCrise uudelleen (Chromium). Firefox: Serial-välilehti USB:llä."
       },
       "short": "BT: {{deviceName}}",
       "long": "Bluetooth-laite",

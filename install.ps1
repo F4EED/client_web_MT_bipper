@@ -269,8 +269,9 @@ echo.
 echo ========================================
 echo   GerMaCrise - serveur local
 echo ========================================
-echo   Ouvrez Chrome / Edge / Firefox :
+echo   Ouvrez Chrome ou Edge (Bluetooth natif) :
 echo     http://localhost:$Port
+echo   Firefox : USB seulement, pas de BLE.
 echo   Laissez cette fenetre ouverte.
 echo ========================================
 echo.
@@ -495,14 +496,15 @@ Write-Host ""
 Write-Host "========================================"
 Write-Host "  C est pret."
 Write-Host ""
-Write-Host "  Ouvrez Chrome / Edge / Firefox :"
+Write-Host "  Ouvrez Chrome ou Edge (Bluetooth natif) :"
 Write-Host ("    http://localhost:{0}" -f $Port)
 Write-Host ""
 Write-Host "  Bluetooth Windows :"
-Write-Host "    - Chrome / Edge : Web Bluetooth natif (recommande)"
-Write-Host "    - Firefox : extension WebBLE, puis recharger la page"
+Write-Host "    - Chrome / Edge : Web Bluetooth natif (aucun flag)"
+Write-Host "    - Firefox : pas de BLE (USB = onglet Serial, Firefox 151+)"
 Write-Host "    - PIN usine Gaulix : 123456"
 Write-Host "    - Ne pas appairer le noeud dans Parametres > Bluetooth avant le navigateur"
+Write-Host "    - URL : http://localhost (pas l'IP du PC)"
 Write-Host ""
 Write-Host "  Relancer :"
 Write-Host "    - GerMaCrise sur le Bureau (.lnk ou .bat)"

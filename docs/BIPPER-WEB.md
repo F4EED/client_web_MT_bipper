@@ -194,23 +194,27 @@ La connexion USB passe par l’API **Web Serial** (`navigator.serial`). Sans ell
 - Symptôme « Connexion échouée / Chargement… / Noeuds (0) » : handshake incomplet — débrancher/rebrancer, fermer les autres apps série, reconnecter sous Chrome ou Edge sur `http://localhost:5173` (pas une IP LAN).
 - Après config OK : `set_time_only` force l’horloge radio sur l’heure du PC (retries 0 / 2 / 8 s). Firmware Gaulix applique avec `forceUpdate` (ignore le throttle NTP/GPS).
 
-Web Bluetooth (BLE) : **Chrome / Chromium / Edge**, et **Firefox** avec l’extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). Safari : non.
+Web Bluetooth (BLE) : **Firefox n’a pas cette API** (aucun OS). En USB, onglet **Serial** (Firefox ≥ 151). Safari : non.
 
-| Navigateur | BLE (Web Bluetooth) | Notes Linux |
-|:-----------|:--------------------|:------------|
-| **Chrome** / **Edge** | ✅ | Sous Linux : `chrome://flags/#enable-web-bluetooth` = Enabled ; **pas** le Chromium Snap (bridé). BlueZ + groupe `bluetooth` |
-| **Chromium** (apt) | ✅ si flag + BlueZ | Même flags ; `snap connect chromium:bluez` ne suffit souvent pas — préférer le paquet apt ou Google Chrome |
-| **Firefox** | ✅ via **WebBLE** | Pas d’API native. Installer l’extension, recharger `localhost`. Cocher « Afficher tous les appareils Bluetooth » |
+| Navigateur / OS | BLE (Web Bluetooth) | Notes |
+|:----------------|:--------------------|:------|
+| **Chrome / Edge sous Windows** | ✅ natif | Aucun flag. Ouvrir `http://localhost:5173` (pas l’IP du PC). PIN **123456**. Ne pas appairer dans Paramètres Windows → Bluetooth avant le navigateur. |
+| **Chrome / Chromium (apt) sous Linux** via icône GerMaCrise | ✅ | Le lanceur passe `--enable-blink-features=WebBluetooth` et un profil `~/.config/germa-crise-chromium`. Fermer **toutes** les fenêtres Chromium/Chrome avant, sinon le flag est ignoré. Pas le Snap. BlueZ + groupe `bluetooth`. |
+| **Chromium / Chrome Linux ouverts à la main** | ❌ tant que le flag n’est pas là | `navigator.bluetooth` reste absent → *Web Bluetooth non pris en charge*. Relancer GerMaCrise, ou `bash scripts/lancer-navigateur-bluetooth.sh`. |
+| **Firefox** (Windows et Linux) | ❌ BLE | Pas d’API native. USB : onglet **Serial** (Firefox ≥ 151). HTTP si le nœud a le Wi‑Fi. |
 | Safari | ❌ | Pas de Web Bluetooth |
 
-Sous **Linux**, BlueZ n’expose souvent pas l’UUID GATT Meshtastic dans les publicités BLE : le sélecteur filtré est **vide**. Le client bascule alors sur `acceptAllDevices` (tous les appareils BLE proches) + `optionalServices`. Ne **pas** appairer le nœud dans les réglages Bluetooth GNOME/KDE avant le navigateur.
+Sous **Linux**, BlueZ n’expose souvent pas l’UUID GATT Meshtastic dans les publicités BLE : le sélecteur filtré est **vide**. Le client bascule alors sur `acceptAllDevices` (tous les appareils BLE proches) + `optionalServices`. Ne **pas** appairer le nœud dans les réglages Bluetooth GNOME/KDE (ni Windows) avant le navigateur.
+
+Ouvrez **`http://localhost:5173`** (pas l’IP LAN, pas `http://0.0.0.0`) : hors localhost/HTTPS, le navigateur masque aussi Web Bluetooth.
 
 **Pièges BLE (ThinkNode M1 / L1 / pagers nRF)** :
 
 - PIN usine Gaulix : **`123456`** (FIXED_PIN). Sans appairage navigateur correct → *Device does not advertise the Meshtastic GATT service*.
 - Un seul client à la fois (fermer GerMaCrise Android / autre PC avant de connecter le navigateur).
 - Contexte sécurisé : `http://localhost` / `127.0.0.1` ou **HTTPS** — pas `http://IP-LAN`.
-- Linux : après `usermod -aG bluetooth`, **déconnexion / reconnexion** de session. Adapter allumé (`bluetoothctl power on`).
+- **Windows** : Chrome ou Edge (natif). Firefox = *Web Bluetooth non pris en charge*. Ne pas appairer dans Paramètres → Bluetooth avant.
+- **Linux** : après `usermod -aG bluetooth`, **déconnexion / reconnexion** de session. Adapter allumé (`bluetoothctl power on`). Relancer GerMaCrise (pas un Chromium déjà ouvert).
 
 ### Messages / canaux (historique local)
 
@@ -258,4 +262,5 @@ Après déploiement, vérifier :
 | `public/i18n/locales/*/bipper.json` | i18n |
 | `public/images/germacrise_icon.png` | Icône GerMaCrise (favicons / sidebar / PWA) — orange / mesh |
 | `public/site.webmanifest` | PWA : `short_name` = **🔴** |
+| `scripts/lancer-navigateur-bluetooth.sh` | Linux : Chromium + Web Bluetooth (profil GerMaCrise) |
 | `.cursor/rules/gaulix-ecosystem-sync.mdc` | Sync 3 projets |

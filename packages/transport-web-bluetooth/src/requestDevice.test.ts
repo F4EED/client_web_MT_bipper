@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   MESHTASTIC_GATT_SERVICE_UUID,
   buildBluetoothRequestOptions,
+  getBluetoothUnavailableReason,
+  isChromiumFamily,
   isFirefoxBrowser,
   isLinuxDesktop,
+  isWebBluetoothAvailable,
   needsAcceptAllBluetoothDevices,
 } from "./requestDevice.ts";
 
@@ -61,6 +64,58 @@ describe("Web Bluetooth Linux / Firefox request options", () => {
     expect(win.acceptAllDevices).toBeUndefined();
     expect(win.filters).toEqual([{ services: [MESHTASTIC_GATT_SERVICE_UUID] }]);
     expect(win.optionalServices).toEqual([MESHTASTIC_GATT_SERVICE_UUID]);
+  });
+
+  it("detects Chromium-family browsers, not Firefox", () => {
+    expect(isChromiumFamily(UA.chromeLinux)).toBe(true);
+    expect(isChromiumFamily(UA.chromeWindows)).toBe(true);
+    expect(isChromiumFamily(UA.firefoxLinux)).toBe(false);
+  });
+
+  it("treats requestDevice as the Web Bluetooth availability signal", () => {
+    expect(isWebBluetoothAvailable(null)).toBe(false);
+    expect(isWebBluetoothAvailable({})).toBe(false);
+    expect(isWebBluetoothAvailable({ requestDevice: () => undefined })).toBe(
+      true,
+    );
+  });
+
+  it("explains missing Web Bluetooth on Linux Chromium vs Firefox vs HTTP", () => {
+    expect(
+      getBluetoothUnavailableReason({
+        hasBluetooth: true,
+        isSecureContext: true,
+        userAgent: UA.chromeLinux,
+      }),
+    ).toBeNull();
+    expect(
+      getBluetoothUnavailableReason({
+        hasBluetooth: false,
+        isSecureContext: false,
+        userAgent: UA.chromeLinux,
+      }),
+    ).toBe("secure-context");
+    expect(
+      getBluetoothUnavailableReason({
+        hasBluetooth: false,
+        isSecureContext: true,
+        userAgent: UA.firefoxLinux,
+      }),
+    ).toBe("firefox");
+    expect(
+      getBluetoothUnavailableReason({
+        hasBluetooth: false,
+        isSecureContext: true,
+        userAgent: UA.chromeLinux,
+      }),
+    ).toBe("chromium-linux");
+    expect(
+      getBluetoothUnavailableReason({
+        hasBluetooth: false,
+        isSecureContext: true,
+        userAgent: UA.chromeWindows,
+      }),
+    ).toBe("unsupported");
   });
 
   it("honours an explicit acceptAllDevices override", () => {

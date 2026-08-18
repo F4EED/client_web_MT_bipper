@@ -33,7 +33,7 @@
     "title": "Add connection",
     "description": "Choose a connection type and fill in the details",
     "validation": {
-      "requiresWebBluetooth": "This connection type requires <0>Web Bluetooth</0>. Use Chrome/Chromium (on Linux: not the Snap package) or Firefox with the WebBLE add-on.",
+      "requiresWebBluetooth": "This connection type requires <0>Web Bluetooth</0>. Windows: Chrome or Edge (built-in). Linux: relaunch GerMaCrise (Chromium). Firefox: no BLE (use the Serial tab over USB).",
       "requiresWebSerial": "This connection type requires <0>Web Serial</0>. Please use a supported browser, like Chrome or Edge.",
       "requiresSecureContext": "This application requires a <0>secure context</0>. Please connect using HTTPS or localhost.",
       "additionallyRequiresSecureContext": "Additionally, it requires a <0>secure context</0>. Please connect using HTTPS or localhost."
@@ -45,7 +45,7 @@
       },
       "notSupported": {
         "title": "Web Bluetooth not supported",
-        "description": "Your browser or device does not support Web Bluetooth. On Linux use Chrome/Chromium (not Snap) or Firefox with the WebBLE add-on."
+        "description": "This browser does not expose Web Bluetooth. Windows: open Chrome or Edge. Linux: relaunch GerMaCrise (Chromium, not Firefox). URL: http://localhost (not the PC IP). Firefox: Serial tab over USB."
       },
       "short": "BT: {{deviceName}}",
       "long": "Bluetooth Device",
@@ -55,9 +55,15 @@
       "notSelected": "No device selected",
       "acceptAllDevices": "Show all Bluetooth devices",
       "helperText": "Uses the Meshtastic Bluetooth service for discovery.",
-      "linuxHelperText": "Linux/Firefox: the picker lists every nearby BLE device. Choose the pager or PC crise, then pair with PIN 123456 if asked. Do not pair the device in the OS Bluetooth settings first.",
-      "firefoxWebBle": "Firefox has no built-in Web Bluetooth. Install the <0>WebBLE</0> add-on, reload this page, then try again.",
-      "chromiumLinuxHelp": "On Linux, Chrome/Chromium need Web Bluetooth enabled (chrome://flags/#enable-web-bluetooth) and BlueZ. Snap Chromium is often blocked — use Google Chrome or Chromium from apt. After being added to the bluetooth group, log out and back in."
+      "linuxHelperText": "Linux: the picker lists every nearby BLE device. Choose the pager or PC crise, then pair with PIN 123456 if asked. Do not pair the device in the OS Bluetooth settings first.",
+      "firefoxWebBle": "Firefox has no Web Bluetooth. For BLE: Chrome or Edge (Windows); on Linux, relaunch GerMaCrise. Over USB: Serial tab (Firefox 151+).",
+      "chromiumLinuxHelp": "On Linux, Chromium hides Web Bluetooth. Relaunch GerMaCrise (desktop icon): a dedicated Chromium profile opens with Bluetooth. Close every Chromium/Chrome window first. Not the Snap package. URL: http://localhost (not the PC IP).",
+      "insecureContext": "Browser Bluetooth only works at <0>{{url}}</0> (localhost or HTTPS). The PC IP or http://0.0.0.0 will not work.",
+      "firefoxNoApi": "Firefox has no Web Bluetooth (Windows and Linux). For BLE: Chrome or Edge on Windows; on Linux, relaunch GerMaCrise (Chromium). Over USB, use the Serial tab (Firefox 151+).",
+      "chromiumLinuxNoApi": "On Linux, Chromium hides Web Bluetooth until launched with the right flag. Close every Chromium/Chrome window, then relaunch the GerMaCrise icon (dedicated profile). Avoid the Snap package. PIN 123456.",
+      "chromiumLinuxCommand": "Or in a terminal, after closing Chromium:",
+      "copyCommand": "Copy command",
+      "commandCopied": "Command copied"
     },
     "serialConnection": {
       "namePlaceholder": "My Serial Node",

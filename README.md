@@ -25,6 +25,7 @@ Après install : **http://localhost:5173** — laisser la fenêtre du serveur ou
 | [`install.ps1`](install.ps1) | **Windows 10 / 11** | **Seul script** : install (`irm … \| iex` ou `install.bat`) et raccourci (`-Icone`) |
 | [`install.bat`](install.bat) | **Windows 10 / 11** | Double-clic : appelle `install.ps1` |
 | [`creer-icone.sh`](creer-icone.sh) | Debian / Ubuntu | Recréer l’icône Bureau + entrée menu **GerMaCrise** |
+| [`scripts/lancer-navigateur-bluetooth.sh`](scripts/lancer-navigateur-bluetooth.sh) | Debian / Ubuntu | Ouvre Chromium avec Web Bluetooth (profil GerMaCrise) |
 | `~/demarrer-GerMaCrise.sh` | Debian / Ubuntu | Relancer le serveur (créé par l’install) |
 | `%USERPROFILE%\demarrer-GerMaCrise.bat` | Windows 10 / 11 | Relancer le serveur (créé par `install.ps1`) |
 | [`scripts/install-local.sh`](scripts/install-local.sh) | Linux | Ancien nom → `install.sh` |
@@ -40,7 +41,7 @@ bash install.sh
 
 Depuis un clone du dépôt : `bash install.sh` (ou `bash scripts/install-local.sh`).
 
-Puis **Chrome / Chromium (apt, pas le Snap) / Firefox** → **http://localhost:5173**.  
+Puis l’icône **GerMaCrise** ouvre **Chromium** (Bluetooth) sur **http://localhost:5173**.  
 Relancer : icône **GerMaCrise** sur le Bureau, menu Applications, ou `~/demarrer-GerMaCrise.sh`.
 
 Recréer l’icône / le menu :
@@ -49,7 +50,7 @@ Recréer l’icône / le menu :
 cd ~/GerMaCrise && git pull && bash creer-icone.sh
 ```
 
-**Bluetooth Linux** : le script installe BlueZ et ajoute l’utilisateur aux groupes `bluetooth` et `dialout` — **déconnexion / reconnexion** ensuite. Chrome/Chromium : `chrome://flags/#enable-web-bluetooth` = Enabled. Firefox : extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). PIN Gaulix **123456**. Ne pas appairer le nœud dans les réglages Bluetooth du bureau avant le navigateur.
+**Bluetooth Linux** : le script installe BlueZ (experimental), ajoute l’utilisateur aux groupes `bluetooth` et `dialout`, et ouvre **Chromium/Chrome avec Web Bluetooth** (profil GerMaCrise). **Déconnexion / reconnexion** ensuite. Firefox n’a pas Web Bluetooth (USB = onglet Serial). PIN Gaulix **123456**. Ne pas appairer le nœud dans les réglages Bluetooth du bureau. URL : **http://localhost:5173** (pas l’IP du PC).
 
 ### Windows 10 / 11
 
@@ -61,7 +62,7 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 
 **Variante double-clic** : ZIP GitHub → `install.bat`.
 
-Puis **Chrome / Edge / Firefox** → **http://localhost:5173**.  
+Puis **Chrome** ou **Edge** → **http://localhost:5173** (Firefox : USB seulement, pas de BLE).  
 Relancer : **GerMaCrise.lnk** ou **GerMaCrise.bat** sur le Bureau, ou `%USERPROFILE%\demarrer-GerMaCrise.bat`.
 
 Recréer le raccourci :
@@ -70,7 +71,7 @@ Recréer le raccourci :
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\GerMaCrise\install.ps1" -Icone
 ```
 
-**Bluetooth Windows** : Chrome / Edge natif ; Firefox + [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). PIN **123456**. Ne pas appairer dans Paramètres → Bluetooth avant le navigateur.
+**Bluetooth Windows** : Chrome / Edge **natif** (aucun flag). Firefox n’a pas Web Bluetooth (USB = onglet Serial). PIN **123456**. Ne pas appairer dans Paramètres → Bluetooth avant le navigateur. URL : **http://localhost:5173** (pas l’IP du PC).
 
 Si l’icône affiche `No module named 'meshtastic'` : un `meshtastic.exe` Python pollue le PATH — ce n’est **pas** le client web. Recréer le lanceur (`install.ps1 -Icone`) ou voir [install_local.md](docs/install_local.md) § Erreur Python.
 

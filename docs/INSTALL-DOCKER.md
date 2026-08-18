@@ -150,7 +150,7 @@ Web Serial / Web Bluetooth **exigent HTTPS** hors `localhost`.
 
 **Navigateurs USB** : préférer **Chrome** ou **Edge**. Firefox ≥ 151 peut marcher ; Safari et Firefox plus anciens n’ont pas Web Serial (*Web Serial not supported*).
 
-**Bluetooth Linux** : Chrome/Chromium (flag Web Bluetooth, pas le Snap) ou Firefox + [WebBLE](https://addons.mozilla.org/firefox/addon/webble/). Voir [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
+**Bluetooth Linux** : relancer GerMaCrise (Chromium + Web Bluetooth). **Bluetooth Windows** : Chrome / Edge natif. Firefox (tous OS) : pas de BLE (USB = Serial). Voir [BIPPER-WEB.md](./BIPPER-WEB.md) § Navigateurs.
 
 Exemple derrière un reverse proxy (Caddy / Traefik / Nginx) :
 
@@ -197,7 +197,7 @@ docker compose up -d --build
 | --- | --- |
 | `ADD failed: … apps/web/dist` | Lancer le build **avant** `docker build`, et utiliser le contexte à la **racine** du monorepo |
 | Page blanche / 404 sur refresh | Config Nginx SPA déjà fournie (`try_files … /index.html`) ; ne pas remplacer `default.conf` sans équivalent |
-| USB / Bluetooth indisponible | Passer en HTTPS (ou rester sur `localhost`) ; vérifier Chrome/Edge (Web Serial) |
+| USB / Bluetooth indisponible | Passer en HTTPS (ou rester sur `localhost`). BLE : Chrome/Edge (Windows) ou lanceur GerMaCrise (Linux). Firefox : USB seulement. |
 | *Web Serial not supported* | Navigateur incompatible — Chrome ou Edge |
 | Port déjà utilisé | Changer le mapping : `-p 3000:8080` |
 

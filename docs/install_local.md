@@ -11,19 +11,19 @@ wget -O install.sh https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/
 bash install.sh
 ```
 
-Puis **Chrome / Chromium / Firefox** → **http://localhost:5173**
+Puis l’icône **GerMaCrise** ouvre **Chromium** avec Bluetooth sur **http://localhost:5173**
 
-### Bluetooth sous Linux (Firefox, Chromium, Chrome)
+### Bluetooth sous Linux (Chromium, pas Firefox)
 
-Le script installe **BlueZ** et ajoute l’utilisateur aux groupes `bluetooth` et `dialout`. **Déconnectez puis reconnectez** la session (ou redémarrez) pour que le groupe `bluetooth` soit pris en compte.
+Le script installe **BlueZ** (mode experimental), ajoute l’utilisateur aux groupes `bluetooth` et `dialout`, et ouvre Chromium avec Web Bluetooth **activé** (profil `~/.config/germa-crise-chromium`). **Déconnectez puis reconnectez** la session (ou redémarrez) pour que le groupe `bluetooth` soit pris en compte.
 
 | Navigateur | Action |
 |:-----------|:-------|
-| **Google Chrome** ou **Chromium (apt)** | `chrome://flags/#enable-web-bluetooth` → **Enabled**, relancer le navigateur |
-| **Chromium Snap** | Souvent bloqué. `sudo snap connect chromium:bluez` puis, si ça échoue encore, installer Chrome ou Chromium apt |
-| **Firefox** | Installer l’extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/), recharger la page. Dans Connexions, laisser **Afficher tous les appareils Bluetooth** |
+| **Google Chrome** ou **Chromium (apt)** | Relancer **GerMaCrise** (icône Bureau). Fermer d’abord **toutes** les fenêtres Chromium/Chrome. Message *Web Bluetooth non pris en charge* = le navigateur a été ouvert sans le flag — ne pas rester sur Firefox ni sur un Chromium déjà lancé. |
+| **Chromium Snap** | Souvent bloqué. Installer Google Chrome (.deb) ou Chromium Debian (`apt install chromium`), pas le Snap. |
+| **Firefox** | Pas de Web Bluetooth. BLE : utiliser Chromium via GerMaCrise. USB : onglet **Serial** (Firefox ≥ 151). |
 
-Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans les réglages Bluetooth du bureau (GNOME/KDE).
+Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans les réglages Bluetooth du bureau (GNOME/KDE). URL : **http://localhost:5173** (pas l’IP du PC).
 
 Relancer : icône **GerMaCrise** sur le Bureau (ou `~/demarrer-GerMaCrise.sh`).
 
@@ -90,22 +90,22 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 ```
 
 3. Valider avec Entrée, saisir si Windows demande une autorisation  
-4. Attendre la fin, puis ouvrir **Chrome**, **Edge** ou **Firefox** → **http://localhost:5173**
+4. Attendre la fin, puis ouvrir **Chrome** ou **Edge** → **http://localhost:5173** (Firefox : USB seulement, pas de BLE)
 
-### Bluetooth sous Windows (Chrome, Edge, Firefox)
+### Bluetooth sous Windows (Chrome / Edge)
 
 | Navigateur | Action |
 |:-----------|:-------|
-| **Chrome** / **Edge** | Web Bluetooth natif — recommandé |
-| **Firefox** | Installer l’extension [WebBLE](https://addons.mozilla.org/firefox/addon/webble/), recharger la page. Dans Connexions, laisser **Afficher tous les appareils Bluetooth** |
+| **Chrome** / **Edge** | Web Bluetooth **natif** — aucun flag. Recommandé pour le BLE. |
+| **Firefox** | Pas de Web Bluetooth. BLE : Chrome ou Edge. USB : onglet **Serial** (Firefox ≥ 151). |
 
-Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans Paramètres Windows → Bluetooth.
+Dans le client : Connexions → Bluetooth → choisir le pager / PC crise (PIN **123456**). **Ne pas** l’appairer d’abord dans Paramètres Windows → Bluetooth. URL : **http://localhost:5173** (pas l’IP du PC).
 
 ### Variante double-clic
 
 1. Télécharger le ZIP du dépôt GitHub (Code → Download ZIP) et décompresser  
 2. Double-cliquer sur **`install.bat`**  
-3. Chrome / Edge / Firefox → **http://localhost:5173**
+3. Chrome ou Edge → **http://localhost:5173** (Firefox : USB Serial uniquement)
 
 ### Relancer plus tard
 
@@ -135,7 +135,7 @@ irm https://raw.githubusercontent.com/F4EED/client_web_MT_bipper/main/install.ps
 1. Fermer toutes les fenêtres GerMaCrise  
 2. Supprimer le dossier `%USERPROFILE%\GerMaCrise` s’il est corrompu  
 3. Rouvrir **Terminal** et relancer la commande `irm … | iex` ci-dessus  
-4. Vérifier Chrome / Edge / Firefox  
+4. Vérifier **Chrome** ou **Edge** (BLE et USB). Firefox : USB seulement.  
 5. Antivirus : autoriser Node.js / le dossier `GerMaCrise`
 
 ### Messages identiques sur plusieurs canaux (Fr_*)
@@ -194,7 +194,7 @@ Journal install : `%TEMP%\germa-pnpm-install.log`
 
 | | |
 |:--|:--|
-| Navigateur | **Chrome / Edge** (USB + BLE) · **Firefox** (USB ≥ 151, BLE via WebBLE) |
+| Navigateur | **Windows** : Chrome / Edge (USB + BLE natif) · **Linux** : Chromium via lanceur GerMaCrise (BLE) · **Firefox** (tous OS) : USB ≥ 151, pas de BLE |
 | Fenêtre serveur | **À laisser ouverte** |
 | Arrêt | Fermer la fenêtre ou `Ctrl+C` |
 
@@ -207,6 +207,7 @@ Journal install : `%TEMP%\germa-pnpm-install.log`
 | [`install.sh`](../install.sh) | Install Debian / Ubuntu |
 | [`install.ps1`](../install.ps1) / [`install.bat`](../install.bat) | Install Windows 10 / 11 (raccourci : `install.ps1 -Icone`) |
 | `creer-icone.sh` | Recréer l’icône Bureau / menu (Linux) |
+| `scripts/lancer-navigateur-bluetooth.sh` | Ouvre Chromium avec Web Bluetooth (Linux) |
 | `creer-icone.ps1` | Ancien nom → `install.ps1 -Icone` |
 | `demarrer.sh` / `demarrer.bat` | Lancer le serveur (créés par l’install) |
 | `scripts/install-local.sh` | Ancien nom → `install.sh` |

@@ -19,5 +19,9 @@ packages/protobufs/packages/ts/dist
 *.crt
 *.key
 
+# Local launch logs (Linux GerMaCrise)
+_lancer-navigateur.log
+_launch-test.log
+
 # Claude Code session locks
 .claude/
